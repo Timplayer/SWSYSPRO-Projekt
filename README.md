@@ -3,7 +3,7 @@
 # Frontend
 
 # Communication 
- - [] REST (Representational State Transfer)
- - [] GraphQL
- - [] gRPC
+ - [ ] REST (Representational State Transfer)
+ - [ ] GraphQL
+ - [ ] gRPC
 # Backend
