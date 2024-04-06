@@ -2,15 +2,15 @@
 
 # Frontend
 - [ ] React
-- [ ] Angular
+- ~~[ ] Angular~~
 # Communication 
- - [ ] REST (Representational State Transfer)
- - [ ] GraphQL
+ - ~~[ ] REST (Representational State Transfer)~~
+ - ~~[ ] GraphQL~~
  - [ ] gRPC
 # Backend
-- [ ] Rust
-- [ ] Node.js
-- [ ] C++
+- ~~[ ] Rust~~
+- ~~[ ] Node.js~~
+- ~~[ ] C++~~
 - [ ] Go (Golang)
-- [ ] Java
-- [ ] C#
+- ~~[ ] Java~~
+- ~~[ ] C#~~
