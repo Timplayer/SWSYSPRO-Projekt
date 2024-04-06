@@ -7,6 +7,7 @@
  - ~~[ ] REST (Representational State Transfer)~~
  - ~~[ ] GraphQL~~
  - [ ] gRPC
+ - [ ] JWT
 # Backend
 - ~~[ ] Rust~~
 - ~~[ ] Node.js~~
