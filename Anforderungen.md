@@ -8,7 +8,7 @@
 - Reservierungen einsehen
 - Reserviergungen löschen
 
-# Laboraufgaben
+## Laboraufgaben
 - L01: Pflichtenheft (200P) 08.05.2024
 - L02: Technische Dokumentation (300P) 04.07.2024
 - L03: Final Presentation (100P) 03.07.2024
