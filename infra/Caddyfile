@@ -1,0 +1,6 @@
+{$SITE_ADDRESS} {
+    respond /api/* "Hello, API!"
+    respond "Hello, frontend!"
+    file_server
+}
+
