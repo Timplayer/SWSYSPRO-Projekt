@@ -14,6 +14,18 @@ services:
       - caddy_config:/config
     environment:
       - SITE_ADDRESS=localhost:8080
+    depends_on:
+      - keycloak
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=password
+      - KC_HTTP_RELATIVE_PATH=/auth/
+      - KC_PROXY_HEADERS=xforwarded
+    command: start-dev
+
 volumes:
   caddy_data:
   caddy_config:
+
