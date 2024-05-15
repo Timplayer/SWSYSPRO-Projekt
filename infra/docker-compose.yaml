@@ -29,7 +29,7 @@ services:
     build: ../frontend/
     restart: unless-stopped
     volumes:
-      - ../front-end/hivedrive/src/:/usr/local/app/src/:Z
+      - ../frontend/hivedrive/src/:/usr/local/app/src/:Z
   backend:
     build: ../backend/
     restart: unless-stopped
