@@ -26,11 +26,12 @@ jobs:
             ${{ runner.os }}-docker-
 
       - name: Build the stack
+        id: build
         run: |
           mkdir -p /tmp/.docker-cache
           docker-compose -f ./infra/docker-compose.yaml build --progress=plain --build-arg BUILDKIT_INLINE_CACHE=1
 
       - name: Save Docker cache
-        if: success()
+        if: steps.build.outputs.exit_code == 0
         run: |
-          docker save $(docker images --format '{{.Repository}}:{{.Tag}}' | grep -v '<none>') -o /tmp/.docker-cache/cache.tar
+          docker save -o /tmp/.buildx-cache/cache.tar $(docker images --format '{{.Repository}}:{{.Tag}}' | grep -v '<none>')
