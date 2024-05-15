@@ -2,7 +2,7 @@ name: Docker Compose Actions Workflow
 
 on: 
   pull_request:
-    types: [opened, closed]
+    types: [opened, synchronize, reopened, closed]
   push:
     branches: [main]
 
