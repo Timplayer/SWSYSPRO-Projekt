@@ -1,0 +1,40 @@
+version: '3.7'
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      #- "443:443"
+      #- "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:Z
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      - SITE_ADDRESS=localhost:8080
+    depends_on:
+      - keycloak
+      - frontend
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=password
+      - KC_HTTP_RELATIVE_PATH=/auth/
+      - KC_PROXY_HEADERS=xforwarded
+    command: start-dev
+  frontend:
+    build: ../frontend/
+    restart: unless-stopped
+    volumes:
+      - ../front-end/hivedrive/src/:/usr/local/app/src/:Z
+  backend:
+    build: ../backend/
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:
+

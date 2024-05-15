@@ -1,0 +1,6 @@
+{$SITE_ADDRESS} {
+    reverse_proxy /api/* backend
+    reverse_proxy /auth/* keycloak:8080
+    reverse_proxy frontend:5173
+}
+
