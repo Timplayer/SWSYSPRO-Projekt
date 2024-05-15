@@ -20,10 +20,17 @@ jobs:
       - name: Cache Docker layers
         uses: actions/cache@v4
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          path: /tmp/.docker-cache
+          key: ${{ runner.os }}-docker-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-
+            ${{ runner.os }}-docker-
 
       - name: Build the stack
-        run: docker-compose -f ./infra/docker-compose.yaml build
+        run: |
+          mkdir -p /tmp/.docker-cache
+          docker-compose -f ./infra/docker-compose.yaml build --progress=plain --build-arg BUILDKIT_INLINE_CACHE=1
+
+      - name: Save Docker cache
+        if: success()
+        run: |
+          docker save $(docker images --format '{{.Repository}}:{{.Tag}}' | grep -v '<none>') -o /tmp/.docker-cache/cache.tar
