@@ -1,6 +1,6 @@
 {$SITE_ADDRESS} {
     respond /api/* "Hello, API!"
     reverse_proxy /auth/* keycloak:8080
-    respond "Hello, frontend!"
+    reverse_proxy frontend:5173
 }
 
