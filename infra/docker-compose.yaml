@@ -26,12 +26,12 @@ services:
       - KC_PROXY_HEADERS=xforwarded
     command: start-dev
   frontend:
-    build: ../front-end/
+    build: ../frontend/
     restart: unless-stopped
     volumes:
       - ../front-end/hivedrive/src/:/usr/local/app/src/:Z
   backend:
-    build: ../back-end/
+    build: ../backend/
     restart: unless-stopped
 
 volumes:
