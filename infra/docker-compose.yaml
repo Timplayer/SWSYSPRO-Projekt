@@ -30,6 +30,9 @@ services:
     restart: unless-stopped
     volumes:
       - ../front-end/hivedrive/src/:/usr/local/app/src/:Z
+  backend:
+    build: ../back-end/
+    restart: unless-stopped
 
 volumes:
   caddy_data:

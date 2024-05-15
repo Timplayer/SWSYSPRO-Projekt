@@ -1,5 +1,5 @@
 {$SITE_ADDRESS} {
-    respond /api/* "Hello, API!"
+    reverse_proxy /api/* backend
     reverse_proxy /auth/* keycloak:8080
     reverse_proxy frontend:5173
 }
