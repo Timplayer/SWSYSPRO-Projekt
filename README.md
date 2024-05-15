@@ -14,7 +14,6 @@
 - ~~[ ] C++~~
 - [ ] Go (Golang)
 - ~~[ ] Java~~
-- ~~[ ] C#~~
 # WebServer
 - [ ] nginx
 # AAA
