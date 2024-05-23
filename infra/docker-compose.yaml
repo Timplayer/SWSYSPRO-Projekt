@@ -24,7 +24,9 @@ services:
       - KEYCLOAK_ADMIN_PASSWORD=password
       - KC_HTTP_RELATIVE_PATH=/auth/
       - KC_PROXY_HEADERS=xforwarded
-    command: start-dev
+    command: start-dev --import-realm
+    volumes:
+      - ./keycloak/input:/opt/keycloak/data/import:Z
   frontend:
     build: ../frontend/
     restart: unless-stopped
