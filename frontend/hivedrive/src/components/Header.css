@@ -1,0 +1,11 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: #f8f9fa;
+  }
+  
+  .menu, .logo, .bookings, .auth {
+    margin: 0 10px;
+  }
+  
