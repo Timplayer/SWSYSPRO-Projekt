@@ -22,3 +22,10 @@ jobs:
         run: |
           mkdir -p /tmp/.docker-cache
           docker-compose -f ./infra/docker-compose.yaml build --progress=plain
+      - name : integration_test_keycloak_backend
+        run : |
+          docker-compose -f ./infra/docker-compose.yaml up -d
+          ./backend/test/oidc-login.sh
+          docker-compose -f ./infra/docker-compose.yaml down
+      
+    
