@@ -24,7 +24,7 @@ jobs:
           docker-compose -f ./infra/docker-compose.yaml build --progress=plain
       - name : integration_test_keycloak_backend
         run : |
-          docker-compose -f ./infra/docker-compose.yaml up -d
+          docker-compose -f ./infra/docker-compose.yaml up --detach --wait --wait-timeout 30
           ./backend/test/oidc-login.sh
           docker-compose -f ./infra/docker-compose.yaml down
       
