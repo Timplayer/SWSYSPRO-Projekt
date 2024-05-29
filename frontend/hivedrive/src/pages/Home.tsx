@@ -1,6 +1,5 @@
 import React from 'react';
-import Header from '../components/Header';
-import SearchBar from '../components/Searchbar';
+import MenuAppBar from '../components/MenuAppBar';
 import Content from '../components/Content';
 import Footer from '../components/Footer';
 import './Home.css';
@@ -9,8 +8,7 @@ import './Home.css';
 const Home: React.FC = () => {
     return (
       <div className="app">
-        <Header />
-        <SearchBar />
+        <MenuAppBar />
         <Content />
         <Footer />
       </div>
