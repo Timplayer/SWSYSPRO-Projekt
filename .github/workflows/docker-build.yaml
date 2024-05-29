@@ -25,7 +25,7 @@ jobs:
       - name: integration_test_keycloak_backend
         working-directory: "./infra"
         run: |
-          docker compose up --detach --wait
+          docker compose up --detach --wait --no-TTY
           ./backend/test/oidc-login.sh
           docker compose down
       
