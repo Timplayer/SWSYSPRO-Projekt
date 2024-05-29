@@ -18,7 +18,7 @@ jobs:
       #- run: docker-compose -f ./infra/docker-compose.yaml pull
       - uses: docker/build-push-action@v5.3.0
         with:
-          context: ./infra/
+          context: ./infra/.
           cache-from: type=gha
           cache-to: type=gha, mode=max
 
