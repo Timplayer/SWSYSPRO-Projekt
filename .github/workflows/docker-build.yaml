@@ -18,9 +18,12 @@ jobs:
       #- run: docker-compose -f ./infra/docker-compose.yaml pull
       - uses: docker/build-push-action@v5.3.0
         with:
-          context: /home/runner/work/SWSYSPRO-Projekt/SWSYSPRO-Projekt/infra/docker-compose.yaml
-          #cache-from: type=gha
-          #cache-to: type=gha, mode=max
-
+          cache-from: type=gha
+          
+      - run: docker-compose -f ./infra/docker-compose.yaml build --progress=plain
+      
+      - uses: docker/build-push-action@v5.3.0
+        with:
+          cache-to: type=gha, mode=max
 
   
