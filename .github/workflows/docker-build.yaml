@@ -26,7 +26,7 @@ jobs:
         working-directory: "./infra"
         run: |
           docker compose up --detach --wait
-          ./backend/test/oidc-login.sh
+          ../backend/test/oidc-login.sh
           docker compose down
       
     
