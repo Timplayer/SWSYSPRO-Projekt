@@ -3,7 +3,7 @@ client="admin-cli"
 memberName="member_test"
 memberSecret="test"
 
-token=$(curl -k \
+token=$(curl -f -k \
 -d "client_id=${client}" \
 -d "username=${memberName}" \
 -d "password=${memberSecret}" \
@@ -11,6 +11,6 @@ token=$(curl -k \
 https://localhost:8080/auth/realms/hivedrive/protocol/openid-connect/token \
 | jq .access_token)
 
-curl -k \
+curl -f -k \
 -H "Authorization: Bearer $token" \
 https://localhost:8080/api/test/auth
