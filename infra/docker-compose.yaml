@@ -45,6 +45,10 @@ services:
     depends_on:
       keycloak:
         condition: service_healthy
+    environment:
+      - ISSUER=http://keycloak:8080/auth/realms/hivedrive
+      - CLIENT_ID=go-backend
+      - CLIENT_SECRET=QYkmaGk96FsGytwSYqaz6sus4oFrj6iv
 
 volumes:
   caddy_data:
