@@ -18,18 +18,19 @@ services:
       - keycloak
       - frontend
   keycloak:
-    image: quay.io/keycloak/keycloak:latest
+    build: ./keycloak/
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=password
       - KC_HTTP_RELATIVE_PATH=/auth/
       - KC_PROXY_HEADERS=xforwarded
+      - KC_HEALTH_ENABLED=true
     command: start-dev --import-realm
     volumes:
       - ./keycloak/input:/opt/keycloak/data/import:Z
     healthcheck:
-      test: curl --fail -k https://localhost:8080/auth//health/ready || exit 1
-      interval: 60s
+      test: /healthcheck
+      interval: 10s
       retries: 5
       start_period: 60s
       timeout: 10s
@@ -42,7 +43,8 @@ services:
     build: ../backend/
     restart: unless-stopped
     depends_on:
-      - keycloak
+      keycloak:
+        condition: service_healthy
 volumes:
   caddy_data:
   caddy_config:
