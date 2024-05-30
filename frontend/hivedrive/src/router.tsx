@@ -1,8 +1,8 @@
 import React from 'react';
 import { createBrowserRouter, RouterProvider, RouteObject } from 'react-router-dom';
 import NotFound from './pages/NotFound';
-//import App from './App'
-import Home from './pages/Home'
+
+import Home from './piratetest2/onepirate/Home.tsx'
 
 const routes: RouteObject[] = [
     {
