@@ -26,4 +26,5 @@ jobs:
         run: |
           docker compose -f ./infra/docker-compose.yaml up --detach --wait
           ./backend/test/oauth-integration.sh
+          ./backend/test/sql-integration.sh
           docker compose -f ./infra/docker-compose.yaml down
