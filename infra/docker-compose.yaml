@@ -49,6 +49,9 @@ services:
       - ISSUER=http://keycloak:8080/auth/realms/hivedrive
       - CLIENT_ID=go-backend
       - CLIENT_SECRET=QYkmaGk96FsGytwSYqaz6sus4oFrj6iv
+      - DATABASE_URL=db
+      - DATABASE_USER=postgres
+      - DATABASE_PASS=example
   db:
     image: postgres
     restart: always
