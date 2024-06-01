@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/zitadel/oidc/v3/pkg/client/rs"
 	"github.com/zitadel/oidc/v3/pkg/oidc"
 	"log"
@@ -14,17 +15,63 @@ import (
 )
 
 func main() {
+	dbpool := getDBpool()
+	defer dbpool.Close()
+
 	provider := getOAuthProvider()
 
 	router := mux.NewRouter()
 
 	router.HandleFunc("/api/healthcheck/hello", hello()).Methods("GET")
-	router.HandleFunc("/api/healthcheck/auth", validate(provider, func(writer http.ResponseWriter, request *http.Request, response *oidc.IntrospectionResponse) {
-		hello()(writer, request)
-	}))
+	router.HandleFunc("/api/healthcheck/auth", validate(provider,
+		func(writer http.ResponseWriter, request *http.Request, response *oidc.IntrospectionResponse) {
+			hello()(writer, request)
+		}))
+	router.HandleFunc("/api/healthcheck/sql", testDBget(dbpool)).Methods("GET")
+	router.HandleFunc("/api/healthcheck/sql/{name}", testDBpost(dbpool)).Methods("POST")
 
 	//start server
 	log.Fatal(http.ListenAndServe(":80", router))
+}
+
+func getDBpool() *pgxpool.Pool {
+	url, ok := os.LookupEnv("DATABASE_URL")
+	if !ok {
+		log.Fatal("DATABASE_URL environment variable not set")
+	}
+	port := 5432
+	user, ok := os.LookupEnv("DATABASE_USER")
+	if !ok {
+		log.Fatal("DATABASE_USER environment variable not set")
+	}
+	password, ok := os.LookupEnv("DATABASE_PASS")
+	if !ok {
+		log.Fatal("DATABASE_PASS environment variable not set")
+	}
+	table := "hivedrive"
+
+	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", url, port, user, password, table)
+
+	for i := 0; i < 10; i++ {
+		dbpool, err := pgxpool.New(context.Background(), psqlconn)
+		if err != nil {
+			log.Printf("Unable to connect to database: %v\n", err)
+			log.Printf("Waiting 5 seconds for database to become available")
+			time.Sleep(5 * time.Second)
+		}
+		initializeDatabase(dbpool)
+		return dbpool
+	}
+	log.Fatal("Unable to connect to database")
+	return nil
+}
+
+func initializeDatabase(dbpool *pgxpool.Pool) {
+	tag, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS test(id BIGSERIAL PRIMARY KEY, name TEXT)")
+	if err != nil {
+		log.Fatalf("Failed to create table: %v\n", err)
+	}
+	log.Printf("Create table: %v\n", tag)
 }
 
 func getOAuthProvider() rs.ResourceServer {
@@ -82,11 +129,4 @@ func validate(provider rs.ResourceServer,
 
 	}
 
-}
-
-func hello() http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		writer.WriteHeader(http.StatusOK)
-		writer.Write([]byte("hello world"))
-	}
 }
