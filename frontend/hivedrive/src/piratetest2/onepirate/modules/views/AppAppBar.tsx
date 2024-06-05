@@ -3,6 +3,8 @@ import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import AppBar from '../components/AppBar';
 import Toolbar from '../components/Toolbar';
+import TemporaryDrawer from '../components/TemporaryDrawer';
+
 import logo from '../../images/HiveDriveLogo.png'; // Pfad zu Ihrem Logo
 
 
@@ -17,6 +19,9 @@ function AppAppBar() {
     <div>
       <AppBar position="fixed">
         <Toolbar sx={{ justifyContent: 'space-between' }}>
+        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center'}}>
+            <TemporaryDrawer /> 
+          </Box>
           <Box sx={{ flex: 1 }} />
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <img src={logo} alt="Logo" style={{ height: 40, marginRight: 8 }} />
@@ -24,7 +29,7 @@ function AppAppBar() {
             variant="h6"
             underline="none"
             color="inherit"
-            href="/premium-themes/onepirate/"
+            href="/"
             sx={{ fontSize: 24 }}
           >
             {'HiveDrive'}
