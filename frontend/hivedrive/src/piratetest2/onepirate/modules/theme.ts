@@ -4,14 +4,14 @@ import { green, grey, red } from '@mui/material/colors';
 const rawTheme = createTheme({
   palette: {
     primary: {
-      light: '#69696a',
-      main: '#28282a',
-      dark: '#1e1e1f',
+      light: '#69696a', // light grey
+      main: '#021927', // dark grey/black from the logo
+      dark: '#141414', // darker grey
     },
     secondary: {
-      light: '#fff5f8',
-      main: '#ff3366',
-      dark: '#e62958',
+      light: '#ffcc80', // lighter orange
+      main: '#ff9800', // main orange from the logo
+      dark: '#f57c00', // darker orange
     },
     warning: {
       main: '#ffc071',
@@ -50,8 +50,9 @@ const theme = {
     ...rawTheme.palette,
     background: {
       ...rawTheme.palette.background,
-      default: rawTheme.palette.common.white,
-      placeholder: grey[200],
+      //default: rawTheme.palette.common.white,
+      default: '#000000',
+      placeholder: '#FFFFFF',
     },
   },
   typography: {
