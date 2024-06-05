@@ -3,6 +3,8 @@ import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import AppBar from '../components/AppBar';
 import Toolbar from '../components/Toolbar';
+import logo from '../../images/HiveDriveLogo.png'; // Pfad zu Ihrem Logo
+
 
 const rightLink = {
   fontSize: 16,
@@ -16,6 +18,8 @@ function AppAppBar() {
       <AppBar position="fixed">
         <Toolbar sx={{ justifyContent: 'space-between' }}>
           <Box sx={{ flex: 1 }} />
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <img src={logo} alt="Logo" style={{ height: 40, marginRight: 8 }} />
           <Link
             variant="h6"
             underline="none"
@@ -23,8 +27,9 @@ function AppAppBar() {
             href="/premium-themes/onepirate/"
             sx={{ fontSize: 24 }}
           >
-            {'onepirate'}
+            {'HiveDrive'}
           </Link>
+          </Box>
           <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
             <Link
               color="inherit"
@@ -38,7 +43,7 @@ function AppAppBar() {
             <Link
               variant="h6"
               underline="none"
-              href="/premium-themes/onepirate/sign-up/"
+              href="/premium-themes/onepirate/sign-up/"    //jeweils sign in und up ändern
               sx={{ ...rightLink, color: 'secondary.main' }}
             >
               {'Sign Up'}
