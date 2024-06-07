@@ -22,6 +22,8 @@ func main() {
 
 	router := mux.NewRouter()
 
+	router.HandleFunc("/api/stations/name/{name}", postStation(dbpool)).Methods("POST")
+	router.HandleFunc("/api/stations/id/{id}", getStationByID(dbpool)).Methods("GET")
 	router.HandleFunc("/api/healthcheck/hello", hello()).Methods("GET")
 	router.HandleFunc("/api/healthcheck/auth", validate(provider,
 		func(writer http.ResponseWriter, request *http.Request, response *oidc.IntrospectionResponse) {
@@ -55,23 +57,29 @@ func getDBpool() *pgxpool.Pool {
 	for i := 0; i < 10; i++ {
 		dbpool, err := pgxpool.New(context.Background(), psqlconn)
 		if err != nil {
-			log.Printf("Unable to connect to database: %v\n", err)
-			log.Printf("Waiting 5 seconds for database to become available")
-			time.Sleep(5 * time.Second)
+			log.Fatal(err)
 		}
-		initializeDatabase(dbpool)
-		return dbpool
+		err = dbpool.Ping(context.Background())
+		if err == nil {
+			log.Println("Connected to database")
+			initializeDatabase(dbpool)
+			return dbpool
+		}
+		log.Printf("Unable to connect to database: %v\n", err)
+		log.Printf("Waiting 5 seconds for database to become available")
+		time.Sleep(5 * time.Second)
 	}
 	log.Fatal("Unable to connect to database")
 	return nil
 }
 
 func initializeDatabase(dbpool *pgxpool.Pool) {
-	tag, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS test(id BIGSERIAL PRIMARY KEY, name TEXT)")
+	_, err := dbpool.Exec(context.Background(),
+		"CREATE TABLE IF NOT EXISTS test(id BIGSERIAL PRIMARY KEY, name TEXT)")
 	if err != nil {
 		log.Fatalf("Failed to create table: %v\n", err)
 	}
-	log.Printf("Create table: %v\n", tag)
+	createStationsTable(dbpool)
 }
 
 func getOAuthProvider() rs.ResourceServer {
