@@ -6,10 +6,10 @@ import Typography from '../components/Typography';
 import AppFooter from '../views/AppFooter';
 import AppAppBar from '../views/AppAppBar';
 import AppForm from '../views/AppForm';
-import { email, required } from './modules/form/validation';
-import RFTextField from './modules/form/RFTextField';
-import FormButton from './modules/form/FormButton';
-import FormFeedback from './modules/form/FormFeedback';
+import { email, required } from '../form/validation';
+import RFTextField from '../form/RFTextField';
+import FormButton from '../form/FormButton';
+import FormFeedback from '../form/FormFeedback';
 import withRoot from '../withRoot';
 
 function SignIn() {
