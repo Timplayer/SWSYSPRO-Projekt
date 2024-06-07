@@ -1,11 +1,11 @@
 import * as React from 'react';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
-import Markdown from './modules/components/Markdown';
-import Typography from './modules/components/Typography';
-import AppAppBar from './modules/views/AppAppBar';
-import AppFooter from './modules/views/AppFooter';
-import withRoot from './modules/withRoot';
+import Markdown from '../components/Markdown';
+import Typography from '../components/Typography';
+import AppAppBar from '../views/AppAppBar';
+import AppFooter from '../views/AppFooter';
+import withRoot from '../withRoot';
 import terms from './modules/views/terms.md';
 
 function Terms() {

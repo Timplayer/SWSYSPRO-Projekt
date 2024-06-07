@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { experimentalStyled as styled, Theme } from '@mui/material/styles';
 import { SxProps } from '@mui/system';
-import Typography from '../components/Typography';
+import Typography from '../../../../components/Typography';
 
 interface FormFeedbackProps extends React.HTMLAttributes<HTMLDivElement> {
   error?: boolean;
