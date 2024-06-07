@@ -6,7 +6,7 @@ import Typography from '../components/Typography';
 import AppAppBar from '../views/AppAppBar';
 import AppFooter from '../views/AppFooter';
 import withRoot from '../withRoot';
-import terms from './modules/views/terms.md';
+import terms from '../views/terms.md';
 
 function Terms() {
   return (
