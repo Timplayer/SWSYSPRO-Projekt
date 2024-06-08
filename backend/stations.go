@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"io"
 	"log"
@@ -90,6 +91,37 @@ func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 	}
 
+}
+
+func getStations(dbpool *pgxpool.Pool) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		rows, err := dbpool.Query(context.Background(), "SELECT stations.id, stations.name FROM stations")
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error geting Database Connection: %v\n", err)
+			return
+		}
+		defer rows.Close()
+		stations, err := pgx.CollectRows(rows,
+			func(row pgx.CollectableRow) (station, error) {
+				var s station
+				err := rows.Scan(&s.Id, &s.Name)
+				return s, err
+			})
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error finding Stations: %v\n", err)
+			return
+		}
+		str, err := json.Marshal(stations)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error finding Stations: %v\n", err)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		writer.Write(str)
+	}
 }
 
 func createStationsTable(dbpool *pgxpool.Pool) {
