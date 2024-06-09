@@ -4,9 +4,7 @@ import Link from '@mui/material/Link';
 import AppBar from '../components/AppBar';
 import Toolbar from '../components/Toolbar';
 import TemporaryDrawer from '../components/TemporaryDrawer';
-
-import logo from '../../images/HiveDriveLogo.png'; // Pfad zu Ihrem Logo
-
+import logo from '../../images/HiveDriveLogo.png'; // Pfad zum Logo
 
 const rightLink = {
   fontSize: 16,
@@ -19,23 +17,22 @@ function AppAppBar() {
     <div>
       <AppBar position="fixed">
         <Toolbar sx={{ justifyContent: 'space-between' }}>
-        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center'}}>
-            <TemporaryDrawer /> 
+          <Box sx={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+            <TemporaryDrawer />
           </Box>
-          <Box sx={{ flex: 1 }} />
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <img src={logo} alt="Logo" style={{ height: 40, marginRight: 8 }} />
-          <Link
-            variant="h6"
-            underline="none"
-            color="inherit"
-            href="/"
-            sx={{ fontSize: 24 }}
-          >
-            {'HiveDrive'}
-          </Link>
+            <Link
+              variant="h6"
+              underline="none"
+              color="inherit"
+              href="/"
+              sx={{ fontSize: 24 }}
+            >
+              {'HiveDrive'}
+            </Link>
           </Box>
-          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
             <Link
               color="inherit"
               variant="h6"
