@@ -2,16 +2,11 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
 import Button from '@mui/material/Button';
-import List from '@mui/material/List';
 import Divider from '@mui/material/Divider';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
-import MailIcon from '@mui/icons-material/Mail';
 import MenuIcon from '@mui/icons-material/Menu';
-import { useMediaQuery } from '@mui/material';
+import { IconButton, Link, Stack, useMediaQuery } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import logo from '../../images/HiveDriveLogo.png'; // Pfad zum Logo
 
 export default function TemporaryDrawer() {
   const [open, setOpen] = React.useState(false);
@@ -29,44 +24,44 @@ export default function TemporaryDrawer() {
     setOpen(newOpen);
   };
 
+
   const DrawerList = (
     <Box sx={{ width: drawerWidth }} role="presentation" onClick={toggleDrawer(false)}>
-      <List>
-        {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-          <ListItem key={text} disablePadding>
-            <ListItemButton>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
+      <Stack spacing={2} direction="row" sx={{ backgroundColor: '#021927', padding: '16px' }}>
+        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center'}}>
+          <IconButton aria-label="close">
+            <CloseIcon 
+            sx={{ fontSize: 24, color: '#FFFFFF' }}
+            />
+          </IconButton> 
+          <img src={logo} alt="Logo" style={{ height: 40, marginRight: 8 }} />
+          <Link
+            variant="h6"
+            underline="none"
+            color="inherit"
+            href="/"
+            sx={{ fontSize: 24, color: '#FFFFFF' }}
+          >
+            {'HiveDrive'}
+          </Link>
+        </Box>
+      </Stack>   
       <Divider />
-      <List>
-        {['All mail', 'Trash', 'Spam'].map((text, index) => (
-          <ListItem key={text} disablePadding>
-            <ListItemButton>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
     </Box>
   );
 
   return (
-    <div>
-      <Button onClick={toggleDrawer(true)}>
-        <MenuIcon sx={{ color: 'white' }} />
-      </Button>
-      <Drawer open={open} onClose={toggleDrawer(false)}>
-        {DrawerList}
-      </Drawer>
-    </div>
+      <div>
+        <Button onClick={toggleDrawer(true)}>
+          <MenuIcon sx={{ color: 'white' }} />
+        </Button>
+        <Drawer 
+          open={open} 
+          onClose={toggleDrawer(false)}
+          sx={{ "& .MuiDrawer-paper": { backgroundColor: '#ffffff' } }} // Hier ändere die Hintergrundfarbe
+        >
+          {DrawerList}
+        </Drawer>
+      </div>
   );
 }

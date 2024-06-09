@@ -38,7 +38,7 @@ function AppAppBar() {
               color="inherit"
               variant="h6"
               underline="none"
-              href="/premium-themes/onepirate/sign-in/"
+              href="/sign-in"
               sx={rightLink}
             >
               {'Sign In'}
@@ -46,7 +46,7 @@ function AppAppBar() {
             <Link
               variant="h6"
               underline="none"
-              href="/premium-themes/onepirate/sign-up/"    //jeweils sign in und up ändern
+              href="/sign-up"    //jeweils sign in und up ändern
               sx={{ ...rightLink, color: 'secondary.main' }}
             >
               {'Sign Up'}
