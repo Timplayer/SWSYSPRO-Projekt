@@ -35,8 +35,8 @@ export default function AppFooter() {
       component="footer"
       sx={{ display: 'flex', bgcolor: 'secondary.light' }}
     >
-      <Container sx={{ my: 8, display: 'flex', justifyContent: 'center' }}>        
-        <Grid container spacing={5} justifyContent="center">
+      <Container sx={{ my: 8, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>        
+        <Grid container spacing={5} justifyContent="center" >
           <Grid item xs={6} sm={4} md={2}> 
           <Typography variant="h6" marked="left" gutterBottom>
               Hilfreiches
@@ -66,7 +66,7 @@ export default function AppFooter() {
               </Box>
             </Box>
           </Grid>
-          <Grid item xs={6} sm={8} md={4}>
+          <Grid item xs={6} sm={4} md={2}>
             <Typography variant="h6" marked="left" gutterBottom>
               Language
             </Typography>
