@@ -17,6 +17,7 @@ function AppAppBar() {
     <div>
       <AppBar position="fixed">
         <Toolbar sx={{ justifyContent: 'space-between' }}>
+        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}></Box>
           <Box sx={{ flex: 1, display: 'flex', alignItems: 'center' }}>
             <TemporaryDrawer />
           </Box>
@@ -51,6 +52,7 @@ function AppAppBar() {
               {'Sign Up'}
             </Link>
           </Box>
+          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}></Box>
         </Toolbar>
       </AppBar>
       <Toolbar />
