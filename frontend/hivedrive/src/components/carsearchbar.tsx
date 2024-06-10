@@ -4,6 +4,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 
+
 const locations = [
   { label: 'Hamburg Flughafen', value: 'hamburg-airport' },
   // Add more locations as needed
@@ -48,7 +49,6 @@ const CarSearchBar: React.FC = () => {
                 label="Abholdatum"
                 value={pickupDate}
                 onChange={(date) => setPickupDate(date)}
-                renderInput={(params) => <TextField {...params} fullWidth />}
               />
             </LocalizationProvider>
           </Grid>
@@ -58,7 +58,6 @@ const CarSearchBar: React.FC = () => {
                 label="Rückgabedatum"
                 value={returnDate}
                 onChange={(date) => setReturnDate(date)}
-                renderInput={(params) => <TextField {...params} fullWidth />}
               />
             </LocalizationProvider>
           </Grid>

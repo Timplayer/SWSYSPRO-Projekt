@@ -8,6 +8,7 @@ import ProductHowItWorks from '../views/ProductHowItWorks';
 import ProductCTA from '../views/ProductCTA';
 import AppAppBar from '../views/AppAppBar';
 import withRoot from '../withRoot';
+import CarSearchBar from '../components/CarSearchBar';
 
 document.body.style.display = 'contents';
 
@@ -15,6 +16,7 @@ function Index() {
   return (
     <React.Fragment>
       <AppAppBar />
+      <CarSearchBar />
       <ProductHero />
       <ProductValues />
       <ProductCategories />
