@@ -1,3 +1,4 @@
+// CarSearchBar.tsx
 import React, { useState } from 'react';
 import { TextField, Button, MenuItem, Box, Container, Grid, IconButton } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -5,21 +6,26 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
+import { Label } from '@mui/icons-material';
+
+interface CarSearchBarProps {
+  setLocation: (location: string) => void;
+}
 
 const locations = [
-  { label: 'Hamburg Flughafen', value: 'hamburg-airport' },
+  { label: 'Hamburg Flughafen', value: 'Hamburg Flughafen' },
+  { label: 'Berlin Hauptbahnhof', value: 'Berlin Hauptbahnhof' },
   // Add more locations as needed
 ];
 
-const CarSearchBar: React.FC = () => {
-  const [location, setLocation] = useState<string>('hamburg-airport');
+const CarSearchBar: React.FC<CarSearchBarProps> = ({ setLocation }) => {
+  const [location, setLocationState] = useState<string>('Hamburg Flughafen'); // Ensure type is string
   const [pickupDate, setPickupDate] = useState<Date | null>(new Date());
   const [returnDate, setReturnDate] = useState<Date | null>(new Date());
   const [splitLocation, setSplitLocation] = useState<boolean>(false);
-  const [returnLocation, setReturnLocation] = useState<string>('hamburg-airport');
+  const [returnLocation, setReturnLocation] = useState<string>('Hamburg Flughafen'); // Ensure type is string
 
   const handleSubmit = () => {
-    // Handle form submission
     console.log({
       location,
       returnLocation: splitLocation ? returnLocation : location,
@@ -37,7 +43,10 @@ const CarSearchBar: React.FC = () => {
               select
               label={splitLocation ? "Abholung" : "Abholung und Rückgabe"}
               value={location}
-              onChange={(e) => setLocation(e.target.value)}
+              onChange={(e) => {
+                setLocationState(e.target.value);
+              }}
+              onClick={setLocation(location)}
               fullWidth
             >
               {locations.map((option) => (
@@ -94,10 +103,10 @@ const CarSearchBar: React.FC = () => {
         </Grid>
       </Box>
       <Grid item xs={12} justifyContent="right" alignItems="center">
-            <Button variant="contained" color="primary" fullWidth onClick={handleSubmit}>
-              Autos anzeigen
-            </Button>
-          </Grid>
+        <Button variant="contained" color="primary" fullWidth onClick={handleSubmit} >
+          Autos anzeigen
+        </Button>
+      </Grid>
     </Container>
   );
 };

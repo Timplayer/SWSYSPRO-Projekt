@@ -15,7 +15,7 @@ const rightLink = {
 function AppAppBar() {
   return (
     <div>
-      <AppBar position="fixed">
+      <AppBar position="sticky">
         <Toolbar sx={{ justifyContent: 'space-between' }}>
           <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}></Box>
           <Box sx={{ flex: 1, display: 'flex', alignItems: 'center' }}>
@@ -55,7 +55,6 @@ function AppAppBar() {
           <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}></Box>
         </Toolbar>
       </AppBar>
-      <Toolbar />
     </div>
   );
 }
