@@ -16,6 +16,8 @@ export const tabs: TabItem[] = [
     { key: 'Cars', label: 'Cars', icon: <CarRental /> },
     { key: 'Stations', label: 'Stations', icon: <EvStation /> },
     { key: 'Reservations', label: 'Reservations', icon: <EventNote /> },
+    { key: 'Accounts', label: 'Accounts', icon: <EventNote /> },
+
 ];
 
 

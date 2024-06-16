@@ -1,9 +1,10 @@
 import React from 'react';
 import { Box, Typography, Button } from '@mui/material';
+import keycloak from '../../keycloak';
 
 const Account: React.FC = () => {
     const handleAccountManagement = () => {
-        //window.location.href = keycloak.createAccountUrl();
+        window.location.href = keycloak.createAccountUrl();
     };
 
     return (
