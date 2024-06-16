@@ -68,7 +68,7 @@ function ProductHowItWorks() {
                   sx={image}
                 />
                 <Typography variant="h5" align="center">
-                  Appointment every Wednesday 9am.
+                  Startort wählen
                 </Typography>
               </Box>
             </Grid>
@@ -82,8 +82,7 @@ function ProductHowItWorks() {
                   sx={image}
                 />
                 <Typography variant="h5" align="center">
-                  First come, first served. Our offers are in limited quantities, so
-                  be quick.
+                  Auto aussuchen
                 </Typography>
               </Box>
             </Grid>
@@ -97,8 +96,7 @@ function ProductHowItWorks() {
                   sx={image}
                 />
                 <Typography variant="h5" align="center">
-                  {'New offers every week. New experiences, new surprises. '}
-                  {'Your Sundays will no longer be alike.'}
+                  Losfahren
                 </Typography>
               </Box>
             </Grid>
