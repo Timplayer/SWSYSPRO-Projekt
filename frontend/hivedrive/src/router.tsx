@@ -1,11 +1,37 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createBrowserRouter, RouterProvider, RouteObject } from 'react-router-dom';
 import NotFound from './pages/NotFound';
-import App from './App'
+import keycloak from './keycloak';
+import Logout from './pages/Logout';
+import Login from './pages/Login';
+import Home from './pages/Home';
+import Account from './pages/Account';
+import ProtectedRoute from './ProtectedRoute';
+import { ErrorMessageProvider } from './Utils/ErrorMessageContext';
 
 import Admin from './pages/Admin';
 
 const routes: RouteObject[] = [
+	{
+		path: '/',
+		element: <Home />,
+	},
+	{
+		path: '/logout',
+		element: <Logout />,
+	},
+	{
+		path: '/login',
+		element: <Login />,
+	},
+	{
+		path: '/account',
+		element: <ProtectedRoute element={<Account />} requiredRoles={['admin_page_access']} />,
+	},
+	{
+		path: '*',
+		element: <NotFound />,
+	},
     {
       path: '/',
       element: <App />,
@@ -19,13 +45,28 @@ const routes: RouteObject[] = [
         element: <Admin/>,
     }
 ];
-  
-  const router = createBrowserRouter(routes);
-  
-  const AppRouter: React.FC = () => {
-    return <RouterProvider router={router} />;
-  };
 
+const router = createBrowserRouter(routes);
 
-  
-  export default AppRouter;
+const AppRouter: React.FC = () => {
+
+	const [init, setInit] = useState(false);
+	const init_done = useRef(false);
+
+	useEffect(() => {
+		if (init || init_done.current) return;
+		init_done.current = true;
+
+		keycloak.init({ onLoad: 'check-sso' }).then(() => { 
+			setInit(true); 
+		});
+	}, []);
+
+	if (!init) {
+		return <>Initializing Keycloak...</>;
+	}
+
+	return <ErrorMessageProvider> <RouterProvider router={router} /> </ErrorMessageProvider>;
+};
+
+export default AppRouter;
