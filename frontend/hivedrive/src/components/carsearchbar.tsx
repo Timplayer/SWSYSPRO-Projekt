@@ -36,7 +36,7 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({ setLocation }) => {
   const now = new Date();
 
   return (
-    <Container maxWidth={false} sx={{ backgroundColor: '#FFFF', width: '100%', padding: '16px' }}>
+    <Container maxWidth={false} sx={{ backgroundColor: 'secondary.light', width: '100%', padding: '16px' }}>
       <Box sx={{ mt: 4 }}>
         <Grid container spacing={2} alignItems="center" wrap="nowrap">
           <Grid item xs={12} sm={4} justifyContent="left" alignItems="center">
@@ -112,8 +112,8 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({ setLocation }) => {
           </Grid>
         </Grid>
       </Box>
-      <Grid item xs={12} justifyContent="right" alignItems="center">
-        <Button variant="contained" color="primary" fullWidth onClick={handleSubmit}>
+      <Grid item xs={12} justifyContent="right" alignItems="center" margin-top="5em">
+        <Button variant="contained" color="primary" fullWidth onClick={handleSubmit} margin="5">
           Autos anzeigen
         </Button>
       </Grid>
