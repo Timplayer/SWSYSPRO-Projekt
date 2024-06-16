@@ -1,18 +1,8 @@
 import React from 'react';
-import { Box, Container, Typography, Button } from '@mui/material';
+import { Box,Typography, Button, Container } from '@mui/material';
 import { styled } from '@mui/system';
 
-const PromoContainer = styled(Container)(({ theme }) => ({
-  height: '75vh',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: theme.palette.primary.main,
-  color: theme.palette.common.white,
-  textAlign: 'center',
-  padding: theme.spacing(4),
-  borderRadius: theme.shape.borderRadius,
-}));
+
 
 const PromoBox = styled(Box)(({ theme }) => ({
   maxWidth: '800px',
@@ -29,23 +19,25 @@ const PromoButton = styled(Button)(({ theme }) => ({
 
 const PromoAdvertisement: React.FC = () => {
   return (
-    <PromoContainer maxWidth="lg">
-      <PromoBox>
-        <Typography variant="h3" component="h1" gutterBottom>
-          Unser neues Bonusprogramm
-        </Typography>
-        <Typography variant="h5" component="h2" gutterBottom>
-          Fahren Sie oft mit uns? Dann profitieren Sie von unserem neuen Bonusprogramm!
-        </Typography>
-        <Typography variant="body1" gutterBottom>
-          Kunden, die häufig fahren, erhalten Freifahrten, Rabatte und Upgrades auf bessere Fahrzeuge. 
-          Melden Sie sich jetzt an und sichern Sie sich Ihre Vorteile!
-        </Typography>
-        <PromoButton variant="contained" color="primary" size="large">
-          Jetzt Anmelden
-        </PromoButton>
-      </PromoBox>
-    </PromoContainer>
+    <Container maxWidth={false} sx={{ backgroundColor: '#FFFF', width: '100%', padding: '16px' }}>
+      <Box sx={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+        <PromoBox>
+          <Typography variant="h3" component="h1" gutterBottom>
+            Unser neues Bonusprogramm
+          </Typography>
+          <Typography variant="h5" component="h2" gutterBottom>
+            Fahren Sie oft mit uns? Dann profitieren Sie von unserem neuen Bonusprogramm!
+          </Typography>
+          <Typography variant="body1" gutterBottom>
+            Kunden, die häufig fahren, erhalten Freifahrten, Rabatte und Upgrades auf bessere Fahrzeuge. 
+            Melden Sie sich jetzt an und sichern Sie sich Ihre Vorteile!
+          </Typography>
+          <PromoButton variant="contained" color="primary" size="large">
+            Jetzt Anmelden
+          </PromoButton>
+        </PromoBox>
+      </Box>
+    </Container>
   );
 };
 
