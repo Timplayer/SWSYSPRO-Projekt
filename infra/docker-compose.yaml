@@ -28,6 +28,12 @@ services:
     command: start-dev --import-realm
     volumes:
       - ./keycloak/input:/opt/keycloak/data/import:Z
+    healthcheck:
+      test: /healthcheck
+      interval: 10s
+      retries: 5
+      start_period: 60s
+      timeout: 10s
   frontend:
     build: ../frontend/
     restart: unless-stopped
@@ -37,7 +43,8 @@ services:
     build: ../backend/
     restart: unless-stopped
     depends_on:
-     - keycloak
+      keycloak:
+        condition: service_healthy
     environment:
       - ISSUER=http://keycloak:8080/auth/realms/hivedrive
       - CLIENT_ID=go-backend
