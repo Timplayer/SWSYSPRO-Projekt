@@ -46,6 +46,14 @@
   "failureFactor" : 30,
   "roles" : {
     "realm" : [ {
+      "id" : "50532af9-8246-4305-b8d0-62d424622e9e",
+      "name" : "admin",
+      "description" : "",
+      "composite" : false,
+      "clientRole" : false,
+      "containerId" : "520fa0a1-958c-42e2-9d85-33e44313d020",
+      "attributes" : { }
+    }, {
       "id" : "6f5d2b0e-e491-44f6-b564-786a05b9b1b9",
       "name" : "offline_access",
       "description" : "${role_offline-access}",
@@ -72,6 +80,22 @@
           "account" : [ "manage-account", "view-profile" ]
         }
       },
+      "clientRole" : false,
+      "containerId" : "520fa0a1-958c-42e2-9d85-33e44313d020",
+      "attributes" : { }
+    }, {
+      "id" : "4f7409c7-92d8-4560-9f29-d4c3e48cacb8",
+      "name" : "member",
+      "description" : "",
+      "composite" : false,
+      "clientRole" : false,
+      "containerId" : "520fa0a1-958c-42e2-9d85-33e44313d020",
+      "attributes" : { }
+    }, {
+      "id" : "8085332c-a35c-405e-9e2d-5e34c6636c6f",
+      "name" : "employee",
+      "description" : "",
+      "composite" : false,
       "clientRole" : false,
       "containerId" : "520fa0a1-958c-42e2-9d85-33e44313d020",
       "attributes" : { }
@@ -245,7 +269,6 @@
         "containerId" : "86f3c4ef-8998-480d-a580-61721911f7eb",
         "attributes" : { }
       } ],
-      "go-backend" : [ ],
       "security-admin-console" : [ ],
       "admin-cli" : [ ],
       "account-console" : [ ],
@@ -332,7 +355,8 @@
         "clientRole" : true,
         "containerId" : "c4afcf55-0633-4e8c-9913-5bbb430ae157",
         "attributes" : { }
-      } ]
+      } ],
+      "frontend" : [ ]
     }
   },
   "groups" : [ ],
@@ -396,7 +420,7 @@
     } ],
     "disableableCredentialTypes" : [ ],
     "requiredActions" : [ ],
-    "realmRoles" : [ "default-roles-hivedrive" ],
+    "realmRoles" : [ "admin", "default-roles-hivedrive" ],
     "notBefore" : 0,
     "groups" : [ ]
   }, {
@@ -419,7 +443,7 @@
     } ],
     "disableableCredentialTypes" : [ ],
     "requiredActions" : [ ],
-    "realmRoles" : [ "default-roles-hivedrive" ],
+    "realmRoles" : [ "default-roles-hivedrive", "employee" ],
     "notBefore" : 0,
     "groups" : [ ]
   }, {
@@ -442,7 +466,7 @@
     } ],
     "disableableCredentialTypes" : [ ],
     "requiredActions" : [ ],
-    "realmRoles" : [ "default-roles-hivedrive" ],
+    "realmRoles" : [ "default-roles-hivedrive", "member" ],
     "notBefore" : 0,
     "groups" : [ ]
   } ],
@@ -582,20 +606,19 @@
     "defaultClientScopes" : [ "web-origins", "acr", "profile", "roles", "email" ],
     "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ]
   }, {
-    "id" : "36253680-9027-405f-af55-96a0d0f5402c",
-    "clientId" : "go-backend",
-    "name" : "Go Backend",
+    "id" : "c6845576-1b9e-45d8-a08c-ca4c12ec43de",
+    "clientId" : "frontend",
+    "name" : "",
     "description" : "",
-    "rootUrl" : "",
-    "adminUrl" : "",
-    "baseUrl" : "",
+    "rootUrl" : "https://localhost:8080",
+    "adminUrl" : "https://localhost:8080",
+    "baseUrl" : "https://localhost:8080",
     "surrogateAuthRequired" : false,
     "enabled" : true,
     "alwaysDisplayInConsole" : false,
     "clientAuthenticatorType" : "client-secret",
-    "secret" : "QYkmaGk96FsGytwSYqaz6sus4oFrj6iv",
-    "redirectUris" : [ "/*" ],
-    "webOrigins" : [ "/*" ],
+    "redirectUris" : [ "https://localhost:8080/*" ],
+    "webOrigins" : [ "https://localhost:8080" ],
     "notBefore" : 0,
     "bearerOnly" : false,
     "consentRequired" : false,
@@ -603,13 +626,13 @@
     "implicitFlowEnabled" : false,
     "directAccessGrantsEnabled" : true,
     "serviceAccountsEnabled" : false,
-    "publicClient" : false,
+    "publicClient" : true,
     "frontchannelLogout" : true,
     "protocol" : "openid-connect",
     "attributes" : {
       "oidc.ciba.grant.enabled" : "false",
+      "post.logout.redirect.uris" : "+",
       "oauth2.device.authorization.grant.enabled" : "false",
-      "client.secret.creation.time" : "1717095908",
       "backchannel.logout.session.required" : "true",
       "backchannel.logout.revoke.offline.tokens" : "false"
     },
@@ -1222,7 +1245,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper", "oidc-usermodel-property-mapper", "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper", "oidc-full-name-mapper", "oidc-address-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "saml-role-list-mapper", "saml-user-attribute-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper" ]
       }
     }, {
       "id" : "39ebacdd-0e7c-479b-a6cb-ad6596cd10cd",
@@ -1247,7 +1270,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-sha256-pairwise-sub-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper", "oidc-usermodel-property-mapper", "oidc-full-name-mapper", "saml-role-list-mapper", "saml-user-property-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-role-list-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper", "saml-user-property-mapper", "oidc-usermodel-property-mapper", "saml-user-attribute-mapper", "oidc-usermodel-attribute-mapper", "oidc-address-mapper" ]
       }
     }, {
       "id" : "419ae18b-969a-46eb-ac28-419186ce8920",

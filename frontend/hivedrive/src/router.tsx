@@ -26,7 +26,7 @@ const routes: RouteObject[] = [
 	},
 	{
 		path: '/account',
-		element: <ProtectedRoute element={<Account />} requiredRoles={['admin_page_access']} />,
+		element: <ProtectedRoute element={<Account />} requiredRoles={['admin']} />,
 	},
 	{
 		path: '*',
