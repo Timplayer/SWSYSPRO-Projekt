@@ -12,26 +12,24 @@ function ProductSmokingHero() {
     >
       <Button
         sx={{
-          border: '4px solid currentColor',
+          border: '4px solid',
+          borderColor: 'secondary.main',
           borderRadius: 0,
           height: 'auto',
           py: 2,
           px: 5,
         }}
       >
-        <Typography variant="h4" component="span">
-          Got any questions? Need help?
+        <Typography variant="h4" component="span" color="secondary.light">
+          Haben Sie Fragen oder brauchen Sie hilfe?
         </Typography>
       </Button>
-      <Typography variant="subtitle1" sx={{ my: 3 }}>
-        We are here to help. Get in touch!
-      </Typography>
-      <Box
+      {/* <Box
         component="img"
         src="/static/themes/onepirate/productBuoy.svg"
         alt="buoy"
         sx={{ width: 60 }}
-      />
+      /> */}
     </Container>
   );
 }
