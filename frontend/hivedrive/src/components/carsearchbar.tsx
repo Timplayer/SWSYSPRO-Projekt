@@ -6,7 +6,6 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
-import { Label } from '@mui/icons-material';
 
 interface CarSearchBarProps {
   setLocation: (location: string) => void;
@@ -19,11 +18,11 @@ const locations = [
 ];
 
 const CarSearchBar: React.FC<CarSearchBarProps> = ({ setLocation }) => {
-  const [location, setLocationState] = useState<string>('Hamburg Flughafen'); // Ensure type is string
+  const [location, setLocationState] = useState<string>('Hamburg Flughafen');
   const [pickupDate, setPickupDate] = useState<Date | null>(new Date());
   const [returnDate, setReturnDate] = useState<Date | null>(new Date());
   const [splitLocation, setSplitLocation] = useState<boolean>(false);
-  const [returnLocation, setReturnLocation] = useState<string>('Hamburg Flughafen'); // Ensure type is string
+  const [returnLocation, setReturnLocation] = useState<string>('Hamburg Flughafen');
 
   const handleSubmit = () => {
     console.log({
@@ -33,6 +32,8 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({ setLocation }) => {
       returnDate,
     });
   };
+
+  const now = new Date();
 
   return (
     <Container maxWidth={false} sx={{ backgroundColor: '#FFFF', width: '100%', padding: '16px' }}>
@@ -87,7 +88,14 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({ setLocation }) => {
               <DateTimePicker
                 label="Abholdatum"
                 value={pickupDate}
-                onChange={(date) => setPickupDate(date)}
+                onChange={(date) => {
+                  setPickupDate(date);
+                  if (date && returnDate && date > returnDate) {
+                    setReturnDate(date);
+                  }
+                }}
+                minDate={now}
+                minTime={now}
               />
             </LocalizationProvider>
           </Grid>
@@ -97,13 +105,15 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({ setLocation }) => {
                 label="Rückgabedatum"
                 value={returnDate}
                 onChange={(date) => setReturnDate(date)}
+                minDate={pickupDate || now}
+                minTime={pickupDate || now}
               />
             </LocalizationProvider>
           </Grid>
         </Grid>
       </Box>
       <Grid item xs={12} justifyContent="right" alignItems="center">
-        <Button variant="contained" color="primary" fullWidth onClick={handleSubmit} >
+        <Button variant="contained" color="primary" fullWidth onClick={handleSubmit}>
           Autos anzeigen
         </Button>
       </Grid>
