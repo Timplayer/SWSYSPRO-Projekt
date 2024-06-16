@@ -18,15 +18,22 @@ services:
       - keycloak
       - frontend
   keycloak:
-    image: quay.io/keycloak/keycloak:latest
+    build: ./keycloak/
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=password
       - KC_HTTP_RELATIVE_PATH=/auth/
       - KC_PROXY_HEADERS=xforwarded
+      - KC_HEALTH_ENABLED=true
     command: start-dev --import-realm
     volumes:
       - ./keycloak/input:/opt/keycloak/data/import:Z
+    healthcheck:
+      test: /healthcheck
+      interval: 10s
+      retries: 5
+      start_period: 60s
+      timeout: 10s
   frontend:
     build: ../frontend/
     restart: unless-stopped
@@ -35,8 +42,30 @@ services:
   backend:
     build: ../backend/
     restart: unless-stopped
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    environment:
+      - ISSUER=http://keycloak:8080/auth/realms/hivedrive
+      - CLIENT_ID=go-backend
+      - CLIENT_SECRET=QYkmaGk96FsGytwSYqaz6sus4oFrj6iv
+      - DATABASE_URL=db
+      - DATABASE_USER=postgres
+      - DATABASE_PASS=example
+  db:
+    image: postgres
+    restart: always
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: hivedrive
+    volumes:
+      - db:/var/lib/postgresql/data
 
 volumes:
   caddy_data:
   caddy_config:
+  db:
 

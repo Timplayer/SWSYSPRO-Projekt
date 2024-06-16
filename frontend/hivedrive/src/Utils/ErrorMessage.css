@@ -1,0 +1,17 @@
+
+.error-message {
+    position: fixed;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: red;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    transition: top 0.5s ease-in-out;
+    z-index: 1000;
+}
+
+.error-message.show {
+    top: 20px;
+}
