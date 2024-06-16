@@ -23,12 +23,12 @@ function Index() {
       <AppAppBar />
       <CarSearchBar setLocation={setLocation} /> {/* Pass setLocation to CarSearchBar */}
       <CarPresentation location={location} /> {/* Pass location to CarPresentation */}
-      <PromoAdvertisement/>
-      <ProductHero />
-      <ProductValues />
-      <ProductCategories />
-      <ProductHowItWorks />
+      {/* <PromoAdvertisement/> */}
       <ProductCTA />
+      {/* <ProductHero />
+      <ProductValues />
+      <ProductCategories /> */}
+      <ProductHowItWorks />
       <ProductSmokingHero />
       <AppFooter />
     </React.Fragment>

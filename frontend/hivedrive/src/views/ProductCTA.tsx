@@ -32,7 +32,7 @@ function ProductCTA() {
               px: 3,
             }}
           >
-            <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 400 }}>
+            {/* <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 400 }}>
               <Typography variant="h2" component="h2" gutterBottom>
                 Receive offers
               </Typography>
@@ -53,7 +53,24 @@ function ProductCTA() {
               >
                 Keep me updated
               </Button>
+            </Box> */}
+
+            <Box>
+              <Typography variant="h3" component="h1" gutterBottom>
+                Unser neues Bonusprogramm
+              </Typography>
+              <Typography variant="h5" component="h2" gutterBottom>
+                Fahren Sie oft mit uns? Dann profitieren Sie von unserem neuen Bonusprogramm!
+              </Typography>
+              <Typography variant="body1" gutterBottom>
+                Kunden, die häufig fahren, erhalten Freifahrten, Rabatte und Upgrades auf bessere Fahrzeuge.
+                Melden Sie sich jetzt an und sichern Sie sich Ihre Vorteile!
+              </Typography>
+              <Button variant="contained" color="primary" size="large">
+                Jetzt Anmelden
+              </Button>
             </Box>
+
           </Box>
         </Grid>
         <Grid
@@ -70,12 +87,13 @@ function ProductCTA() {
               right: 0,
               bottom: 0,
               width: '100%',
-              background: 'url(/static/themes/onepirate/productCTAImageDots.png)',
+              // background: 'url(/static/themes/onepirate/productCTAImageDots.png)',
             }}
           />
           <Box
             component="img"
-            src="https://images.unsplash.com/photo-1527853787696-f7be74f2e39a?auto=format&fit=crop&w=750"
+            // src="https://images.unsplash.com/photo-1527853787696-f7be74f2e39a?auto=format&fit=crop&w=750"
+            src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Silver_Ferrari_Luxury_Sports_Car.jpg/640px-Silver_Ferrari_Luxury_Sports_Car.jpg"
             alt="call to action"
             sx={{
               position: 'absolute',
@@ -89,11 +107,11 @@ function ProductCTA() {
           />
         </Grid>
       </Grid>
-      <Snackbar
+      {/* <Snackbar
         open={open}
         closeFunc={handleClose}
         message="We will send you our best offers, once a week."
-      />
+      /> */}
     </Container>
   );
 }
