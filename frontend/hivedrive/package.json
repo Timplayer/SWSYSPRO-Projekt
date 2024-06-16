@@ -14,7 +14,7 @@
     "@emotion/styled": "^11.11.5",
     "@fontsource/roboto": "^5.0.13",
     "@mui/icons-material": "^5.15.19",
-    "@mui/material": "^5.15.19",
+    "@mui/material": "^5.15.20",
     "@mui/x-date-pickers": "^7.6.2",
     "date-fns": "^2.30.0",
     "markdown-to-jsx": "^7.4.7",

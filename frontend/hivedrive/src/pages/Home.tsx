@@ -11,6 +11,7 @@ import AppAppBar from '../views/AppAppBar';
 import withRoot from '../withRoot';
 import CarSearchBar from '../components/CarSearchBar';
 import CarPresentation from '../views/CarPresentation';
+import PromoAdvertisement from '../views/PromoAdvertisement';
 
 document.body.style.display = 'contents';
 
@@ -22,6 +23,7 @@ function Index() {
       <AppAppBar />
       <CarSearchBar setLocation={setLocation} /> {/* Pass setLocation to CarSearchBar */}
       <CarPresentation location={location} /> {/* Pass location to CarPresentation */}
+      <PromoAdvertisement/>
       <ProductHero />
       <ProductValues />
       <ProductCategories />
