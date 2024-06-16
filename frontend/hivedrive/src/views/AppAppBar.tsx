@@ -52,6 +52,25 @@ function AppAppBar() {
               {'Sign Up'}
             </Link>
           </Box>
+          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+            <Link
+              color="inherit"
+              variant="h6"
+              underline="none"
+              href="/sign-in"
+              sx={rightLink}
+            >
+              {'Verwaltung'}
+            </Link>
+            <Link
+              variant="h6"
+              underline="none"
+              href="/sign-up"    
+              sx={{ ...rightLink, color: 'secondary.main' }}
+            >
+              {'Sign Out'}
+            </Link>
+          </Box>
           <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}></Box>
         </Toolbar>
       </AppBar>
