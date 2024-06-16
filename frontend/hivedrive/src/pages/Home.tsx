@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useState } from 'react'; // Import useState hook
+import { useState } from 'react'; 
 import ProductCategories from '../views/ProductCategories';
 import ProductSmokingHero from '../views/ProductSmokingHero';
 import AppFooter from '../views/AppFooter';
@@ -16,7 +16,7 @@ import PromoAdvertisement from '../views/PromoAdvertisement';
 document.body.style.display = 'contents';
 
 function Index() {
-  const [location, setLocation] = useState<string>('Hamburg Flughafen'); // Define location state
+  const [location, setLocation] = useState<string>('Hamburg Flughafen'); // Define standard
 
   return (
     <React.Fragment>
