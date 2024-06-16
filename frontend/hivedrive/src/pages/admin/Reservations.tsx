@@ -1,6 +1,42 @@
 import React, { useState } from 'react';
-import { Box, Button, List, ListItem, ListItemText, Typography, IconButton, Divider, TextField } from '@mui/material';
+import { Box, Button, List, ListItem, ListItemText, Typography, IconButton, Divider, TextField, Tabs, Tab } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { styled } from '@mui/material/styles';
+
+const CustomTextField = styled(TextField)({
+    '& .MuiInputBase-input': {
+        color: 'white',
+    },
+    '& .MuiInputLabel-root': {
+        color: 'white',
+    },
+    '& .MuiOutlinedInput-notchedOutline': {
+        borderColor: 'white',
+    },
+    '&:hover .MuiOutlinedInput-notchedOutline': {
+        borderColor: 'white',
+    },
+    '& .MuiInputBase-input::placeholder': {
+        color: 'white',
+    },
+});
+
+const CustomTabs = styled(Tabs)({
+    color: 'white',
+    '& .MuiTab-root': {
+        color: 'white',
+    },
+    '& .Mui-selected': {
+        color: 'white',
+    },
+});
+
+const CustomTab = styled(Tab)({
+    color: 'white',
+    '&.Mui-selected': {
+        color: 'white',
+    },
+});
 
 interface Reservation {
     id: number;
@@ -42,21 +78,21 @@ const Reservations: React.FC = () => {
                 Reservations
             </Typography>
             <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
-                <TextField
+                <CustomTextField
                     label="User Name"
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
                     variant="outlined"
                     sx={{ minWidth: '200px' }}
                 />
-                <TextField
+                <CustomTextField
                     label="Car"
                     value={car}
                     onChange={(e) => setCar(e.target.value)}
                     variant="outlined"
                     sx={{ minWidth: '150px' }}
                 />
-                <TextField
+                <CustomTextField
                     label="Start Time"
                     type="datetime-local"
                     value={startTime}
@@ -65,7 +101,7 @@ const Reservations: React.FC = () => {
                     InputLabelProps={{ shrink: true }}
                     sx={{ minWidth: '250px' }}
                 />
-                <TextField
+                <CustomTextField
                     label="End Time"
                     type="datetime-local"
                     value={endTime}
@@ -74,7 +110,7 @@ const Reservations: React.FC = () => {
                     InputLabelProps={{ shrink: true }}
                     sx={{ minWidth: '250px' }}
                 />
-                <TextField
+                <CustomTextField
                     label="Station"
                     value={station}
                     onChange={(e) => setStation(e.target.value)}
