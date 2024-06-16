@@ -5,6 +5,8 @@ import AppBar from '../components/AppBar';
 import Toolbar from '../components/Toolbar';
 import TemporaryDrawer from '../components/TemporaryDrawer';
 import logo from '../../images/HiveDriveLogo.png'; // Pfad zum Logo
+import keycloak from '../keycloak';
+import AccountManagement from '../components/Accountmanagement';
 
 const rightLink = {
   fontSize: 16,
@@ -33,6 +35,7 @@ function AppAppBar() {
               {'HiveDrive'}
             </Link>
           </Box>
+          {!keycloak.authenticated && (
           <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
             <Link
               color="inherit"
@@ -52,25 +55,20 @@ function AppAppBar() {
               {'Sign Up'}
             </Link>
           </Box>
+          )}
+          {keycloak.authenticated && (
           <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-            <Link
-              color="inherit"
-              variant="h6"
-              underline="none"
-              href="/sign-in"
-              sx={rightLink}
-            >
-              {'Verwaltung'}
-            </Link>
+            <AccountManagement/>
             <Link
               variant="h6"
               underline="none"
-              href="/sign-up"    
+              href="/signout"    
               sx={{ ...rightLink, color: 'secondary.main' }}
             >
               {'Sign Out'}
             </Link>
           </Box>
+           )}
           <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}></Box>
         </Toolbar>
       </AppBar>
