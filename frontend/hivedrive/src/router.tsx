@@ -33,16 +33,12 @@ const routes: RouteObject[] = [
 		element: <NotFound />,
 	},
     {
-      path: '/',
-      element: <App />,
-    },
-    {
       path: '*',
       element: <NotFound />,
     },
     {
         path: '/admin',
-        element: <Admin/>,
+        element: <ProtectedRoute element={<Admin />} requiredRoles={['admin']} />,
     }
 ];
 
