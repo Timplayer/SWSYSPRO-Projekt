@@ -46,6 +46,14 @@
   "failureFactor" : 30,
   "roles" : {
     "realm" : [ {
+      "id" : "50532af9-8246-4305-b8d0-62d424622e9e",
+      "name" : "admin",
+      "description" : "",
+      "composite" : false,
+      "clientRole" : false,
+      "containerId" : "520fa0a1-958c-42e2-9d85-33e44313d020",
+      "attributes" : { }
+    }, {
       "id" : "6f5d2b0e-e491-44f6-b564-786a05b9b1b9",
       "name" : "offline_access",
       "description" : "${role_offline-access}",
@@ -72,6 +80,22 @@
           "account" : [ "manage-account", "view-profile" ]
         }
       },
+      "clientRole" : false,
+      "containerId" : "520fa0a1-958c-42e2-9d85-33e44313d020",
+      "attributes" : { }
+    }, {
+      "id" : "4f7409c7-92d8-4560-9f29-d4c3e48cacb8",
+      "name" : "member",
+      "description" : "",
+      "composite" : false,
+      "clientRole" : false,
+      "containerId" : "520fa0a1-958c-42e2-9d85-33e44313d020",
+      "attributes" : { }
+    }, {
+      "id" : "8085332c-a35c-405e-9e2d-5e34c6636c6f",
+      "name" : "employee",
+      "description" : "",
+      "composite" : false,
       "clientRole" : false,
       "containerId" : "520fa0a1-958c-42e2-9d85-33e44313d020",
       "attributes" : { }
@@ -396,7 +420,7 @@
     } ],
     "disableableCredentialTypes" : [ ],
     "requiredActions" : [ ],
-    "realmRoles" : [ "default-roles-hivedrive" ],
+    "realmRoles" : [ "admin", "default-roles-hivedrive" ],
     "notBefore" : 0,
     "groups" : [ ]
   }, {
@@ -419,7 +443,7 @@
     } ],
     "disableableCredentialTypes" : [ ],
     "requiredActions" : [ ],
-    "realmRoles" : [ "default-roles-hivedrive" ],
+    "realmRoles" : [ "default-roles-hivedrive", "employee" ],
     "notBefore" : 0,
     "groups" : [ ]
   }, {
@@ -442,7 +466,7 @@
     } ],
     "disableableCredentialTypes" : [ ],
     "requiredActions" : [ ],
-    "realmRoles" : [ "default-roles-hivedrive" ],
+    "realmRoles" : [ "default-roles-hivedrive", "member" ],
     "notBefore" : 0,
     "groups" : [ ]
   } ],
@@ -607,6 +631,7 @@
     "protocol" : "openid-connect",
     "attributes" : {
       "oidc.ciba.grant.enabled" : "false",
+      "post.logout.redirect.uris" : "+",
       "oauth2.device.authorization.grant.enabled" : "false",
       "backchannel.logout.session.required" : "true",
       "backchannel.logout.revoke.offline.tokens" : "false"
@@ -1220,7 +1245,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-attribute-mapper", "oidc-usermodel-attribute-mapper", "saml-role-list-mapper", "oidc-usermodel-property-mapper", "oidc-full-name-mapper", "saml-user-property-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-address-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "saml-role-list-mapper", "saml-user-attribute-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-usermodel-property-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper" ]
       }
     }, {
       "id" : "39ebacdd-0e7c-479b-a6cb-ad6596cd10cd",
@@ -1245,7 +1270,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-usermodel-property-mapper", "oidc-address-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-property-mapper", "oidc-full-name-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-role-list-mapper", "oidc-sha256-pairwise-sub-mapper", "oidc-full-name-mapper", "saml-user-property-mapper", "oidc-usermodel-property-mapper", "saml-user-attribute-mapper", "oidc-usermodel-attribute-mapper", "oidc-address-mapper" ]
       }
     }, {
       "id" : "419ae18b-969a-46eb-ac28-419186ce8920",
