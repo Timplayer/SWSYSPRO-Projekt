@@ -3,6 +3,8 @@ import { createBrowserRouter, RouterProvider, RouteObject } from 'react-router-d
 import NotFound from './pages/NotFound';
 import App from './App'
 
+import Admin from './pages/Admin';
+
 const routes: RouteObject[] = [
     {
       path: '/',
@@ -12,6 +14,10 @@ const routes: RouteObject[] = [
       path: '*',
       element: <NotFound />,
     },
+    {
+        path: '/admin',
+        element: <Admin/>,
+    }
 ];
   
   const router = createBrowserRouter(routes);
@@ -19,5 +25,7 @@ const routes: RouteObject[] = [
   const AppRouter: React.FC = () => {
     return <RouterProvider router={router} />;
   };
+
+
   
   export default AppRouter;
