@@ -112,7 +112,7 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({ setLocation }) => {
           </Grid>
         </Grid>
       </Box>
-      <Grid item xs={12} justifyContent="right" alignItems="center" margin-top="5em">
+      <Grid item xs={12} justifyContent="right" alignItems="center">
         <Button variant="contained" color="primary" fullWidth onClick={handleSubmit} margin="5">
           Autos anzeigen
         </Button>
