@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Box, Button, List, ListItem, ListItemText, Typography, IconButton, Divider, Tabs, Tab, TextField, Chip } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ImageIcon from '@mui/icons-material/Image';
 import { styled } from '@mui/material/styles';
+import { useDropzone } from 'react-dropzone';
 
 const CustomTextField = styled(TextField)({
     '& .MuiInputBase-input': {
@@ -46,6 +48,7 @@ interface Car {
     color: string;
     licensePlate: string;
     stationId: number;
+    images: File[];
 }
 
 const Cars: React.FC = () => {
@@ -56,6 +59,7 @@ const Cars: React.FC = () => {
     const [color, setColor] = useState<string>('');
     const [licensePlate, setLicensePlate] = useState<string>('');
     const [stationId, setStationId] = useState<number>(0);
+    const [images, setImages] = useState<File[]>([]);
     const [nextId, setNextId] = useState<number>(1);
     const [tabIndex, setTabIndex] = useState<number>(0);
 
@@ -69,6 +73,7 @@ const Cars: React.FC = () => {
                 color,
                 licensePlate,
                 stationId,
+                images,
             }]);
             setMake('');
             setModel('');
@@ -76,6 +81,7 @@ const Cars: React.FC = () => {
             setColor('');
             setLicensePlate('');
             setStationId(0);
+            setImages([]);
             setNextId(nextId + 1);
         }
     };
@@ -87,6 +93,22 @@ const Cars: React.FC = () => {
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setTabIndex(newValue);
     };
+
+    const onDrop = (acceptedFiles: File[]) => {
+        const imageFiles = acceptedFiles.filter(file => file.type.startsWith('image/'));
+        setImages([...images, ...imageFiles]);
+    };
+
+    const removeImage = (index: number) => {
+        const newImages = [...images];
+        newImages.splice(index, 1);
+        setImages(newImages);
+    };
+
+    const { getRootProps, getInputProps } = useDropzone({
+        onDrop,
+        accept: 'image/*'
+    });
 
     return (
         <Box sx={{ p: 3 }}>
@@ -113,7 +135,10 @@ const Cars: React.FC = () => {
                                         <>
                                             Color: {car.color}<br />
                                             License Plate: {car.licensePlate}<br />
-                                            Station ID: {car.stationId}
+                                            Station ID: {car.stationId}<br />
+                                            Images: {car.images.map((file, index) => (
+                                                <Chip key={index} label={file.name} />
+                                            ))}
                                         </>
                                     }
                                 />
@@ -168,6 +193,22 @@ const Cars: React.FC = () => {
                         variant="outlined"
                         sx={{ minWidth: '150px' }}
                     />
+                    <Box {...getRootProps()} sx={{ border: '1px dashed gray', padding: 2, textAlign: 'center' }}>
+                        <input {...getInputProps()} />
+                        <Typography variant="body1" gutterBottom>
+                            Drag 'n' drop some images here, or click to select images
+                        </Typography>
+                        <ImageIcon />
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                        {images.map((file, index) => (
+                            <Chip
+                                key={index}
+                                label={file.name}
+                                onDelete={() => removeImage(index)}
+                            />
+                        ))}
+                    </Box>
                     <Button variant="contained" color="primary" onClick={handleAddCar} sx={{ alignSelf: 'center' }}>
                         Add Car
                     </Button>
