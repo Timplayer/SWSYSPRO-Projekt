@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"io"
 	"log"
 	"net/http"
 )
@@ -12,6 +13,51 @@ import (
 type vehicleCategoriy struct {
 	Id   int64  `json:"id"`
 	Name string `json:"name"`
+}
+
+func postVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		body, err := io.ReadAll(request.Body)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error reading request body: %v\n", err)
+			return
+		}
+		var vC vehicleCategoriy
+		err = json.Unmarshal(body, &vC)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error reading request body: %v\n", err)
+			return
+		}
+		rows, err := dbpool.Query(context.Background(),
+			"INSERT INTO vehicle_categories (name) VALUES ($1) RETURNING id", vC.Id)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error executing insert vehicle_category: %v", err)
+			return
+		}
+		defer rows.Close()
+		rows.Next()
+		var id int64
+		err = rows.Scan(&id)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error executing insert vehicle_category: %v", err)
+			return
+		}
+		log.Printf("Inserted vehicle_category: %d", id)
+		vC.Id = id
+		body, err = json.Marshal(vC)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error serializing vehicle_category: %v", err)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusCreated)
+		writer.Write(body)
+	}
 }
 
 func getVehicleCategoryById(dbpool *pgxpool.Pool) http.HandlerFunc {
