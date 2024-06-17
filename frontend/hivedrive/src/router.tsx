@@ -8,6 +8,8 @@ import Home from './pages/Home';
 import Account from './pages/Account';
 import ProtectedRoute from './ProtectedRoute';
 import { ErrorMessageProvider } from './Utils/ErrorMessageContext';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
 
 const routes: RouteObject[] = [
 	{
@@ -25,6 +27,14 @@ const routes: RouteObject[] = [
 	{
 		path: '/account',
 		element: <ProtectedRoute element={<Account />} requiredRoles={['admin']} />,
+	},
+	{	
+		path: '/Datenschutz',
+		element: <Privacy />,
+	},
+	{
+		path: '/Impressum',
+		element: <Terms />,
 	},
 	{
 		path: '*',
