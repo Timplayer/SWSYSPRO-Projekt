@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"io"
 	"log"
@@ -87,6 +88,37 @@ func getVehicleCategoryById(dbpool *pgxpool.Pool) http.HandlerFunc {
 			writer.Header().Set("Content-Type", "application/json")
 			writer.Write(str)
 		}
+	}
+}
+
+func getVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		rows, err := dbpool.Query(context.Background(), "SELECT vehicle_categories.id, vehicle_categories.name FROM vehicle_categories")
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error geting Database Connection: %v\n", err)
+			return
+		}
+		defer rows.Close()
+		vehicle_categories, err := pgx.CollectRows(rows,
+			func(row pgx.CollectableRow) (vehicle_categories, error) {
+				var vC vehicle_categories
+				err := rows.Scan(&s.Id, &s.Name)
+				return vC, err
+			})
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error finding vehicle_categories: %v\n", err)
+			return
+		}
+		str, err := json.Marshal(vehicle_categories)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error finding vehicle_categories: %v\n", err)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		writer.Write(str)
 	}
 }
 
