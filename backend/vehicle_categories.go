@@ -32,7 +32,7 @@ func postVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		rows, err := dbpool.Query(context.Background(),
-			"INSERT INTO vehicle_categories (name) VALUES ($1) RETURNING id", vC.Id)
+			"INSERT INTO vehicle_categories (name) VALUES ($1) RETURNING id", vC.Name)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing insert vehicle_category: %v", err)
