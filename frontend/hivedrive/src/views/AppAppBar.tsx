@@ -49,7 +49,7 @@ function AppAppBar() {
               color="inherit"
               variant="h6"
               underline="none"
-              href="/login"
+              href={keycloak.createLoginUrl()}
               sx={rightLink}
             >
               {'Sign In'}
@@ -57,7 +57,7 @@ function AppAppBar() {
             <Link
               variant="h6"
               underline="none"
-              href="/register"    
+              href={keycloak.createRegisterUrl()}    
               sx={{ ...rightLink, color: 'secondary.main' }}
             >
               {'Sign Up'}
