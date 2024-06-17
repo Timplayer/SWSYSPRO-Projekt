@@ -64,6 +64,9 @@ export default function AppFooter() {
               <Box component="li" sx={{ py: 0.5 }}>
                 <Link href="/Impressum">Impressum</Link>
               </Box>
+              <Box component="li" sx={{ py: 0.5 }}>
+                <Link href="/Licenses">Open-Source Lizenzen</Link>
+              </Box>
             </Box>
           </Grid>
           <Grid item xs={6} sm={4} md={2}>
