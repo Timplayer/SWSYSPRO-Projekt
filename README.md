@@ -1,15 +1,25 @@
 # SWSYSPRO-Projekt
 
-# Frontend
+## Minimum acceptance criteria
+
+- [ ] Create member account
+- [ ] Change member account data
+- [ ] Login/Logout
+- [ ] Create new reservation
+- [ ] Check out reservations
+- [ ] Delete reservations
+
+## Technologies
+### Frontend
 - [ ] React
-# Communication 
+### Communication 
  - [ ] [gRPC](https://grpc.io/)
  - [ ] [JWT](https://jwt.io/)
-# Backend
+### Backend
 - [ ] Go (Golang)
-# WebServer
+### WebServer
 - [ ] nginx
-# AAA
+### AAA
 - [ ] [Keycloak](https://www.keycloak.org/)
-# Payment
+### Payment
 - [ ] [Hyperswitch](https://hyperswitch.io/)
