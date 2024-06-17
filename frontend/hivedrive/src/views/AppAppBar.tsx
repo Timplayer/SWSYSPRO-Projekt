@@ -7,11 +7,19 @@ import TemporaryDrawer from '../components/TemporaryDrawer';
 import logo from '../../images/HiveDriveLogo.png'; // Pfad zum Logo
 import keycloak from '../keycloak';
 import AccountManagement from '../components/Accountmanagement';
+import Button from '@mui/material/Button';
 
 const rightLink = {
   fontSize: 16,
   color: 'common.white',
   ml: 3,
+};
+
+
+
+const handleLogout = (event: { preventDefault: () => void; }) => {
+  event.preventDefault();
+  keycloak.logout();
 };
 
 function AppAppBar() {
@@ -49,7 +57,7 @@ function AppAppBar() {
             <Link
               variant="h6"
               underline="none"
-              href="/register"    //jeweils sign in und up ändern
+              href="/register"    
               sx={{ ...rightLink, color: 'secondary.main' }}
             >
               {'Sign Up'}
@@ -59,14 +67,13 @@ function AppAppBar() {
           {keycloak.authenticated && (
           <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
             <AccountManagement/>
-            <Link
-              variant="h6"
-              underline="none"
-              href="/signout"    
+            <Button
+              variant="text"
+              onClick={handleLogout}
               sx={{ ...rightLink, color: 'secondary.main' }}
             >
               {'Sign Out'}
-            </Link>
+            </Button>
           </Box>
            )}
           <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}></Box>
