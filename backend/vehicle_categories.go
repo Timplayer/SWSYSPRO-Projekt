@@ -43,3 +43,10 @@ func getVehicleCategoryById(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 	}
 }
+
+func createVehicleCategoriesTable(dbpool *pgxpool.Pool) {
+	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS vehicle_categories (id serial PRIMARY KEY, name TEXT)")
+	if err != nil {
+		log.Fatalf("Failed to create table: %v\n", err)
+	}
+}
