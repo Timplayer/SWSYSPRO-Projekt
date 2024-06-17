@@ -69,9 +69,9 @@ export default function ProductHeroLayout(
         <Background sx={sxBackground} />
         <Box
           component="img"
-          src="/static/themes/onepirate/productHeroArrowDown.png"
-          height="16"
-          width="12"
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/White_arrow_down.svg/640px-White_arrow_down.svg.png"
+          height="3em"
+          width="3em"
           alt="arrow down"
           sx={{ position: 'absolute', bottom: 32 }}
         />
