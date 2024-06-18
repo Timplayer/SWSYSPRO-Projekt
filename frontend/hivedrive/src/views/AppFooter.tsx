@@ -56,10 +56,10 @@ export default function AppFooter() {
             </Typography> 
             <Box component="ul" sx={{ m: 0, listStyle: 'none', p: 0 }}>
               <Box component="li" sx={{ py: 0.5 }}>
-                <Link href="/AGB">AGB</Link>
+                <Link href="/terms">AGB</Link>
               </Box> 
               <Box component="li" sx={{ py: 0.5 }}>   
-                <Link href="/Datenschutz">Datenschutz</Link>  
+                <Link href="/privacy">Datenschutz</Link>  
               </Box>
               <Box component="li" sx={{ py: 0.5 }}>
                 <Link href="/Impressum">Impressum</Link>

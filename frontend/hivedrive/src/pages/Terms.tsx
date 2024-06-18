@@ -1,12 +1,11 @@
 import * as React from 'react';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
-import Markdown from '../components/Markdown';
 import Typography from '../components/Typography';
 import AppAppBar from '../views/AppAppBar';
 import AppFooter from '../views/AppFooter';
 import withRoot from '../withRoot';
-import terms from '../views/terms.md';
+
 
 function Terms() {
   return (
@@ -17,7 +16,6 @@ function Terms() {
           <Typography variant="h3" gutterBottom marked="center" align="center">
             Terms
           </Typography>
-          <Markdown>{terms}</Markdown>
         </Box>
       </Container>
       <AppFooter />
