@@ -1,59 +1,54 @@
 import React from 'react';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Collapse from '@mui/material/Collapse';
-import ExpandLess from '@mui/icons-material/ExpandLess';
-import ExpandMore from '@mui/icons-material/ExpandMore';
-import AccountBoxIcon from '@mui/icons-material/AccountBox';
-import StarBorder from '@mui/icons-material/StarBorder';
-import { styled } from '@mui/material/styles';
-import ButtonBase from '@mui/material/ButtonBase';
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import Menu from '@mui/material/Menu';
+import Avatar from '@mui/material/Avatar';
+import Tooltip from '@mui/material/Tooltip';
+import MenuItem from '@mui/material/MenuItem';
 
-const Root = styled('div')(({ theme }) => ({
-  width: '100%',
-  maxWidth: 360,
-  backgroundColor: theme.palette.background.paper,
-}));
-
-const NestedListItem = styled(ListItem)(({ theme }) => ({
-  paddingLeft: theme.spacing(4),
-}));
+const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
 export default function AccountManagement() {
-  const [open, setOpen] = React.useState(false);
+  const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
 
-  const handleClick = () => {
-    setOpen(!open);
+  const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorElUser(event.currentTarget);
+  };
+
+  const handleCloseUserMenu = () => {
+    setAnchorElUser(null);
   };
 
   return (
-    <Root>
-      <List component="nav" aria-labelledby="nested-list-subheader">
-        <ButtonBase onClick={handleClick}>
-          <ListItem>
-            <ListItemIcon>
-              <AccountBoxIcon />
-            </ListItemIcon>
-            <ListItemText primary="Accountverwaltung" />
-            {open ? <ExpandLess /> : <ExpandMore />}
-          </ListItem>
-        </ButtonBase>
-        <Collapse in={open} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            <ButtonBase>
-              <NestedListItem>
-                <ListItemIcon>
-                  <StarBorder />
-                </ListItemIcon>
-                <ListItemText primary="Buchungsprofil" />
-              </NestedListItem>
-            </ButtonBase>
-            {/* Fügen Sie hier weitere Listenelemente hinzu */}
-          </List>
-        </Collapse>
-      </List>
-    </Root>
+    <Box sx={{ flexGrow: 0 }}>
+      <Tooltip title="Open settings">
+        <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+          <Avatar alt="User Avatar" src="/static/images/avatar/2.jpg" />
+        </IconButton>
+      </Tooltip>
+      <Menu
+        sx={{ mt: '45px' }}
+        id="menu-appbar"
+        anchorEl={anchorElUser}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        keepMounted
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        open={Boolean(anchorElUser)}
+        onClose={handleCloseUserMenu}
+      >
+        {settings.map((setting) => (
+          <MenuItem key={setting} onClick={handleCloseUserMenu}>
+            <Typography textAlign="center">{setting}</Typography>
+          </MenuItem>
+        ))}
+      </Menu>
+    </Box>
   );
 }
