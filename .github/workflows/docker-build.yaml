@@ -28,7 +28,7 @@ jobs:
       - name: List and Inspect Docker Containers
         if: always()
         run: |
-          docker inspect --format='{{json .State.Health.Status}}' infra_keycloak_1
+          docker inspect --format='{{json .State.Health}}' infra_keycloak_1
 
       - name: Build the stack
         id: build

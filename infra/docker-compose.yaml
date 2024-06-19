@@ -30,10 +30,10 @@ services:
       - ./keycloak/input:/opt/keycloak/data/import:Z
     healthcheck:
       test: /healthcheck.sh
-      interval: 2s
+      interval: 10s
       retries: 5
       start_period: 60s
-      timeout: 2s
+      timeout: 10s
   frontend:
     build: ../frontend/
     restart: unless-stopped
