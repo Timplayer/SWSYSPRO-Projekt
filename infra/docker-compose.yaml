@@ -29,11 +29,11 @@ services:
     volumes:
       - ./keycloak/input:/opt/keycloak/data/import:Z
     healthcheck:
-      test: /healthcheck
-      interval: 10s
+      test: /healthcheck.sh
+      interval: 2s
       retries: 5
       start_period: 60s
-      timeout: 10s
+      timeout: 2s
   frontend:
     build: ../frontend/
     restart: unless-stopped
