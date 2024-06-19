@@ -62,7 +62,7 @@ export default function AppFooter() {
                 <Link href="/privacy">Datenschutz</Link>  
               </Box>
               <Box component="li" sx={{ py: 0.5 }}>
-                <Link href="/Impressum">Impressum</Link>
+                <Link href="/impressum">Impressum</Link>
               </Box>
               <Box component="li" sx={{ py: 0.5 }}>
                 <Link href="/Licenses">Open-Source Lizenzen</Link>

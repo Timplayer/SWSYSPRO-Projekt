@@ -5,19 +5,18 @@ import Typography from '../components/Typography';
 import AppAppBar from '../views/AppAppBar';
 import AppFooter from '../views/AppFooter';
 import withRoot from '../withRoot';
-import privacyData from '../data/privacy.json'; 
+import impressumData from '../data/impressum.json'; 
 
-
-function Privacy() {
+function Impressum() {
   return (
     <React.Fragment>
       <AppAppBar />
       <Container>
         <Box sx={{ mt: 7, mb: 12 }}>
           <Typography variant="h3" gutterBottom marked="center" align="center">
-            {privacyData.title}
+            {impressumData.title}
           </Typography>
-          {privacyData.sections.map((section, index) => (
+          {impressumData.sections.map((section, index) => (
             <Box key={index} sx={{ mt: 5 }}>
               <Typography variant="h5" gutterBottom>
                 {section.heading}
@@ -34,4 +33,4 @@ function Privacy() {
   );
 }
 
-export default withRoot(Privacy);
+export default withRoot(Impressum);

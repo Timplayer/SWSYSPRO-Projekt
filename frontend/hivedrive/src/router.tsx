@@ -10,6 +10,7 @@ import ProtectedRoute from './ProtectedRoute';
 import { ErrorMessageProvider } from './Utils/ErrorMessageContext';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
+import Impressum from './pages/Impressum';
 
 const routes: RouteObject[] = [
 	{
@@ -35,6 +36,10 @@ const routes: RouteObject[] = [
 	{
 		path: '/terms',
 		element: <Terms />,
+	},
+	{
+		path: '/impressum',
+		element: <Impressum />,
 	},
 	{
 		path: '*',
