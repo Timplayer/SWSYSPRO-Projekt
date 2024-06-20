@@ -24,10 +24,10 @@ func main() {
 
 	router.HandleFunc("/api/stations", postStation(dbpool)).Methods("POST")
 	router.HandleFunc("/api/stations", getStations(dbpool)).Methods("GET")
-	router.HandleFunc("/api/vehicle_categories", postVehicleCategories(dbpool)).Methods("POST")
-	router.HandleFunc("/api/vehicle_categories", getVehicleCategories(dbpool)).Methods("GET")
+	router.HandleFunc("/api/vehicleCategories", postVehicleCategories(dbpool)).Methods("POST")
+	router.HandleFunc("/api/vehicleCategories", getVehicleCategories(dbpool)).Methods("GET")
 	router.HandleFunc("/api/stations/id/{id}", getStationByID(dbpool)).Methods("GET")
-	router.HandleFunc("/api/vehicle_categories/id/{id}", getVehicleCategoryById(dbpool)).Methods("GET")
+	router.HandleFunc("/api/vehicleCategories/id/{id}", getVehicleCategoryById(dbpool)).Methods("GET")
 	router.HandleFunc("/api/healthcheck/hello", hello()).Methods("GET")
 	router.HandleFunc("/api/healthcheck/auth", validate(provider,
 		func(writer http.ResponseWriter, request *http.Request, response *oidc.IntrospectionResponse) {
