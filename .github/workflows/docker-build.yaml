@@ -28,4 +28,5 @@ jobs:
           ./backend/test/oauth-integration.sh
           ./backend/test/sql-integration.sh
           ./backend/test/add-stations.sh
+          ./backend/test/add-vehicleCategories.sh
           docker compose -f ./infra/docker-compose.yaml down
