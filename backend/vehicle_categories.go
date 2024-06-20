@@ -35,7 +35,7 @@ func postVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
 			"INSERT INTO vehicleCategories (name) VALUES ($1) RETURNING id", vC.Name)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error executing insert vehicle_category: %v", err)
+			log.Printf("Error executing insert vehicleCategory: %v", err)
 			return
 		}
 		defer rows.Close()
@@ -44,15 +44,15 @@ func postVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
 		err = rows.Scan(&id)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error executing insert vehicle_category: %v", err)
+			log.Printf("Error executing insert vehicleCategory: %v", err)
 			return
 		}
-		log.Printf("Inserted vehicle_category: %d", id)
+		log.Printf("Inserted vehicleCategory: %d", id)
 		vC.Id = id
 		body, err = json.Marshal(vC)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error serializing vehicle_category: %v", err)
+			log.Printf("Error serializing vehicleCategory: %v", err)
 			return
 		}
 		writer.Header().Set("Content-Type", "application/json")
