@@ -63,7 +63,7 @@ func postVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getVehicleCategoryById(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT * FROM vehicleCategories WHERE vehicle_category_id = $1",
+		rows, err := dbpool.Query(context.Background(), "SELECT * FROM vehicleCategories WHERE vehicleCategories.id = $1",
 			mux.Vars(request)["id"])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
