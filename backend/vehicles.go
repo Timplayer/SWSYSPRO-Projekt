@@ -134,3 +134,10 @@ func getVehicles(dbpool *pgxpool.Pool) http.HandlerFunc {
 		writer.Write(str)
 	}
 }
+
+func createVehiclesTable(dbpool *pgxpool.Pool) {
+	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS vehicles (id BIGSERIAL PRIMARY KEY, name TEXT NOT NULL, receptionDate TEXT NOT NULL, status TEXT NOT NULL);")
+	if err != nil {
+		log.Fatalf("Failed to create table: %v\n", err)
+	}
+}
