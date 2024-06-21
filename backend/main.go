@@ -26,10 +26,10 @@ func main() {
 	router.HandleFunc("/api/stations", getStations(dbpool)).Methods("GET")
 	router.HandleFunc("/api/vehicleCategories", postVehicleCategories(dbpool)).Methods("POST")
 	router.HandleFunc("/api/vehicleCategories", getVehicleCategories(dbpool)).Methods("GET")
-	router.HandleFunc("/api/vehicles", postVehicleCategories(dbpool)).Methods("POST")
-	router.HandleFunc("/api/vehicles", getVehicleCategories(dbpool)).Methods("GET")
+	router.HandleFunc("/api/vehicles", postVehicle(dbpool)).Methods("POST")
+	router.HandleFunc("/api/vehicles", getVehicles(dbpool)).Methods("GET")
 	router.HandleFunc("/api/stations/id/{id}", getStationByID(dbpool)).Methods("GET")
-	router.HandleFunc("/api/vehicles/id/{id}", getStationByID(dbpool)).Methods("GET")
+	router.HandleFunc("/api/vehicles/id/{id}", getVehicleById(dbpool)).Methods("GET")
 	router.HandleFunc("/api/vehicleCategories/id/{id}", getVehicleCategoryById(dbpool)).Methods("GET")
 	router.HandleFunc("/api/healthcheck/hello", hello()).Methods("GET")
 	router.HandleFunc("/api/healthcheck/auth", validate(provider,
