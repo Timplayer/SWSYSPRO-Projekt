@@ -9,14 +9,13 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"time"
 )
 
 type vehicle struct {
-	Id            int64     `json:"id"`
-	Name          string    `json:"name"`
-	ReceptionDate time.Time `json:"receptionDate"`
-	Status        string    `json:"status"`
+	Id            int64  `json:"id"`
+	Name          string `json:"name"`
+	ReceptionDate string `json:"receptionDate"`
+	Status        string `json:"status"`
 }
 
 func updateVehicle(w http.ResponseWriter, r *http.Request) {
