@@ -88,6 +88,12 @@ func getVehicleCategoryById(dbpool *pgxpool.Pool) http.HandlerFunc {
 			writer.Header().Set("Content-Type", "application/json")
 			writer.Write(str)
 		}
+
+		if !rows.Next() {
+			writer.WriteHeader(http.StatusNotFound)
+			log.Printf("Error finding vehicleCategory: vehicleCategory not found \n")
+			return
+		}
 	}
 }
 
