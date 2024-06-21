@@ -16,6 +16,10 @@ type vehicleCategory struct {
 	Name string `json:"name"`
 }
 
+func updateVehicleCategory(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func postVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		body, err := io.ReadAll(request.Body)
