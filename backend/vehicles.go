@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"io"
 	"log"
@@ -63,5 +64,41 @@ func postVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
 		writer.Header().Set("Content-Type", "application/json")
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(body)
+	}
+}
+
+func getVehicleById(dbpool *pgxpool.Pool) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		rows, err := dbpool.Query(context.Background(), "SELECT * FROM vehicles WHERE vehicles.id = $1",
+			mux.Vars(request)["id"])
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error finding vehicle: %v\n", err)
+		}
+		defer rows.Close()
+
+		if rows.Next() {
+			var v vehicle
+			err = rows.Scan(&v.Id, &v.Name, &v.ReceptionDate, &v.Status)
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				log.Printf("Error finding vehicle: %v\n", err)
+				return
+			}
+			str, err := json.Marshal(v)
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				log.Printf("Error finding vehicle: %v\n", err)
+				return
+			}
+			writer.Header().Set("Content-Type", "application/json")
+			writer.Write(str)
+		}
+
+		if !rows.Next() {
+			writer.WriteHeader(http.StatusNotFound)
+			log.Printf("Error finding vehicle: vehicle not found \n")
+			return
+		}
 	}
 }
