@@ -38,7 +38,7 @@ func postVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		rows, err := dbpool.Query(context.Background(),
-			"INSERT INTO vehicles (name, receptionDate, status) VALUES ($1) RETURNING id", v.Name, v.ReceptionDate, v.Status)
+			"INSERT INTO vehicles (name, receptionDate, status) VALUES ($1, $2, $3) RETURNING id", v.Name, v.ReceptionDate, v.Status)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing insert vehicle: %v", err)
