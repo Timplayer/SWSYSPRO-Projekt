@@ -29,4 +29,7 @@ jobs:
           ./backend/test/sql-integration.sh
           ./backend/test/add-stations.sh
           ./backend/test/add-vehicleCategories.sh
+          npm install -g @usebruno/cli
+          cd /bacckend/test/hiveDriveAPI/
+          bru run --insecure
           docker compose -f ./infra/docker-compose.yaml down
