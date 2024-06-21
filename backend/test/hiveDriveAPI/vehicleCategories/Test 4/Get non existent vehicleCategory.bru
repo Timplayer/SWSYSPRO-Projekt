@@ -1,0 +1,18 @@
+meta {
+  name: Get non existent vehicleCategory
+  type: http
+  seq: 1
+}
+
+get {
+  url: https://localhost:8080/api/vehicleCategories/id/10000
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status = 404", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(404);
+  });
+}

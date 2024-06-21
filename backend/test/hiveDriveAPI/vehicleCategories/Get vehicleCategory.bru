@@ -1,7 +1,7 @@
 meta {
   name: Get vehicleCategory
   type: http
-  seq: 5
+  seq: 1
 }
 
 get {
@@ -18,7 +18,7 @@ tests {
   
   test("Two entries in List?", function() {
     const data = res.getBody();
-    expect (data.length).to.equal(2);
+    expect (data.length).to.equal(3);
   });
   
   test("Different IDs?", function() {
