@@ -22,14 +22,6 @@ jobs:
         run: |
           mkdir -p /tmp/.docker-cache
           docker-compose -f ./infra/docker-compose.yaml build --progress=plain
-      - name: integration test backend-keycloak
-        run: |
-          docker compose -f ./infra/docker-compose.yaml up --detach --wait
-          ./backend/test/oauth-integration.sh
-          ./backend/test/sql-integration.sh
-          ./backend/test/add-stations.sh
-          ./backend/test/add-vehicleCategories.sh
-          docker compose -f ./infra/docker-compose.yaml down
       - name: api test bruno
         run: |
           docker compose -f ./infra/docker-compose.yaml up --detach --wait
@@ -37,5 +29,13 @@ jobs:
           cd ./backend/test/hiveDriveAPI/
           bru run --insecure
           cd ../../../
+          docker compose -f ./infra/docker-compose.yaml down
+      - name: integration test backend-keycloak
+        run: |
+          docker compose -f ./infra/docker-compose.yaml up --detach --wait
+          ./backend/test/oauth-integration.sh
+          ./backend/test/sql-integration.sh
+          ./backend/test/add-stations.sh
+          ./backend/test/add-vehicleCategories.sh
           docker compose -f ./infra/docker-compose.yaml down
 
