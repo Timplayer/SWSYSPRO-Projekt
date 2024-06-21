@@ -23,11 +23,11 @@ tests {
   
   test("Different IDs?", function() {
     const data = res.getBody();
-    expect (data[0].id).to.not.equal(data[1].id);
+    expect (data[1].id).to.not.equal(data[2].id);
   });
   
   test("Same name?", function() {
     const data = res.getBody();
-    expect (data[0].name).to.equal(data[1].name);
+    expect (data[1].name).to.equal(data[2].name);
   });
 }
