@@ -40,7 +40,7 @@ func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		rows, err := dbpool.Query(context.Background(),
-			"INSERT INTO stations (name) VALUES ($1) RETURNING id",
+			"INSERT INTO stations (name, location, country, state, city, zip, street, houseNumber) VALUES ($1, point($2, $3), $4, $5, $6, $7, $8, $9) RETURNING id",
 			s.Name)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
