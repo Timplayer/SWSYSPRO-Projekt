@@ -41,7 +41,7 @@ func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		rows, err := dbpool.Query(context.Background(),
 			"INSERT INTO stations (name, location, country, state, city, zip, street, houseNumber) VALUES ($1, point($2, $3), $4, $5, $6, $7, $8, $9) RETURNING id",
-			s.Name)
+			s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing inserist station: %v", err)
@@ -72,7 +72,7 @@ func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT stations.id, stations.name, stations.location, stations.country, stations.state, stations.city, stations.zip, stations.street, stations.houseNumber FROM stations WHERE stations.id = $1",
+		rows, err := dbpool.Query(context.Background(), "SELECT stations.id, stations.name, stations.location[0] as latitude, stations.location[1] as longitude, stations.country, stations.state, stations.city, stations.zip, stations.street, stations.houseNumber FROM stations WHERE stations.id = $1",
 			mux.Vars(request)["id"])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
@@ -103,7 +103,7 @@ func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getStations(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT stations.id, stations.name, stations.location, stations.country, stations.state, stations.city, stations.zip, stations.street, stations.houseNumber FROM stations")
+		rows, err := dbpool.Query(context.Background(), "SELECT stations.id, stations.name, stations.location[0] as latitude, stations.location[1] as longitude, stations.country, stations.state, stations.city, stations.zip, stations.street, stations.houseNumber FROM stations;")
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error geting Database Connection: %v\n", err)
