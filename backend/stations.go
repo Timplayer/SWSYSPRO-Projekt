@@ -103,7 +103,7 @@ func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getStations(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT stations.id, stations.name FROM stations")
+		rows, err := dbpool.Query(context.Background(), "SELECT stations.id, stations.name, stations.location, stations.country, stations.state, stations.city, stations.zip, stations.street, stations.houseNumber FROM stations")
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error geting Database Connection: %v\n", err)
