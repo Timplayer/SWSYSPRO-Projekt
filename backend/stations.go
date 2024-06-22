@@ -72,7 +72,7 @@ func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT stations.id, stations.name FROM stations WHERE stations.id = $1",
+		rows, err := dbpool.Query(context.Background(), "SELECT stations.id, stations.name, stations.location, stations.country, stations.state, stations.city, stations.zip, stations.street, stations.houseNumber FROM stations WHERE stations.id = $1",
 			mux.Vars(request)["id"])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
@@ -82,7 +82,7 @@ func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 		defer rows.Close()
 		if rows.Next() {
 			var s station
-			err = rows.Scan(&s.Id, &s.Name)
+			err = rows.Scan(&s.Id, &s.Name, &s.Latitude, &s.Longitude, &s.Country, &s.State, &s.City, &s.Zip, &s.Street, &s.HouseNumber)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
 				log.Printf("Error finding Stitions: %v\n", err)
