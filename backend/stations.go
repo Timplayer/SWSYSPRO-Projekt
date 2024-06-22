@@ -12,8 +12,16 @@ import (
 )
 
 type station struct {
-	Id   int64  `json:"id"`
-	Name string `json:"name"`
+	Id          int64   `json:"id"`
+	Name        string  `json:"name"`
+	Latitude    float64 `json:"latitude"`
+	Longitude   float64 `json:"longitude"`
+	Country     string  `json:"country"`
+	State       string  `json:"state"`
+	City        string  `json:"city"`
+	Zip         string  `json:"zip"`
+	Street      string  `json:"street"`
+	HouseNumber string  `json:"house_number"`
 }
 
 func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
