@@ -11,6 +11,7 @@ import { ErrorMessageProvider } from './Utils/ErrorMessageContext';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import Impressum from './pages/Impressum';
+import Help from './pages/Help';
 
 const routes: RouteObject[] = [
 	{
@@ -40,6 +41,10 @@ const routes: RouteObject[] = [
 	{
 		path: '/impressum',
 		element: <Impressum />,
+	},
+	{
+		path: '/help',
+		element: <Help />,
 	},
 	{
 		path: '*',
