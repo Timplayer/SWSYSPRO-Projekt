@@ -134,7 +134,7 @@ func getStations(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func createStationsTable(dbpool *pgxpool.Pool) {
 	_, err := dbpool.Exec(context.Background(),
-		"CREATE TABLE IF NOT EXISTS stations(id BIGSERIAL PRIMARY KEY, name TEXT)")
+		"CREATE TABLE IF NOT EXISTS stations(id BIGSERIAL PRIMARY KEY, name TEXT, location POINT, country TEXT, state TEXT, city TEXT, zip TEXT, street TEXT, houseNumber TEXT);")
 	if err != nil {
 		log.Fatalf("Failed to create table: %v\n", err)
 	}
