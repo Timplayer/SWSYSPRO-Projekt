@@ -10,10 +10,10 @@ const HelpPage: React.FC = () => {
   return (
     <React.Fragment>
     <AppAppBar />
+      <Container>
       <Typography variant="h6">
       Autovermietung Hilfe         
        </Typography>
-      <Container>
         <Typography variant="h4" gutterBottom style={{ marginTop: '20px' }}>
           Häufig gestellte Fragen
         </Typography>
@@ -45,7 +45,7 @@ const HelpPage: React.FC = () => {
         </List>
       </Container>
       <AppFooter/>
-      </React.Fragment>
+     </React.Fragment>
   );
 };
 

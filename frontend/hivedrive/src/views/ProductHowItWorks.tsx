@@ -64,7 +64,7 @@ function ProductHowItWorks() {
                 <Box
                   component="img"
                   src=""
-                  alt="suitcase"
+                  alt="choose start location"
                   sx={image}
                 />
                 <Typography variant="h5" align="center">
@@ -78,7 +78,7 @@ function ProductHowItWorks() {
                 <Box
                   component="img"
                   src=""
-                  alt="graph"
+                  alt="car choose"
                   sx={image}
                 />
                 <Typography variant="h5" align="center">
@@ -92,7 +92,7 @@ function ProductHowItWorks() {
                 <Box
                   component="img"
                   src=""
-                  alt="clock"
+                  alt="start driving"
                   sx={image}
                 />
                 <Typography variant="h5" align="center">

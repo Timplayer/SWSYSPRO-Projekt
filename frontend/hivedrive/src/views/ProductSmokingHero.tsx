@@ -1,8 +1,11 @@
 import * as React from 'react';
-import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Typography from '../components/Typography';
+import { Link } from 'react-router-dom';
+import withRoot from '../withRoot';
+
+
 
 function ProductSmokingHero() {
   return (
@@ -19,8 +22,9 @@ function ProductSmokingHero() {
           py: 2,
           px: 5,
         }}
+        component={Link} to="/help"
       >
-        <Typography variant="h4" component="span" color="secondary.light">
+        <Typography variant="h4" component="span" color="secondary.light" >
           Haben Sie Fragen oder brauchen Sie hilfe?
         </Typography>
       </Button>
@@ -34,4 +38,4 @@ function ProductSmokingHero() {
   );
 }
 
-export default ProductSmokingHero;
+export default withRoot(ProductSmokingHero);

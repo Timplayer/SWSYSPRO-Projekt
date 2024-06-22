@@ -43,7 +43,7 @@ export default function AppFooter() {
             </Typography> 
             <Box component="ul" sx={{ m: 0, listStyle: 'none', p: 0 }}>
               <Box component="li" sx={{ py: 0.5 }}>   
-                  <Link href="/Help">Hilfe</Link>  
+                  <Link href="/help">Hilfe</Link>  
               </Box>
               <Grid item>
                 <Copyright />
@@ -65,7 +65,7 @@ export default function AppFooter() {
                 <Link href="/impressum">Impressum</Link>
               </Box>
               <Box component="li" sx={{ py: 0.5 }}>
-                <Link href="/Licenses">Open-Source Lizenzen</Link>
+                <Link href="/licenses">Open-Source Lizenzen</Link>
               </Box>
             </Box>
           </Grid>

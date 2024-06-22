@@ -47,6 +47,19 @@ export default function TemporaryDrawer() {
         </Box>
       </Stack>   
       <Divider />
+
+      <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center'}}>
+          <Link
+            variant="h6"
+            underline="none"
+            color="inherit"
+            href="/subscription"
+            sx={{ fontSize: 24, color: '#FFFFFF' }}
+          >
+            {'Hive-Abos'}
+          </Link>
+        </Box>
+        
     </Box>
   );
 
