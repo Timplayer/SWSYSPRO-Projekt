@@ -1,11 +1,11 @@
 meta {
-  name: Get Created vehicleCategory
+  name: Get second station
   type: http
-  seq: 2
+  seq: 3
 }
 
 get {
-  url: https://localhost:8080/api/stations
+  url: https://localhost:8080/api/stations/id/3
   body: none
   auth: none
 }
@@ -18,51 +18,51 @@ tests {
   
   test("ID is correct?", function() {
     const data = res.getBody();
-    expect (data[0].id).exists;
+    expect (data.id).to.equal(3);
   });
   
   test("Name is correct?", function() {
     const data = res.getBody();
-    expect (data[0].name).to.equal("Station 1");
+    expect (data.name).to.equal("Station 2");
   });
   
   test("Latitude is correct?", function() {
     const data = res.getBody();
-    expect (data[0].latitude).to.equal(1.11);
+    expect (data.latitude).to.equal(1.11);
   });
   
   test("Longitude is correct?", function() {
     const data = res.getBody();
-    expect (data[0].longitude).to.equal(2.22);
+    expect (data.longitude).to.equal(2.22);
   });
   
   test("Country is correct?", function() {
     const data = res.getBody();
-    expect (data[0].country).to.equal("Germany");
+    expect (data.country).to.equal("Germany");
   });
   
   test("State is correct?", function() {
     const data = res.getBody();
-    expect (data[0].state).to.equal("Berlin");
+    expect (data.state).to.equal("Berlin");
   });
   
   test("City is correct?", function() {
     const data = res.getBody();
-    expect (data[0].city).to.equal("Berlin");
+    expect (data.city).to.equal("Berlin");
   });
   
   test("Zip is correct?", function() {
     const data = res.getBody();
-    expect (data[0].zip).to.equal("123456789");
+    expect (data.zip).to.equal("123456789");
   });
   
   test("Street is correct?", function() {
     const data = res.getBody();
-    expect (data[0].street).to.equal("Teststraße");
+    expect (data.street).to.equal("Teststraße");
   });
   
   test("HouseNumber is correct?", function() {
     const data = res.getBody();
-    expect (data[0].house_number).to.equal("15A");
+    expect (data.house_number).to.equal("15A");
   });
 }

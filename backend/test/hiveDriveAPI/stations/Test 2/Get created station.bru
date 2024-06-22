@@ -1,82 +1,68 @@
 meta {
-  name: Create vehicleCategory
+  name: Get created station
   type: http
-  seq: 1
+  seq: 2
 }
 
-post {
+get {
   url: https://localhost:8080/api/stations
-  body: json
+  body: none
   auth: none
 }
 
-body:json {
-  {
-    "name": "Station 1",
-    "latitude": 1.11,
-    "longitude": 2.22,
-    "country": "Germany",
-    "state": "Berlin",
-    "city": "Berlin",
-    "zip": "123456789",
-    "street": "Teststraße",
-    "house_number": "15A"
-  }
-}
-
 tests {
-  test("Status = 201", function() {
+  test("Status = 200", function() {
     const data = res.getBody();
-    expect(res.getStatus()).to.equal(201);
+    expect(res.getStatus()).to.equal(200);
   });
   
   test("ID is correct?", function() {
     const data = res.getBody();
-    expect (data.id).exists;
+    expect (data[0].id).exists;
   });
   
   test("Name is correct?", function() {
     const data = res.getBody();
-    expect (data.name).to.equal("Station 1");
+    expect (data[0].name).to.equal("Station 1");
   });
   
   test("Latitude is correct?", function() {
     const data = res.getBody();
-    expect (data.latitude).to.equal(1.11);
+    expect (data[0].latitude).to.equal(1.11);
   });
   
   test("Longitude is correct?", function() {
     const data = res.getBody();
-    expect (data.longitude).to.equal(2.22);
+    expect (data[0].longitude).to.equal(2.22);
   });
   
   test("Country is correct?", function() {
     const data = res.getBody();
-    expect (data.country).to.equal("Germany");
+    expect (data[0].country).to.equal("Germany");
   });
   
   test("State is correct?", function() {
     const data = res.getBody();
-    expect (data.state).to.equal("Berlin");
+    expect (data[0].state).to.equal("Berlin");
   });
   
   test("City is correct?", function() {
     const data = res.getBody();
-    expect (data.city).to.equal("Berlin");
+    expect (data[0].city).to.equal("Berlin");
   });
   
   test("Zip is correct?", function() {
     const data = res.getBody();
-    expect (data.zip).to.equal("123456789");
+    expect (data[0].zip).to.equal("123456789");
   });
   
   test("Street is correct?", function() {
     const data = res.getBody();
-    expect (data.street).to.equal("Teststraße");
+    expect (data[0].street).to.equal("Teststraße");
   });
   
   test("HouseNumber is correct?", function() {
     const data = res.getBody();
-    expect (data.house_number).to.equal("15A");
+    expect (data[0].house_number).to.equal("15A");
   });
 }

@@ -1,5 +1,5 @@
 meta {
-  name: Create vehicleCategory
+  name: Create station
   type: http
   seq: 1
 }
@@ -12,7 +12,7 @@ post {
 
 body:json {
   {
-    "name": "Station 2",
+    "name": "Station 1",
     "latitude": 1.11,
     "longitude": 2.22,
     "country": "Germany",
@@ -37,7 +37,7 @@ tests {
   
   test("Name is correct?", function() {
     const data = res.getBody();
-    expect (data.name).to.equal("Station 2");
+    expect (data.name).to.equal("Station 1");
   });
   
   test("Latitude is correct?", function() {
