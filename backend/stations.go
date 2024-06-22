@@ -97,6 +97,12 @@ func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 			writer.Header().Set("Content-Type", "application/json")
 			writer.Write(str)
 		}
+
+		if !rows.Next() {
+			writer.WriteHeader(http.StatusNotFound)
+			log.Printf("Error finding station: station not found \n")
+			return
+		}
 	}
 
 }
