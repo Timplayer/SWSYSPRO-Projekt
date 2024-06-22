@@ -1,0 +1,68 @@
+meta {
+  name: Get second vehicleCategory
+  type: http
+  seq: 3
+}
+
+get {
+  url: https://localhost:8080/api/stations/id/3
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status = 200", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("ID is correct?", function() {
+    const data = res.getBody();
+    expect (data.id).to.equal(3);
+  });
+  
+  test("Name is correct?", function() {
+    const data = res.getBody();
+    expect (data.name).to.equal("Station 2");
+  });
+
+  test("Latitude is correct?", function() {
+    const data = res.getBody();
+    expect (data.latitude).to.equal(1.11);
+  });
+  
+  test("Longitude is correct?", function() {
+    const data = res.getBody();
+    expect (data.latitude).to.equal(2.22);
+  });
+  
+  test("Country is correct?", function() {
+    const data = res.getBody();
+    expect (data.country).to.equal("Germany");
+  });
+  
+  test("State is correct?", function() {
+    const data = res.getBody();
+    expect (data.state).to.equal("Berlin");
+  });
+  
+  test("City is correct?", function() {
+    const data = res.getBody();
+    expect (data.city).to.equal("Berlin");
+  });
+  
+  test("Zip is correct?", function() {
+    const data = res.getBody();
+    expect (data.zip).to.equal("123456789");
+  });
+  
+  test("Street is correct?", function() {
+    const data = res.getBody();
+    expect (data.street).to.equal("Teststraße");
+  });
+  
+  test("HouseNumber is correct?", function() {
+    const data = res.getBody();
+    expect (data.house_number).to.equal("15A");
+  });
+}
