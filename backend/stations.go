@@ -113,7 +113,7 @@ func getStations(dbpool *pgxpool.Pool) http.HandlerFunc {
 		stations, err := pgx.CollectRows(rows,
 			func(row pgx.CollectableRow) (station, error) {
 				var s station
-				err := rows.Scan(&s.Id, &s.Name)
+				err := rows.Scan(&s.Id, &s.Name, &s.Latitude, &s.Longitude, &s.Country, &s.State, &s.City, &s.Zip, &s.Street, &s.HouseNumber)
 				return s, err
 			})
 		if err != nil {
