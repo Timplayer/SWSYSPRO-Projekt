@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"io"
@@ -57,6 +58,42 @@ func postProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
 		writer.Header().Set("Content-Type", "application/json")
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(body)
+	}
+}
+
+func getProducerById(dbpool *pgxpool.Pool) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		rows, err := dbpool.Query(context.Background(), "SELECT * FROM producers WHERE producers.id = $1",
+			mux.Vars(request)["id"])
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error finding producer: %v\n", err)
+		}
+		defer rows.Close()
+
+		if rows.Next() {
+			var p producer
+			err = rows.Scan(&p.Id, &p.Name)
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				log.Printf("Error finding producer: %v\n", err)
+				return
+			}
+			str, err := json.Marshal(p)
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				log.Printf("Error finding producer: %v\n", err)
+				return
+			}
+			writer.Header().Set("Content-Type", "application/json")
+			writer.Write(str)
+		}
+
+		if !rows.Next() {
+			writer.WriteHeader(http.StatusNotFound)
+			log.Printf("Error finding producer: producer not found \n")
+			return
+		}
 	}
 }
 
