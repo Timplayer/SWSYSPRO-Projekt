@@ -36,7 +36,7 @@ func main() {
 
 	router.HandleFunc("/api/producers", postProducers(dbpool)).Methods("POST")
 	router.HandleFunc("/api/producers", getProducers(dbpool)).Methods("GET")
-  
+
 	router.HandleFunc("/api/stations/id/{id}", getStationByID(dbpool)).Methods("GET")
 	router.HandleFunc("/api/vehicles/id/{id}", getVehicleById(dbpool)).Methods("GET")
 	router.HandleFunc("/api/vehicleCategories/id/{id}", getVehicleCategoryById(dbpool)).Methods("GET")
@@ -100,9 +100,8 @@ func initializeDatabase(dbpool *pgxpool.Pool) {
 	}
 	createStationsTable(dbpool)
 	createVehicleCategoriesTable(dbpool)
-	createVehiclesTable(dbpool)
 	createProducersTable(dbpool)
-  createDefectsTable(dbpool)
+	createVehiclesTable(dbpool) // depends on Producers and VehicleCategories
 }
 
 func getOAuthProvider() rs.ResourceServer {
@@ -136,8 +135,8 @@ func getOAuthProvider() rs.ResourceServer {
 
 func validate(provider rs.ResourceServer,
 	handler func(writer http.ResponseWriter,
-	request *http.Request,
-	response *oidc.IntrospectionResponse)) http.HandlerFunc {
+		request *http.Request,
+		response *oidc.IntrospectionResponse)) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		auth := request.Header.Get("authorization")
 		if auth == "" {
