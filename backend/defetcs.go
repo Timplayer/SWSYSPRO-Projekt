@@ -62,6 +62,12 @@ func postDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 		writer.Header().Set("Content-Type", "application/json")
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(body)
+
+		if !rows.Next() {
+			writer.WriteHeader(http.StatusNotFound)
+			log.Printf("Error finding defect: defect not found \n")
+			return
+		}
 	}
 }
 
