@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"io"
 	"log"
@@ -56,6 +57,37 @@ func postProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
 		writer.Header().Set("Content-Type", "application/json")
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(body)
+	}
+}
+
+func getProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		rows, err := dbpool.Query(context.Background(), "SELECT * FROM producers")
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error geting Database Connection: %v\n", err)
+			return
+		}
+		defer rows.Close()
+		producers, err := pgx.CollectRows(rows,
+			func(row pgx.CollectableRow) (producer, error) {
+				var p producer
+				err := rows.Scan(&p.Id, &p.Name)
+				return p, err
+			})
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error finding producers: %v\n", err)
+			return
+		}
+		str, err := json.Marshal(producers)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error finding producers: %v\n", err)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		writer.Write(str)
 	}
 }
 
