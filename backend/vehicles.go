@@ -42,7 +42,7 @@ func postVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		rows, err := dbpool.Query(context.Background(),
-			"INSERT INTO vehicles (name, receptionDate, status) VALUES ($1, $2, $3) RETURNING id", v.Name, v.ReceptionDate, v.Status)
+			"INSERT INTO vehicles (name, receptionDate, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id", v.Name, v.VehicleCategory, v.Producer, v.Status, v.ReceptionDate, v.CompletionDate)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing insert vehicle: %v", err)
@@ -83,7 +83,7 @@ func getVehicleById(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 		if rows.Next() {
 			var v vehicle
-			err = rows.Scan(&v.Id, &v.Name, &v.ReceptionDate, &v.Status)
+			err = rows.Scan(&v.Id, &v.Name, v.VehicleCategory, &v.Producer, &v.Status, &v.ReceptionDate, &v.CompletionDate)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
 				log.Printf("Error finding vehicle: %v\n", err)
@@ -119,7 +119,7 @@ func getVehicles(dbpool *pgxpool.Pool) http.HandlerFunc {
 		vehicles, err := pgx.CollectRows(rows,
 			func(row pgx.CollectableRow) (vehicle, error) {
 				var v vehicle
-				err := rows.Scan(&v.Id, &v.Name, &v.ReceptionDate, &v.Status)
+				err := rows.Scan(&v.Id, &v.Name, &v.VehicleCategory, &v.Producer, &v.Status, &v.ReceptionDate, &v.CompletionDate)
 				return v, err
 			})
 		if err != nil {
