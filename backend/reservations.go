@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"io"
@@ -18,6 +19,13 @@ type reservation struct {
 	EndZeit      time.Time `json:"end_zeit"`
 	EndStation   int64     `json:"end_station"`
 	AutoKlasse   int64     `json:"auto_klasse"`
+}
+
+type availability struct {
+	Time       time.Time `json:"time"`
+	Pos        int64     `json:"pos"`
+	AutoKlasse int64     `json:"auto_klasse"`
+	Cars       int64     `json:"availability"`
 }
 
 func postReservation(dbpool *pgxpool.Pool) http.HandlerFunc {
@@ -85,6 +93,34 @@ func postReservation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		writer.Header().Set("Content-Type", "application/json")
 		writer.WriteHeader(http.StatusCreated)
+		writer.Write(body)
+	}
+}
+
+func getAvailabilityAtStation(dbpool *pgxpool.Pool) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		rows, err := dbpool.Query(request.Context(),
+			"SELECT time, station, auto_klasse, available FROM availability WHERE station = $1",
+			mux.Vars(request)["id"])
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error querying availability cars: %v", err)
+			return
+		}
+		a, err := pgx.CollectRows(rows, pgx.RowToAddrOfStructByPos[availability])
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error collecting availability cars: %v", err)
+			return
+		}
+		body, err := json.Marshal(a)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error serializing availability: %v", err)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusOK)
 		writer.Write(body)
 	}
 }

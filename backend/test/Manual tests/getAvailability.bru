@@ -1,0 +1,11 @@
+meta {
+  name: getAvailability
+  type: http
+  seq: 4
+}
+
+get {
+  url: localhost:8080/api/stations/id/{station}/availability
+  body: none
+  auth: none
+}
