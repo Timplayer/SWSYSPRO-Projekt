@@ -42,7 +42,7 @@ func postVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		rows, err := dbpool.Query(context.Background(),
-			"INSERT INTO vehicles (name, receptionDate, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id", v.Name, v.VehicleCategory, v.Producer, v.Status, v.ReceptionDate, v.CompletionDate)
+			"INSERT INTO vehicles (name, vehicleCategory, producer, status, receptionDate, completionDate) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;", v.Name, v.VehicleCategory, v.Producer, v.Status, v.ReceptionDate, v.CompletionDate)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing insert vehicle: %v", err)
@@ -73,7 +73,7 @@ func postVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getVehicleById(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT * FROM vehicles WHERE vehicles.id = $1",
+		rows, err := dbpool.Query(context.Background(), "SELECT * FROM vehicles WHERE vehicles.id = $1;",
 			mux.Vars(request)["id"])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
@@ -83,7 +83,7 @@ func getVehicleById(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 		if rows.Next() {
 			var v vehicle
-			err = rows.Scan(&v.Id, &v.Name, v.VehicleCategory, &v.Producer, &v.Status, &v.ReceptionDate, &v.CompletionDate)
+			err = rows.Scan(&v.Id, &v.Name, &v.VehicleCategory, &v.Producer, &v.Status, &v.ReceptionDate, &v.CompletionDate)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
 				log.Printf("Error finding vehicle: %v\n", err)
@@ -109,7 +109,7 @@ func getVehicleById(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getVehicles(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT * FROM vehicles")
+		rows, err := dbpool.Query(context.Background(), "SELECT * FROM vehicles;")
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error geting Database Connection: %v\n", err)
@@ -139,7 +139,7 @@ func getVehicles(dbpool *pgxpool.Pool) http.HandlerFunc {
 }
 
 func createVehiclesTable(dbpool *pgxpool.Pool) {
-	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS vehicles (id BIGSERIAL PRIMARY KEY, name TEXT NOT NULL, vehicleCategory BIGSERIAL references vehiclecategories(id), producer BIGSERIAL references producers(id), receptionDate timestamp NOT NULL, completionDate timestamp, status TEXT NOT NULL);")
+	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS vehicles (id BIGSERIAL PRIMARY KEY, name TEXT NOT NULL, vehicleCategory BIGSERIAL references vehiclecategories(id), producer BIGSERIAL references producers(id), status TEXT NOT NULL, receptionDate timestamp NOT NULL, completionDate timestamp);")
 	if err != nil {
 		log.Fatalf("Failed to create table: %v\n", err)
 	}
