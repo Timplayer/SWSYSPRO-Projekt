@@ -101,6 +101,7 @@ func initializeDatabase(dbpool *pgxpool.Pool) {
 	createStationsTable(dbpool)
 	createVehicleCategoriesTable(dbpool)
 	createProducersTable(dbpool)
+	createDefectsTable(dbpool)
 	createVehiclesTable(dbpool) // depends on Producers and VehicleCategories
 }
 
