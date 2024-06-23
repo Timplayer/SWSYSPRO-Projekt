@@ -9,10 +9,11 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useNavigate } from 'react-router-dom';
 
 const settings = [
-  { name: 'Profile', link: '/profile' },
-  { name: 'Account', link: '/account' },
-  { name: 'Dashboard', link: '/dashboard' },
-  { name: 'Logout', link: '/logout' },
+  { name: 'Buchungen', link: '/' },
+  { name: 'Abos', link: '/' },
+  { name: 'Persönliche Daten', link: '/' },
+  { name: 'Hilfe', link: '/help' },
+  { name: 'Abmelden', link: '/logout' },
 ];
 
 export default function AccountManagement() {

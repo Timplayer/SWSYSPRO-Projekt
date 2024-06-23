@@ -46,8 +46,8 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({ setLocation }) => {
               value={location}
               onChange={(e) => {
                 setLocationState(e.target.value);
+                setLocation(e.target.value);
               }}
-              onClick={setLocation(location)}
               fullWidth
             >
               {locations.map((option) => (
@@ -113,7 +113,13 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({ setLocation }) => {
         </Grid>
       </Box>
       <Grid item xs={12} justifyContent="right" alignItems="center">
-        <Button variant="contained" color="primary" fullWidth onClick={handleSubmit} margin="5">
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          onClick={handleSubmit}
+          sx={{ marginTop: 2 }}
+        >
           Autos anzeigen
         </Button>
       </Grid>

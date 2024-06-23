@@ -12,6 +12,8 @@ import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import Impressum from './pages/Impressum';
 import Help from './pages/Help';
+import Bookingpage from './pages/Bookingpage';
+
 
 const routes: RouteObject[] = [
 	{
@@ -50,6 +52,11 @@ const routes: RouteObject[] = [
 		path: '*',
 		element: <NotFound />,
 	},
+	{
+		path: '/bookingpage',
+		element: <Bookingpage />,
+	},
+	
 ];
 
 const router = createBrowserRouter(routes);
