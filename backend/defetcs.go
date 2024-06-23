@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"io"
 	"log"
@@ -61,6 +62,37 @@ func postDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(body)
 	}
+}
+
+func getDefectByID(dbpool *pgxpool.Pool) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		rows, err := dbpool.Query(context.Background(), "SELECT * FROM defects WHERE defects.id = $1",
+			mux.Vars(request)["id"])
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error finding defect: %v\n", err)
+			return
+		}
+		defer rows.Close()
+		if rows.Next() {
+			var d defect
+			err = rows.Scan(&d.Id, &d.Name, &d.Date, &d.Description)
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				log.Printf("Error finding defect: %v\n", err)
+				return
+			}
+			str, err := json.Marshal(d)
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				log.Printf("Error finding defect: %v\n", err)
+				return
+			}
+			writer.Header().Set("Content-Type", "application/json")
+			writer.Write(str)
+		}
+	}
+
 }
 
 func createDefectsTable(dbpool *pgxpool.Pool) {
