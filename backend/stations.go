@@ -12,8 +12,16 @@ import (
 )
 
 type station struct {
-	Id   int64  `json:"id"`
-	Name string `json:"name"`
+	Id          int64   `json:"id"`
+	Name        string  `json:"name"`
+	Latitude    float64 `json:"latitude"`
+	Longitude   float64 `json:"longitude"`
+	Country     string  `json:"country"`
+	State       string  `json:"state"`
+	City        string  `json:"city"`
+	Zip         string  `json:"zip"`
+	Street      string  `json:"street"`
+	HouseNumber string  `json:"house_number"`
 }
 
 func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
@@ -32,8 +40,8 @@ func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		rows, err := dbpool.Query(context.Background(),
-			"INSERT INTO stations (name) VALUES ($1) RETURNING id",
-			s.Name)
+			"INSERT INTO stations (name, location, country, state, city, zip, street, houseNumber) VALUES ($1, point($2, $3), $4, $5, $6, $7, $8, $9) RETURNING id",
+			s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing inserist station: %v", err)
@@ -64,7 +72,7 @@ func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT stations.id, stations.name FROM stations WHERE stations.id = $1",
+		rows, err := dbpool.Query(context.Background(), "SELECT stations.id, stations.name, stations.location[0] as latitude, stations.location[1] as longitude, stations.country, stations.state, stations.city, stations.zip, stations.street, stations.houseNumber FROM stations WHERE stations.id = $1",
 			mux.Vars(request)["id"])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
@@ -74,7 +82,7 @@ func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 		defer rows.Close()
 		if rows.Next() {
 			var s station
-			err = rows.Scan(&s.Id, &s.Name)
+			err = rows.Scan(&s.Id, &s.Name, &s.Latitude, &s.Longitude, &s.Country, &s.State, &s.City, &s.Zip, &s.Street, &s.HouseNumber)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
 				log.Printf("Error finding Stitions: %v\n", err)
@@ -89,13 +97,19 @@ func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 			writer.Header().Set("Content-Type", "application/json")
 			writer.Write(str)
 		}
+
+		if !rows.Next() {
+			writer.WriteHeader(http.StatusNotFound)
+			log.Printf("Error finding station: station not found \n")
+			return
+		}
 	}
 
 }
 
 func getStations(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT stations.id, stations.name FROM stations")
+		rows, err := dbpool.Query(context.Background(), "SELECT stations.id, stations.name, stations.location[0] as latitude, stations.location[1] as longitude, stations.country, stations.state, stations.city, stations.zip, stations.street, stations.houseNumber FROM stations;")
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error geting Database Connection: %v\n", err)
@@ -105,7 +119,7 @@ func getStations(dbpool *pgxpool.Pool) http.HandlerFunc {
 		stations, err := pgx.CollectRows(rows,
 			func(row pgx.CollectableRow) (station, error) {
 				var s station
-				err := rows.Scan(&s.Id, &s.Name)
+				err := rows.Scan(&s.Id, &s.Name, &s.Latitude, &s.Longitude, &s.Country, &s.State, &s.City, &s.Zip, &s.Street, &s.HouseNumber)
 				return s, err
 			})
 		if err != nil {
@@ -126,7 +140,7 @@ func getStations(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func createStationsTable(dbpool *pgxpool.Pool) {
 	_, err := dbpool.Exec(context.Background(),
-		"CREATE TABLE IF NOT EXISTS stations(id BIGSERIAL PRIMARY KEY, name TEXT)")
+		"CREATE TABLE IF NOT EXISTS stations(id BIGSERIAL PRIMARY KEY, name TEXT, location POINT, country TEXT, state TEXT, city TEXT, zip TEXT, street TEXT, houseNumber TEXT);")
 	if err != nil {
 		log.Fatalf("Failed to create table: %v\n", err)
 	}

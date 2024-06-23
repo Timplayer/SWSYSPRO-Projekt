@@ -31,8 +31,12 @@ func main() {
 	router.HandleFunc("/api/defects", postDefect(dbpool)).Methods("POST")
 	router.HandleFunc("/api/defects", getDefects(dbpool)).Methods("GET")
 
+	router.HandleFunc("/api/producers", postProducers(dbpool)).Methods("POST")
+	router.HandleFunc("/api/producers", getProducers(dbpool)).Methods("GET")
+
 	router.HandleFunc("/api/stations/id/{id}", getStationByID(dbpool)).Methods("GET")
 	router.HandleFunc("/api/vehicleCategories/id/{id}", getVehicleCategoryById(dbpool)).Methods("GET")
+	router.HandleFunc("/api/producers/id/{id}", getProducerById(dbpool)).Methods("GET")
 	router.HandleFunc("/api/defects/id/{id}", getDefectByID(dbpool)).Methods("GET")
 
 	router.HandleFunc("/api/healthcheck/hello", hello()).Methods("GET")
@@ -92,7 +96,8 @@ func initializeDatabase(dbpool *pgxpool.Pool) {
 	}
 	createStationsTable(dbpool)
 	createVehicleCategoriesTable(dbpool)
-	createDefectsTable(dbpool)
+	createProducersTable(dbpool)
+  createDefectsTable(dbpool)
 }
 
 func getOAuthProvider() rs.ResourceServer {
@@ -126,8 +131,8 @@ func getOAuthProvider() rs.ResourceServer {
 
 func validate(provider rs.ResourceServer,
 	handler func(writer http.ResponseWriter,
-		request *http.Request,
-		response *oidc.IntrospectionResponse)) http.HandlerFunc {
+	request *http.Request,
+	response *oidc.IntrospectionResponse)) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		auth := request.Header.Get("authorization")
 		if auth == "" {
