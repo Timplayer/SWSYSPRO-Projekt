@@ -24,6 +24,8 @@ func main() {
 
 	router.HandleFunc("/api/reservations", postReservation(dbpool)).Methods("POST")
 
+	router.HandleFunc("/api/stations/id/{id}/availability", getAvailabilityAtStation(dbpool)).Methods("GET")
+
 	router.HandleFunc("/api/stations", postStation(dbpool)).Methods("POST")
 	router.HandleFunc("/api/stations", getStations(dbpool)).Methods("GET")
 
