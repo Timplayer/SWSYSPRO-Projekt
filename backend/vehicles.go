@@ -139,7 +139,7 @@ func getVehicles(dbpool *pgxpool.Pool) http.HandlerFunc {
 }
 
 func createVehiclesTable(dbpool *pgxpool.Pool) {
-	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS vehicles (id BIGSERIAL PRIMARY KEY, name TEXT NOT NULL, receptionDate TEXT NOT NULL, status TEXT NOT NULL);")
+	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS vehicles (id BIGSERIAL PRIMARY KEY, name TEXT NOT NULL, vehicleCategory BIGSERIAL references vehiclecategories(id), producer BIGSERIAL references producers(id), receptionDate timestamp NOT NULL, completionDate timestamp, status TEXT NOT NULL);")
 	if err != nil {
 		log.Fatalf("Failed to create table: %v\n", err)
 	}
