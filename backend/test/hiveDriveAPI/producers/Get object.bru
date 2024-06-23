@@ -1,0 +1,33 @@
+meta {
+  name: Get object
+  type: http
+  seq: 1
+}
+
+get {
+  url: https://localhost:8080/api/producers
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status = 200", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Two entries in List?", function() {
+    const data = res.getBody();
+    expect (data.length).to.equal(3);
+  });
+  
+  test("Different IDs?", function() {
+    const data = res.getBody();
+    expect (data[1].id).to.not.equal(data[2].id);
+  });
+  
+  test("Same name?", function() {
+    const data = res.getBody();
+    expect (data[1].name).to.equal(data[2].name);
+  });
+}
