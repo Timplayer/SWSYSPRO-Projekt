@@ -28,11 +28,11 @@ tests {
   
   test("Date is correct?", function() {
     const data = res.getBody();
-    expect (data.date).to.equal("2021-08-15T14:30:45Z");
+    expect (data[0].date).to.equal("2021-08-15T14:30:45Z");
   });
   
   test("Description is correct?", function() {
     const data = res.getBody();
-    expect (data.description).to.equal("Small sratch on the front bumper");
+    expect (data[0].description).to.equal("Small sratch on the front bumper");
   });
 }
