@@ -58,3 +58,10 @@ func postProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
 		writer.Write(body)
 	}
 }
+
+func createProducersTable(dbpool *pgxpool.Pool) {
+	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS producers (id BIGSERIAL PRIMARY KEY, name TEXT NOT NULL)")
+	if err != nil {
+		log.Fatalf("Failed to create table: %v\n", err)
+	}
+}
