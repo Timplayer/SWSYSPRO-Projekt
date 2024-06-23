@@ -85,6 +85,7 @@ func initializeDatabase(dbpool *pgxpool.Pool) {
 	}
 	createStationsTable(dbpool)
 	createVehicleCategoriesTable(dbpool)
+	createProducersTable(dbpool)
 }
 
 func getOAuthProvider() rs.ResourceServer {
