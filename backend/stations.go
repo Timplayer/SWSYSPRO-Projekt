@@ -92,7 +92,7 @@ func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 			str, err := json.Marshal(s)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf("Error finding Stitions: %v\n", err)
+				log.Printf("Error finding Stations: %v\n", err)
 				return
 			}
 			writer.Header().Set("Content-Type", "application/json")
