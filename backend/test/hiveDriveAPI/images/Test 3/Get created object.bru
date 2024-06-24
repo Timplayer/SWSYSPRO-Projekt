@@ -1,11 +1,11 @@
 meta {
-  name: Get second object
+  name: Get created object
   type: http
-  seq: 4
+  seq: 2
 }
 
 get {
-  url: https://localhost:8080/api/images/id/1
+  url: https://localhost:8080/api/images/public
   body: none
   auth: none
 }
@@ -18,6 +18,6 @@ tests {
   
   test("URL is correct?", function() {
     const data = res.getBody();
-    expect (data.url).to.equals("https://localhost:8080/api/images/file/id/3");
+    expect (data[0].url).to.equals("https://localhost:8080/api/images/file/id/1");
   });
 }
