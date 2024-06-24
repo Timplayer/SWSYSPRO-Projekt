@@ -7,14 +7,8 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useNavigate } from 'react-router-dom';
+import keycloak from '../keycloak';
 
-const settings = [
-  { name: 'Buchungen', link: '/mybookings' },
-  { name: 'Abos', link: '/' },
-  { name: 'Persönliche Daten', link: '/' },
-  { name: 'Hilfe', link: '/help' },
-  { name: 'Abmelden', link: '/logout' },
-];
 
 export default function AccountManagement() {
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
@@ -26,10 +20,24 @@ export default function AccountManagement() {
 
   const handleCloseUserMenu = (settingLink: string) => {
     setAnchorElUser(null);
+    console.log(settingLink);
     if (settingLink) {
-      navigate(settingLink);
+      if (settingLink.startsWith('http')) {
+        window.location.href = settingLink; // External URL navigation
+       
+      } else {
+        navigate(settingLink); // Internal navigation
+      }
     }
   };
+
+  const settings = [
+    { name: 'Buchungen', link: '/mybookings' },
+    { name: 'Abos', link: '/' },
+    { name: 'Persönliche Daten', link: keycloak.createAccountUrl() },
+    { name: 'Hilfe', link: '/help' },
+    { name: 'Abmelden', link: '/logout' },
+  ];
 
   return (
     <Box sx={{ flexGrow: 0 }}>
