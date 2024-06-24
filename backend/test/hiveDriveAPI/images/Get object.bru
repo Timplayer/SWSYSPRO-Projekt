@@ -16,8 +16,8 @@ tests {
     expect(res.getStatus()).to.equal(200);
   });
   
-  test("Three entries in List?", function() {
+  test("Four entries in List?", function() {
     const data = res.getBody();
-    expect (data.length).to.equal(3);
+    expect (data.length).to.equal(4);
   });
 }
