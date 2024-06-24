@@ -13,6 +13,7 @@ import Terms from './pages/Terms';
 import Impressum from './pages/Impressum';
 import Help from './pages/Help';
 import Bookingpage from './pages/Bookingpage';
+import Bookings from './pages/Bookings';
 
 
 const routes: RouteObject[] = [
@@ -55,6 +56,10 @@ const routes: RouteObject[] = [
 	{
 		path: '/bookingpage',
 		element: <Bookingpage />,
+	},
+	{
+		path: '/mybookings',
+		element: <ProtectedRoute element={<Bookings />} requiredRoles={['member']} />,
 	},
 	
 ];

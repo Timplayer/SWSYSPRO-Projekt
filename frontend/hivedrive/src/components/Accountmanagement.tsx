@@ -9,7 +9,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useNavigate } from 'react-router-dom';
 
 const settings = [
-  { name: 'Buchungen', link: '/' },
+  { name: 'Buchungen', link: '/mybookings' },
   { name: 'Abos', link: '/' },
   { name: 'Persönliche Daten', link: '/' },
   { name: 'Hilfe', link: '/help' },
