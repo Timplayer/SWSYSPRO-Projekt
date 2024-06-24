@@ -16,6 +16,7 @@
     "@mui/icons-material": "^5.15.20",
     "@mui/material": "^5.15.20",
     "@mui/x-date-pickers": "^7.6.2",
+    "axios": "^1.7.2",
     "date-fns": "^2.30.0",
     "keycloak-js": "^24.0.4",
     "markdown-to-jsx": "^7.4.7",
