@@ -12,7 +12,7 @@ const HelpPage: React.FC = () => {
     <AppAppBar />
       <Container>
       <Typography variant="h6">
-      Autovermietung Hilfe         
+      HiveDrive Help         
        </Typography>
         <Typography variant="h4" gutterBottom style={{ marginTop: '20px' }}>
           Häufig gestellte Fragen

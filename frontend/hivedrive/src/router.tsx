@@ -14,6 +14,8 @@ import Impressum from './pages/Impressum';
 import Help from './pages/Help';
 import Bookingpage from './pages/Bookingpage';
 import Bookings from './pages/Bookings';
+import AboBookingPage from './pages/AboBookingpage';
+import Abopage from './pages/Abopage';
 
 
 const routes: RouteObject[] = [
@@ -61,7 +63,14 @@ const routes: RouteObject[] = [
 		path: '/mybookings',
 		element: <ProtectedRoute element={<Bookings />} requiredRoles={['member']} />,
 	},
-	
+	{
+		path: '/subscription',
+		element: <Abopage />,
+	},
+	{
+		path: '/subscriptionbooking',
+		element: <ProtectedRoute element={<AboBookingPage />} requiredRoles={['member']} />,
+	},
 ];
 
 const router = createBrowserRouter(routes);
