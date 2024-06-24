@@ -22,8 +22,49 @@ type vehicle struct {
 	CompletionDate  time.Time `json:"completionDate"`
 }
 
-func updateVehicle(w http.ResponseWriter, r *http.Request) {
+func updateVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		body, err := io.ReadAll(request.Body)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Println("Error reading request body: %v\n", err)
+			return
+		}
 
+		var v vehicle
+		err = json.Unmarshal(body, &v)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error parsing request body: %v\n", err)
+			return
+		}
+		rows, err := dbpool.Query(context.Background(), "UPDATE vehicles SET name = $1, vehiclecategory = $2, producer = $3, status = $4, receptionDate = $5, completionDate = $6 WHERE id = $7", v.Name, v.VehicleCategory, v.Producer, v.Status, v.ReceptionDate, v.CompletionDate, v.Id)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error updating vehicle: %v\n", err)
+			return
+		}
+		defer rows.Close()
+		rows.Next()
+		var id int64
+		err = rows.Scan(&id)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error updating vehicle: %v\n", err)
+			return
+		}
+		log.Printf("Updated vehicle with id: %d\n", id)
+		v.Id = id
+		body, err = json.Marshal(v)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error serializing vehicle: %v\n", err)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusCreated)
+		writer.Write(body)
+	}
 }
 
 func postVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
@@ -31,7 +72,7 @@ func postVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
 		body, err := io.ReadAll(request.Body)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error reading request body: %v\n", err)
+			log.Printf("Error serializing request body: %v\n", err)
 			return
 		}
 		var v vehicle
