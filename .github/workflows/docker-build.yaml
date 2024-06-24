@@ -27,7 +27,7 @@ jobs:
           docker compose -f ./infra/docker-compose.yaml up --detach --wait
           npm install -g @usebruno/cli
           cd ./backend/test/hiveDriveAPI/
-          bru run --insecure --bail
+          bru run --insecure
           cd ../../../
           docker compose -f ./infra/docker-compose.yaml down
       - name: integration test backend-keycloak
