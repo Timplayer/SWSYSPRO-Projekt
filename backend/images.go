@@ -76,7 +76,7 @@ func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getImageById(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT id FROM images WHERE id = $1", mux.Vars(request)["id"])
+		rows, err := dbpool.Query(context.Background(), "SELECT url FROM images WHERE id = $1", mux.Vars(request)["id"])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing get image by id: %v", err)
@@ -84,14 +84,14 @@ func getImageById(dbpool *pgxpool.Pool) http.HandlerFunc {
 		defer rows.Close()
 
 		if rows.Next() {
-			var p picture
-			err = rows.Scan(&p.Id, &p.FileName, &p.File)
+			var u url
+			err = rows.Scan(&u.URL)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
 				log.Printf("Error executing get image by id: %v", err)
 				return
 			}
-			str, err := json.Marshal(p)
+			str, err := json.Marshal(u)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
 				log.Printf("Error executing get image by id: %v", err)
@@ -99,6 +99,7 @@ func getImageById(dbpool *pgxpool.Pool) http.HandlerFunc {
 			}
 			writer.Header().Set("Content-Type", "application/json")
 			writer.Write(str)
+			return
 		}
 
 		if !rows.Next() {
