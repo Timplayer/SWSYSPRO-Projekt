@@ -16,6 +16,7 @@ import Bookingpage from './pages/Bookingpage';
 import Bookings from './pages/Bookings';
 import AboBookingPage from './pages/AboBookingpage';
 import Abopage from './pages/Abopage';
+import Carclasses from './pages/Carclasses';
 
 
 const routes: RouteObject[] = [
@@ -70,6 +71,10 @@ const routes: RouteObject[] = [
 	{
 		path: '/subscriptionbooking',
 		element: <ProtectedRoute element={<AboBookingPage />} requiredRoles={['member']} />,
+	},
+	{
+		path: '/carclass',
+		element: <Carclasses />,
 	},
 ];
 

@@ -3,8 +3,7 @@ import Button from '../components/Button';
 import Typography from '../components/Typography';
 import ProductHeroLayout from './ProductHeroLayout';
 
-const backgroundImage =
-  'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/2023_Ferrari_Daytona_SP3_1.jpg/640px-2023_Ferrari_Daytona_SP3_1.jpg';
+const backgroundImage = '../../images/firstimage.png';
 
 export default function ProductHero() {
   return (

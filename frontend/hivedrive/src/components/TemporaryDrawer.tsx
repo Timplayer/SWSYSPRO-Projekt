@@ -66,7 +66,7 @@ export default function TemporaryDrawer() {
           variant="h6"
           underline="none"
           color="inherit"
-          href="/"
+          href="/carclass"
           sx={{ fontSize: 24, color: '#FFFFFF' }}
         >
           {'Klassen Übersicht'}

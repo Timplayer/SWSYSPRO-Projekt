@@ -33,7 +33,7 @@ export default function AccountManagement() {
 
   const settings = [
     { name: 'Buchungen', link: '/mybookings' },
-    { name: 'Abos', link: '/' },
+    { name: 'Abos', link: '/subscription' },
     { name: 'Persönliche Daten', link: keycloak.createAccountUrl() },
     { name: 'Hilfe', link: '/help' },
     { name: 'Abmelden', link: '/logout' },
