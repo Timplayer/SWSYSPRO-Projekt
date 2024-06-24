@@ -3,9 +3,9 @@ import React, { useState } from 'react';
 import { TextField, Button, MenuItem, Box, Container, Grid, IconButton } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
+import { MobileDateTimePicker } from '@mui/x-date-pickers';
 
 interface CarSearchBarProps {
   setLocation: (location: string) => void;
@@ -85,7 +85,8 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({ setLocation }) => {
           </Grid>
           <Grid item xs={12} sm={4}>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DateTimePicker
+              <MobileDateTimePicker
+                ampm={false}
                 label="Abholdatum"
                 value={pickupDate}
                 onChange={(date) => {
@@ -101,7 +102,8 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({ setLocation }) => {
           </Grid>
           <Grid item xs={12} sm={4}>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DateTimePicker
+              <MobileDateTimePicker
+                ampm={false}
                 label="Rückgabedatum"
                 value={returnDate}
                 onChange={(date) => setReturnDate(date)}
