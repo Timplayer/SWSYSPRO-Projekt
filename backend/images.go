@@ -83,10 +83,16 @@ func getImageById(dbpool *pgxpool.Pool) http.HandlerFunc {
 			writer.Header().Set("Content-Type", "application/json")
 			writer.Write(str)
 		}
+
+		if !rows.Next() {
+			writer.WriteHeader(http.StatusNotFound)
+			log.Printf("Error finding image: image not found \n")
+			return
+		}
 	}
 }
 
-func getImageByIdAsJPG(dbpool *pgxpool.Pool) http.HandlerFunc {
+func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		rows, err := dbpool.Query(context.Background(), "SELECT id, fileName, file FROM images WHERE id = $1", mux.Vars(request)["id"])
 		if err != nil {
@@ -103,8 +109,14 @@ func getImageByIdAsJPG(dbpool *pgxpool.Pool) http.HandlerFunc {
 				log.Printf("Error executing get image by id: %v", err)
 				return
 			}
-			writer.Header().Set("Content-Type", "jpeg")
+			writer.Header().Set("Content-Type", "octet-stream")
 			writer.Write(p.File)
+		}
+
+		if !rows.Next() {
+			writer.WriteHeader(http.StatusNotFound)
+			log.Printf("Error finding image: image not found \n")
+			return
 		}
 	}
 }
