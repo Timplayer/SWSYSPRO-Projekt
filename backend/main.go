@@ -90,6 +90,7 @@ func initializeDatabase(dbpool *pgxpool.Pool) {
 	if err != nil {
 		log.Fatalf("Failed to create table: %v\n", err)
 	}
+	createImagesTable(dbpool)
 	createStationsTable(dbpool)
 	createVehicleCategoriesTable(dbpool)
 	createProducersTable(dbpool)
@@ -126,8 +127,8 @@ func getOAuthProvider() rs.ResourceServer {
 
 func validate(provider rs.ResourceServer,
 	handler func(writer http.ResponseWriter,
-	request *http.Request,
-	response *oidc.IntrospectionResponse)) http.HandlerFunc {
+		request *http.Request,
+		response *oidc.IntrospectionResponse)) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		auth := request.Header.Get("authorization")
 		if auth == "" {
