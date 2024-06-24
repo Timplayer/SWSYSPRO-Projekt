@@ -12,8 +12,8 @@ function Terms() {
     <React.Fragment>
       <AppAppBar />
       <Container>
-        <Box sx={{ mt: 7, mb: 12 }}>
-          <Typography variant="h3" gutterBottom marked="center" align="center">
+        <Box sx={{ mt: 7, mb: 12, color: '#ffffff' }}>
+          <Typography variant="h3" gutterBottom marked="center" align="center" sx={{ color: '#ff9800' }}>
             {termsData.title}
           </Typography>
           {termsData.sections.map((section, index) => (
