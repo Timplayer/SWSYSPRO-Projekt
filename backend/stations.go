@@ -22,6 +22,7 @@ type station struct {
 	Zip         string  `json:"zip"`
 	Street      string  `json:"street"`
 	HouseNumber string  `json:"house_number"`
+	Capacity    int64   `json:"capacity"`
 }
 
 func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
@@ -40,8 +41,8 @@ func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		rows, err := dbpool.Query(context.Background(),
-			"INSERT INTO stations (name, location, country, state, city, zip, street, houseNumber) VALUES ($1, point($2, $3), $4, $5, $6, $7, $8, $9) RETURNING id",
-			s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber)
+			"INSERT INTO stations (name, location, country, state, city, zip, street, houseNumber, capacity) VALUES ($1, point($2, $3), $4, $5, $6, $7, $8, $9, $10) RETURNING id",
+			s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber, s.Capacity)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing inserist station: %v", err)
@@ -72,7 +73,7 @@ func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT stations.id, stations.name, stations.location[0] as latitude, stations.location[1] as longitude, stations.country, stations.state, stations.city, stations.zip, stations.street, stations.houseNumber FROM stations WHERE stations.id = $1",
+		rows, err := dbpool.Query(context.Background(), "SELECT stations.id, stations.name, stations.location[0] as latitude, stations.location[1] as longitude, stations.country, stations.state, stations.city, stations.zip, stations.street, stations.houseNumber, stations.capacity FROM stations WHERE stations.id = $1",
 			mux.Vars(request)["id"])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
@@ -82,7 +83,7 @@ func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 		defer rows.Close()
 		if rows.Next() {
 			var s station
-			err = rows.Scan(&s.Id, &s.Name, &s.Latitude, &s.Longitude, &s.Country, &s.State, &s.City, &s.Zip, &s.Street, &s.HouseNumber)
+			err = rows.Scan(&s.Id, &s.Name, &s.Latitude, &s.Longitude, &s.Country, &s.State, &s.City, &s.Zip, &s.Street, &s.HouseNumber, &s.Capacity)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
 				log.Printf("Error finding Stitions: %v\n", err)
@@ -91,7 +92,7 @@ func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 			str, err := json.Marshal(s)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf("Error finding Stitions: %v\n", err)
+				log.Printf("Error finding Stations: %v\n", err)
 				return
 			}
 			writer.Header().Set("Content-Type", "application/json")
@@ -109,7 +110,7 @@ func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getStations(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT stations.id, stations.name, stations.location[0] as latitude, stations.location[1] as longitude, stations.country, stations.state, stations.city, stations.zip, stations.street, stations.houseNumber FROM stations;")
+		rows, err := dbpool.Query(context.Background(), "SELECT stations.id, stations.name, stations.location[0] as latitude, stations.location[1] as longitude, stations.country, stations.state, stations.city, stations.zip, stations.street, stations.houseNumber, stations.capacity FROM stations;")
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error geting Database Connection: %v\n", err)
@@ -119,7 +120,7 @@ func getStations(dbpool *pgxpool.Pool) http.HandlerFunc {
 		stations, err := pgx.CollectRows(rows,
 			func(row pgx.CollectableRow) (station, error) {
 				var s station
-				err := rows.Scan(&s.Id, &s.Name, &s.Latitude, &s.Longitude, &s.Country, &s.State, &s.City, &s.Zip, &s.Street, &s.HouseNumber)
+				err := rows.Scan(&s.Id, &s.Name, &s.Latitude, &s.Longitude, &s.Country, &s.State, &s.City, &s.Zip, &s.Street, &s.HouseNumber, &s.Capacity)
 				return s, err
 			})
 		if err != nil {
@@ -140,7 +141,7 @@ func getStations(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func createStationsTable(dbpool *pgxpool.Pool) {
 	_, err := dbpool.Exec(context.Background(),
-		"CREATE TABLE IF NOT EXISTS stations(id BIGSERIAL PRIMARY KEY, name TEXT, location POINT, country TEXT, state TEXT, city TEXT, zip TEXT, street TEXT, houseNumber TEXT);")
+		"CREATE TABLE IF NOT EXISTS stations(id BIGSERIAL PRIMARY KEY, name TEXT, location POINT, country TEXT, state TEXT, city TEXT, zip TEXT, street TEXT, houseNumber TEXT, capacity INTEGER);")
 	if err != nil {
 		log.Fatalf("Failed to create table: %v\n", err)
 	}
