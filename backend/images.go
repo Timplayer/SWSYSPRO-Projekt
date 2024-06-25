@@ -53,7 +53,7 @@ func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		rows, err := dbpool.Query(context.Background(),
-			"INSERT INTO images (fileName, file) VALUES ($1, $2) RETURNING id;", header.Filename, buf.Bytes())
+			"INSERT INTO images (fileName, file, orderNumber) VALUES ($1, $2, $3) RETURNING id;", header.Filename, buf.Bytes(), request.MultipartForm.Value["orderNumber"])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing insert image: %v", err)
@@ -120,7 +120,7 @@ func postVehicleImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		rows, err := dbpool.Query(context.Background(),
-			"INSERT INTO images (fileName, file) VALUES ($1, $2) RETURNING id;", header.Filename, buf.Bytes())
+			"INSERT INTO images (fileName, file, orderNumber) VALUES ($1, $2, $3) RETURNING id;", header.Filename, buf.Bytes(), request.MultipartForm.Value["orderNumber"])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing insert image: %v", err)
