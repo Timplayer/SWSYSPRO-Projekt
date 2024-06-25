@@ -1,0 +1,38 @@
+meta {
+  name: getAvailability2
+  type: http
+  seq: 3
+}
+
+get {
+  url: https://localhost:8080/api/stations/id/1/availability
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status = 200", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Time is correct?", function() {
+    const data = res.getBody();
+    expect (data[0].time).to.equal("2024-07-20T00:00:00Z");
+  });
+  
+  test("Station is correct?", function() {
+    const data = res.getBody();
+    expect (data[0].pos).to.equal(1);
+  });
+  
+  test("Auto_klasse is correct?", function() {
+    const data = res.getBody();
+    expect (data[0].auto_klasse).to.equal(1);
+  });
+  
+  test("One Car is Available", function() {
+    const data = res.getBody();
+    expect (data[0].availability).to.equal(1);
+  });
+}
