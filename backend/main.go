@@ -103,6 +103,10 @@ func initializeDatabase(dbpool *pgxpool.Pool) {
 	createProducersTable(dbpool)
 	createDefectsTable(dbpool)
 	createVehiclesTable(dbpool) // depends on Producers and VehicleCategories
+
+	createDefectImageTable(dbpool)
+	createVehicleCategoryImageTable(dbpool)
+	createVehicleImageTable(dbpool)
 }
 
 func getOAuthProvider() rs.ResourceServer {
