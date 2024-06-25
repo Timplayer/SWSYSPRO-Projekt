@@ -74,7 +74,7 @@ func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		var body []byte
-		body, err = json.Marshal(p.Id)
+		body, err = json.Marshal(p)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing insert image (json.Marshal): %v", err)
