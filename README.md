@@ -9,6 +9,14 @@
 - [ ] Check out reservations
 - [ ] Delete reservations
 
+## Optional
+- [ ] Payment
+- [ ] Images
+- [ ] Invoice as PDF
+- [ ] Social login
+- [ ] 2FA
+- ...
+
 # Deadlines
 - L01: Pflichtenheft (200P) 08.05.2024
 - L02: Technische Dokumentation (300P) 04.07.2024

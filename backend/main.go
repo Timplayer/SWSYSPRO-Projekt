@@ -22,6 +22,11 @@ func main() {
 
 	router := mux.NewRouter()
 
+	router.HandleFunc("/api/reservations", postReservation(dbpool)).Methods("POST")
+
+	router.HandleFunc("/api/stations/id/{id}/availability", getAvailabilityAtStation(dbpool)).Methods("GET")
+	router.HandleFunc("/api/stations/availability", addCarToStation(dbpool)).Methods("POST")
+
 	router.HandleFunc("/api/stations", postStation(dbpool)).Methods("POST")
 	router.HandleFunc("/api/stations", getStations(dbpool)).Methods("GET")
 
@@ -122,6 +127,7 @@ func initializeDatabase(dbpool *pgxpool.Pool) {
 	createDefectImageTable(dbpool)
 	createVehicleCategoryImageTable(dbpool)
 	createVehicleImageTable(dbpool)
+	createReservationsTable(dbpool)
 }
 
 func getOAuthProvider() rs.ResourceServer {
