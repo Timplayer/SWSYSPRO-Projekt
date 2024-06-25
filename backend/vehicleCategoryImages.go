@@ -64,7 +64,7 @@ func postVehicleCategoryImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error executing insert image (rows.Scan): %v", err)
 			return
 		}
-		_, err = dbpool.Query(context.Background(),
+		rows, err = dbpool.Query(context.Background(),
 			"UPDATE images SET url = $1 WHERE id = $2;", "https://"+request.Host+path+strconv.FormatInt(p.Id, 10), p.Id)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
@@ -74,7 +74,7 @@ func postVehicleCategoryImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 		defer rows.Close()
 
-		_, err = dbpool.Query(context.Background(),
+		rows, err = dbpool.Query(context.Background(),
 			"INSERT INTO vehicleCategoryImage (vehicleCategoryId, imageId) VALUES ($1, $2);", mux.Vars(request)["id"], p.Id)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
