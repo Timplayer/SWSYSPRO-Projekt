@@ -82,6 +82,7 @@ func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error executing update image (rows.Scan): %v", err)
 			return
 		}
+		defer rows.Close()
 
 		var body []byte
 		body, err = json.Marshal(p)
