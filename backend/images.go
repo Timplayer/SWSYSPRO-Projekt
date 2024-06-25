@@ -39,7 +39,7 @@ func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		var p picture
-		p.DisplayOrder, err = strconv.ParseInt(request.FormValue("order_number"), 10, 64)
+		p.DisplayOrder, err = strconv.ParseInt(request.FormValue("display_order"), 10, 64)
 		if err != nil {
 			writer.WriteHeader(http.StatusBadRequest)
 			log.Printf("Error parsing order number: %v\n", err)
@@ -126,7 +126,7 @@ func postVehicleImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		var p picture
-		p.DisplayOrder, err = strconv.ParseInt(request.FormValue("order_number"), 10, 64)
+		p.DisplayOrder, err = strconv.ParseInt(request.FormValue("display_order"), 10, 64)
 		if err != nil {
 			writer.WriteHeader(http.StatusBadRequest)
 			log.Printf("Error parsing order number: %v\n", err)
