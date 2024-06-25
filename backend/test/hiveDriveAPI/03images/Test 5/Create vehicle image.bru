@@ -1,0 +1,40 @@
+meta {
+  name: Create vehicle image
+  type: http
+  seq: 3
+}
+
+post {
+  url: https://localhost:8080/api/images/vehicles/id/1
+  body: multipartForm
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Station 1"
+  }
+}
+
+body:form-urlencoded {
+  file_name: testimage
+  file: 
+}
+
+body:multipart-form {
+  file_name: test file
+  file: @file(test.html)
+  display_order: 0
+}
+
+tests {
+  test("Status = 415", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(415);
+  });
+  
+  test("Content empty?", function() {
+       const data = res.getBody();
+      expect(data).empty;
+  });
+}
