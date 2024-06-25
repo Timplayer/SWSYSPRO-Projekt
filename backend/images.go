@@ -18,6 +18,7 @@ type picture struct {
 	FileName string `json:"file_name"`
 	URL      string `json:"url"`
 	File     []byte `json:"file"`
+	Order    int64  `json:"order"`
 }
 
 type url struct {
