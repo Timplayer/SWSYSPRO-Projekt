@@ -1,6 +1,4 @@
 #!/bin/bash
-npm install -g @usebruno/cli
-pwd
 cd ./image-tests
 bru run './Test-1/1.bru' --insecure
 bru run './Test-1/2.bru' --insecure
