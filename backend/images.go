@@ -14,11 +14,11 @@ import (
 )
 
 type picture struct {
-	Id       int64  `json:"id"`
-	FileName string `json:"file_name"`
-	URL      string `json:"url"`
-	File     []byte `json:"file"`
-	Order    int64  `json:"order"`
+	Id          int64  `json:"id"`
+	FileName    string `json:"file_name"`
+	URL         string `json:"url"`
+	File        []byte `json:"file"`
+	OrderNumber int64  `json:"order_number"`
 }
 
 type url struct {
@@ -296,7 +296,7 @@ func getImagesPublic(dbpool *pgxpool.Pool) http.HandlerFunc {
 }
 
 func createImagesTable(dbpool *pgxpool.Pool) {
-	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS images (id BIGSERIAL PRIMARY KEY, fileName TEXT, url TEXT, file bytea)")
+	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS images (id BIGSERIAL PRIMARY KEY, fileName TEXT, url TEXT, file bytea, orderNumber INTEGER)")
 	if err != nil {
 		log.Fatalf("Failed to create table: %v\n", err)
 	}
