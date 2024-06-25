@@ -26,6 +26,7 @@ jobs:
         run: |
           docker compose -f ./infra/docker-compose.yaml up --detach --wait
           npm install -g @usebruno/cli
+          bru --version
           cd ./backend/test/hiveDriveAPI/
           bru run --insecure
           cd ../../../
