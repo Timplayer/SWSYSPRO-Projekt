@@ -72,6 +72,8 @@ func postVehicleCategoryImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 
+		defer rows.Close()
+
 		_, err = dbpool.Query(context.Background(),
 			"INSERT INTO vehicleCategoryImage (vehicleCategoryId, imageId) VALUES ($1, $2);", mux.Vars(request)["id"], p.Id)
 		if err != nil {
@@ -79,6 +81,8 @@ func postVehicleCategoryImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error creating connection: %v", err)
 			return
 		}
+
+		defer rows.Close()
 
 		var body []byte
 		body, err = json.Marshal(p)
@@ -104,6 +108,7 @@ func deleteVehicleCategoryImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error executing delete image: %v", err)
 			return
 		}
+		defer rows.Close()
 		rows, err = dbpool.Query(context.Background(),
 			"DELETE FROM images WHERE id = $1 RETURNING images.id;", mux.Vars(request)["id"])
 		if err != nil {

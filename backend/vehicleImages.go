@@ -81,6 +81,8 @@ func postVehicleImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 
+		defer rows.Close()
+
 		var body []byte
 		body, err = json.Marshal(p)
 		if err != nil {
@@ -105,6 +107,7 @@ func deleteVehicleImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error executing delete image: %v", err)
 			return
 		}
+		defer rows.Close()
 		rows, err = dbpool.Query(context.Background(),
 			"DELETE FROM images WHERE id = $1 RETURNING images.id;", mux.Vars(request)["id"])
 		if err != nil {
