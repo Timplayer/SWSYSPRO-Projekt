@@ -27,7 +27,7 @@ type url struct {
 
 func checkFileType(fileType string) bool {
 	log.Printf(fileType)
-	if fileType != "image/jpeg" && fileType != "image/png" {
+	if fileType != "image/jpeg" && fileType != "image/png" && fileType != "image/gif" && fileType != "image/webp" && fileType != "image/svg" {
 		return true
 	}
 	return false
