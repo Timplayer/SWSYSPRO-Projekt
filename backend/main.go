@@ -31,9 +31,9 @@ func main() {
 	router.HandleFunc("/api/images/vehicles/id/{id}", getVehicleImagesByVehicleId(dbpool)).Methods("GET")
 	router.HandleFunc("/api/images/vehicles/id/{id}", deleteVehicleImage(dbpool)).Methods("DELETE")
 
-	router.HandleFunc("/api/images/vehicleCategories/id/{id}", postVehicleImage(dbpool)).Methods("POST")
-	router.HandleFunc("/api/images/vehicleCategories/id/{id}", getVehicleImagesByVehicleId(dbpool)).Methods("GET")
-	router.HandleFunc("/api/images/vehicleCategories/id/{id}", deleteVehicleImage(dbpool)).Methods("DELETE")
+	router.HandleFunc("/api/images/vehicleCategories/id/{id}", postVehicleCategoryImage(dbpool)).Methods("POST")
+	router.HandleFunc("/api/images/vehicleCategories/id/{id}", getVehicleCategoryImagesByVehicleCategoryId(dbpool)).Methods("GET")
+	router.HandleFunc("/api/images/vehicleCategories/id/{id}", deleteVehicleCategoryImage(dbpool)).Methods("DELETE")
 
 	router.HandleFunc("/api/images/public", getImagesPublic(dbpool)).Methods("GET")          // List of URLs
 	router.HandleFunc("/api/images/id/{id}", getImageById(dbpool)).Methods("GET")            // URL

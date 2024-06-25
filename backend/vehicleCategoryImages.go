@@ -141,7 +141,7 @@ func deleteVehicleCategoryImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 	}
 }
 
-func getVehicleCategoryImagesByVehicleId(dbpool *pgxpool.Pool) http.HandlerFunc {
+func getVehicleCategoryImagesByVehicleCategoryId(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		rows, err := dbpool.Query(context.Background(), "SELECT images.url FROM vehicleCategories JOIN vehicleCategoryImage ON vehicleCategories.id = vehicleCategoryImage.vehicleCategoryId JOIN images ON vehicleCategoryImage.imageId = images.id WHERE vehicleCategories.id = $1", mux.Vars(request)["id"])
 		if err != nil {
