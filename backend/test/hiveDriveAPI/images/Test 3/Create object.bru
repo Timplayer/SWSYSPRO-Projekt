@@ -27,13 +27,13 @@ body:multipart-form {
 }
 
 tests {
-  test("Content empty?", function() {
-       const data = res.getBody();
-      expect(data).empty;
-  });
-  
   test("Status = 201", function() {
     const data = res.getBody();
     expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("ID is correct?", function() {
+    const data = res.getBody();
+    expect (data.id).to.equal(2);
   });
 }
