@@ -1,0 +1,23 @@
+meta {
+  name: 7
+  type: http
+  seq: 7
+}
+
+delete {
+  url: https://localhost:8080/api/images/vehicleCategories/id/5
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status = 200", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("ID is correct?", function() {
+    const data = res.getBody();
+    expect (data.id).to.equal(5);
+  });
+}

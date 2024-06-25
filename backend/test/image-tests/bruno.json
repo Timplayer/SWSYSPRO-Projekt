@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "PNG and GIF collection",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
