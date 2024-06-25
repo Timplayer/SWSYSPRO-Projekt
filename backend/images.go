@@ -81,6 +81,7 @@ func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 
+		log.Printf("Image inserted: %d", p.Id)
 		writer.Header().Set("Content-Type", "application/json")
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(body)
