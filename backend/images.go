@@ -14,11 +14,11 @@ import (
 )
 
 type picture struct {
-	Id          int64  `json:"id"`
-	FileName    string `json:"file_name"`
-	URL         string `json:"url"`
-	File        []byte `json:"file"`
-	OrderNumber int64  `json:"order_number"`
+	Id           int64  `json:"id"`
+	FileName     string `json:"file_name"`
+	URL          string `json:"url"`
+	File         []byte `json:"file"`
+	DisplayOrder int64  `json:"display_order"`
 }
 
 type url struct {
@@ -39,7 +39,7 @@ func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		var p picture
-		p.OrderNumber, err = strconv.ParseInt(request.FormValue("order_number"), 10, 64)
+		p.DisplayOrder, err = strconv.ParseInt(request.FormValue("order_number"), 10, 64)
 		if err != nil {
 			writer.WriteHeader(http.StatusBadRequest)
 			log.Printf("Error parsing order number: %v\n", err)
@@ -61,7 +61,7 @@ func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		rows, err := dbpool.Query(context.Background(),
-			"INSERT INTO images (fileName, file, orderNumber) VALUES ($1, $2, $3) RETURNING id;", header.Filename, buf.Bytes(), p.OrderNumber)
+			"INSERT INTO images (fileName, file, displayOrder) VALUES ($1, $2, $3) RETURNING id;", header.Filename, buf.Bytes(), p.DisplayOrder)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing insert image: %v", err)
@@ -126,7 +126,7 @@ func postVehicleImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		var p picture
-		p.OrderNumber, err = strconv.ParseInt(request.FormValue("order_number"), 10, 64)
+		p.DisplayOrder, err = strconv.ParseInt(request.FormValue("order_number"), 10, 64)
 		if err != nil {
 			writer.WriteHeader(http.StatusBadRequest)
 			log.Printf("Error parsing order number: %v\n", err)
@@ -134,7 +134,7 @@ func postVehicleImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		rows, err := dbpool.Query(context.Background(),
-			"INSERT INTO images (fileName, file, orderNumber) VALUES ($1, $2, $3) RETURNING id;", header.Filename, buf.Bytes(), p.OrderNumber)
+			"INSERT INTO images (fileName, file, displayOrder) VALUES ($1, $2, $3) RETURNING id;", header.Filename, buf.Bytes(), p.DisplayOrder)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing insert image: %v", err)
@@ -279,7 +279,7 @@ func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getImagesPublic(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT images.url FROM images ORDER BY orderNumber;")
+		rows, err := dbpool.Query(context.Background(), "SELECT images.url FROM images ORDER BY displayOrder;")
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error geting Database Connection: %v\n", err)
@@ -309,7 +309,7 @@ func getImagesPublic(dbpool *pgxpool.Pool) http.HandlerFunc {
 }
 
 func createImagesTable(dbpool *pgxpool.Pool) {
-	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS images (id BIGSERIAL PRIMARY KEY, fileName TEXT, url TEXT, file bytea, orderNumber INTEGER)")
+	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS images (id BIGSERIAL PRIMARY KEY, fileName TEXT, url TEXT, file bytea, displayOrder INTEGER)")
 	if err != nil {
 		log.Fatalf("Failed to create table: %v\n", err)
 	}
