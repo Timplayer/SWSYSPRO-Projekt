@@ -93,11 +93,11 @@ func getDBpool() *pgxpool.Pool {
 }
 
 func initializeDatabase(dbpool *pgxpool.Pool) {
-	_, err := dbpool.Exec(context.Background(),
-		"CREATE TABLE IF NOT EXISTS test(id BIGSERIAL PRIMARY KEY, name TEXT)")
-	if err != nil {
-		log.Fatalf("Failed to create table: %v\n", err)
-	}
+	//_, err := dbpool.Exec(context.Background(),
+	//	"CREATE TABLE IF NOT EXISTS test(id BIGSERIAL PRIMARY KEY, name TEXT)")
+	//if err != nil {
+	//	log.Fatalf("Failed to create table: %v\n", err)
+	//}
 	createStationsTable(dbpool)
 	createVehicleCategoriesTable(dbpool)
 	createProducersTable(dbpool)
