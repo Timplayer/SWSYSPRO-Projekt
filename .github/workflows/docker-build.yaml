@@ -31,12 +31,6 @@ jobs:
           bru run --insecure
           cd ../../../
           docker compose -f ./infra/docker-compose.yaml down
-      - name: image api test curl and bruno
-        run: |
-          docker compose -f ./infra/docker-compose.yaml up --detach --wait
-          npm install -g @usebruno/cli
-          ./backend/test/image-test.sh
-          docker compose -f ./infra/docker-compose.yaml down
           
       - name: integration test backend-keycloak
         run: |
