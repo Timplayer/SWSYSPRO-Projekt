@@ -25,6 +25,14 @@ type url struct {
 	URL string `json:"url"`
 }
 
+func checkFileType(fileType string) bool {
+	log.Printf(fileType)
+	if fileType != "image/jpeg" && fileType != "image/png" {
+		return true
+	}
+	return false
+}
+
 func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 
@@ -57,6 +65,13 @@ func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if _, err := io.Copy(buf, file); err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error reading file: %v\n", err)
+			return
+		}
+
+		wrongFileType := checkFileType(http.DetectContentType(buf.Bytes()))
+		if wrongFileType {
+			writer.WriteHeader(http.StatusUnsupportedMediaType)
+			log.Printf("Unsupported Media Type\n")
 			return
 		}
 

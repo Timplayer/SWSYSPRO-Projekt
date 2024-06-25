@@ -40,6 +40,13 @@ func postDefectImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 
+		wrongFileType := checkFileType(http.DetectContentType(buf.Bytes()))
+		if wrongFileType {
+			writer.WriteHeader(http.StatusUnsupportedMediaType)
+			log.Printf("Unsupported Media Type\n")
+			return
+		}
+
 		var p picture
 		p.DisplayOrder, err = strconv.ParseInt(request.FormValue("display_order"), 10, 64)
 		if err != nil {
