@@ -196,6 +196,37 @@ func getImageById(dbpool *pgxpool.Pool) http.HandlerFunc {
 	}
 }
 
+func getVehicleImageById(dbpool *pgxpool.Pool) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		rows, err := dbpool.Query(context.Background(), "SELECT images.url FROM vehicles JOIN vehicleImage ON vehicles.id = vehicleImage.vehicleId JOIN images ON vehicleImage.imageId = images.id WHERE vehicles.id = $1", mux.Vars(request)["id"])
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error executing get image by id: %v", err)
+		}
+		defer rows.Close()
+
+		url, err := pgx.CollectRows(rows,
+			func(row pgx.CollectableRow) (url, error) {
+				var u url
+				err := rows.Scan(&u.URL)
+				return u, err
+			})
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error finding images: %v\n", err)
+			return
+		}
+		str, err := json.Marshal(url)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error finding images: %v\n", err)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		writer.Write(str)
+	}
+}
+
 func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		rows, err := dbpool.Query(context.Background(), "SELECT file FROM images WHERE id = $1;", mux.Vars(request)["id"])
