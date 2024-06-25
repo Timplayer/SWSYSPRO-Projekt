@@ -1,15 +1,17 @@
 # SWSYSPRO-Projekt
 
-# Frontend
-- [ ] React
-# Communication 
- - [ ] [gRPC](https://grpc.io/)
- - [ ] [JWT](https://jwt.io/)
-# Backend
-- [ ] Go (Golang)
-# WebServer
-- [ ] nginx
-# AAA
-- [ ] [Keycloak](https://www.keycloak.org/)
-# Payment
-- [ ] [Hyperswitch](https://hyperswitch.io/)
+## Minimum acceptance criteria
+
+- [ ] Create member account
+- [ ] Change member account data
+- [ ] Login/Logout
+- [ ] Create new reservation
+- [ ] Check out reservations
+- [ ] Delete reservations
+
+# Deadlines
+- L01: Pflichtenheft (200P) 08.05.2024
+- L02: Technische Dokumentation (300P) 04.07.2024
+- L03: Final Presentation (100P) 03.07.2024
+- L04: Implementierung, Test und Abnahme (400P) 10.07.2024
+
