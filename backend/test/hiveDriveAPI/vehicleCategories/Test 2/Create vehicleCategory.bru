@@ -1,0 +1,34 @@
+meta {
+  name: Create vehicleCategory
+  type: http
+  seq: 1
+}
+
+post {
+  url: https://localhost:8080/api/vehicleCategories
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Station 1"
+  }
+}
+
+tests {
+  test("Status = 201", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("ID is correct?", function() {
+    const data = res.getBody();
+    expect (data.id).exists;
+  });
+  
+  test("Name is correct?", function() {
+    const data = res.getBody();
+    expect (data.name).to.equal("Station 1");
+  });
+}
