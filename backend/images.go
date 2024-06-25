@@ -67,6 +67,11 @@ func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		_, err = dbpool.Query(context.Background(),
 			"UPDATE images SET url = $1 WHERE id = $2;", "https://"+request.Host+request.URL.Path+"/file/id/"+strconv.FormatInt(p.Id, 10), p.Id)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error executing update image (rows.Scan): %v", err)
+			return
+		}
 
 		var body []byte
 		body, err = json.Marshal(p.Id)
