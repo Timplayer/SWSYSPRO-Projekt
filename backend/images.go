@@ -27,6 +27,9 @@ type url struct {
 func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 
+		var path string
+		path = "/api/images/file/id/"
+
 		err := request.ParseMultipartForm(1000) // maxMemory in MB
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
@@ -66,7 +69,7 @@ func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		_, err = dbpool.Query(context.Background(),
-			"UPDATE images SET url = $1 WHERE id = $2;", "https://"+request.Host+request.URL.Path+"/file/id/"+strconv.FormatInt(p.Id, 10), p.Id)
+			"UPDATE images SET url = $1 WHERE id = $2;", "https://"+request.Host+path+strconv.FormatInt(p.Id, 10), p.Id)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing update image (rows.Scan): %v", err)
@@ -91,6 +94,9 @@ func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 func postVehicleImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 
+		var path string
+		path = "/api/images/file/id/"
+
 		err := request.ParseMultipartForm(1000) // maxMemory in MB
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
@@ -130,7 +136,7 @@ func postVehicleImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		_, err = dbpool.Query(context.Background(),
-			"UPDATE images SET url = $1 WHERE id = $2;", "https://"+request.Host+request.URL.Path+"/file/id/"+strconv.FormatInt(p.Id, 10), p.Id)
+			"UPDATE images SET url = $1 WHERE id = $2;", "https://"+request.Host+path+strconv.FormatInt(p.Id, 10), p.Id)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing update image: %v", err)
@@ -196,7 +202,7 @@ func getImageById(dbpool *pgxpool.Pool) http.HandlerFunc {
 	}
 }
 
-func getVehicleImageById(dbpool *pgxpool.Pool) http.HandlerFunc {
+func getVehicleImagesByVehicleId(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		rows, err := dbpool.Query(context.Background(), "SELECT images.url FROM vehicles JOIN vehicleImage ON vehicles.id = vehicleImage.vehicleId JOIN images ON vehicleImage.imageId = images.id WHERE vehicles.id = $1", mux.Vars(request)["id"])
 		if err != nil {
