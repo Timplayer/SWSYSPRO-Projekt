@@ -38,6 +38,14 @@ func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 
+		var p picture
+		p.OrderNumber, err = strconv.ParseInt(request.FormValue("order_number"), 10, 64)
+		if err != nil {
+			writer.WriteHeader(http.StatusBadRequest)
+			log.Printf("Error parsing order number: %v\n", err)
+			return
+		}
+
 		file, header, err := request.FormFile("file")
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
@@ -53,15 +61,13 @@ func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		rows, err := dbpool.Query(context.Background(),
-			"INSERT INTO images (fileName, file, orderNumber) VALUES ($1, $2, $3) RETURNING id;", header.Filename, buf.Bytes(), request.MultipartForm.Value["orderNumber"])
+			"INSERT INTO images (fileName, file, orderNumber) VALUES ($1, $2, $3) RETURNING id;", header.Filename, buf.Bytes(), p.OrderNumber)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing insert image: %v", err)
 			return
 		}
 		defer rows.Close()
-
-		var p picture
 		rows.Next()
 		err = rows.Scan(&p.Id)
 		if err != nil {
@@ -119,8 +125,16 @@ func postVehicleImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 
+		var p picture
+		p.OrderNumber, err = strconv.ParseInt(request.FormValue("order_number"), 10, 64)
+		if err != nil {
+			writer.WriteHeader(http.StatusBadRequest)
+			log.Printf("Error parsing order number: %v\n", err)
+			return
+		}
+
 		rows, err := dbpool.Query(context.Background(),
-			"INSERT INTO images (fileName, file, orderNumber) VALUES ($1, $2, $3) RETURNING id;", header.Filename, buf.Bytes(), request.MultipartForm.Value["orderNumber"])
+			"INSERT INTO images (fileName, file, orderNumber) VALUES ($1, $2, $3) RETURNING id;", header.Filename, buf.Bytes(), p.OrderNumber)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing insert image: %v", err)
@@ -128,7 +142,6 @@ func postVehicleImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		defer rows.Close()
 
-		var p picture
 		rows.Next()
 		err = rows.Scan(&p.Id)
 		if err != nil {
