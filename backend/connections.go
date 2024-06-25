@@ -17,3 +17,10 @@ func createVehicleImageTable(dbpool *pgxpool.Pool) {
 		log.Fatalf("Failed to create table: %v\n", err)
 	}
 }
+
+func createVehicleCategoryImageTable(dbpool *pgxpool.Pool) {
+	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS vehicleCategoryImage (vehicleId BIGSERIAL references vehicleCategories(id), imageId BIGSERIAL references images(id))")
+	if err != nil {
+		log.Fatalf("Failed to create table: %v\n", err)
+	}
+}
