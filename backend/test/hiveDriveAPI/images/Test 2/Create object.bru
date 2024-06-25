@@ -24,7 +24,7 @@ body:form-urlencoded {
 body:multipart-form {
   file_name: testimage
   file: @file(testimage.jpg)
-  oder_number: 1
+  order_number: 1
 }
 
 tests {
@@ -36,5 +36,10 @@ tests {
   test("ID is correct?", function() {
     const data = res.getBody();
     expect (data.id).to.equal(1);
+  });
+  
+  test("OrderNumber is correct?", function() {
+    const data = res.getBody();
+    expect (data.order_number).to.equal(1);
   });
 }
