@@ -17,6 +17,7 @@ import Bookings from './pages/Bookings';
 import AboBookingPage from './pages/AboBookingpage';
 import Abopage from './pages/Abopage';
 import Carclasses from './pages/Carclasses';
+import { LocationProvider } from './Utils/LocationContext';
 
 
 const routes: RouteObject[] = [
@@ -58,7 +59,7 @@ const routes: RouteObject[] = [
 	},
 	{
 		path: '/bookingpage',
-		element: <Bookingpage />,
+		element: (<LocationProvider> <Bookingpage /> </LocationProvider>),
 	},
 	{
 		path: '/mybookings',
