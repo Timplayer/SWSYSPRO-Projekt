@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Card, CardContent, CardMedia, Typography, Button, Container, IconButton } from '@mui/material';
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
-
-interface CarPresentationProps {
-  location: string; // Ensure type is string
-}
+import { useLocationContext } from '../Utils/LocationContext';
 
 const cars = [
   {
@@ -38,7 +35,8 @@ const cars = [
   // Add more car objects here
 ];
 
-const CarPresentation: React.FC<CarPresentationProps> = ({ location }) => {
+const CarPresentation: React.FC = () => {
+  const { location } = useLocationContext();
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const nextCars = () => {

@@ -5,6 +5,7 @@ import FilterBar from '../components/Filterbar';
 import withRoot from '../withRoot';
 import AppAppBar from '../views/AppAppBar';
 import AppFooter from '../views/AppFooter';
+import CarSearchBar from '../components/CarSearchBar';
 
 interface Car {
   name: string;
@@ -30,8 +31,9 @@ const Bookingpage : React.FC = () => {
   }, []);
 
   return (
-    <div>
+    <React.Fragment>
       <AppAppBar/>
+      <CarSearchBar />
       <FilterBar />
       <Container>
         <Grid container spacing={3}>
@@ -43,7 +45,7 @@ const Bookingpage : React.FC = () => {
         </Grid>
       </Container>
       <AppFooter/>
-    </div>
+    </React.Fragment>
   );
 }
 

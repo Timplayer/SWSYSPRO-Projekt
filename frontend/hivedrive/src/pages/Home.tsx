@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useState } from 'react'; 
+import { useLocation } from 'react-router-dom';
 import ProductSmokingHero from '../views/ProductSmokingHero';
 import AppFooter from '../views/AppFooter';
 import ProductHero from '../views/ProductHero';
@@ -9,23 +9,27 @@ import AppAppBar from '../views/AppAppBar';
 import withRoot from '../withRoot';
 import CarSearchBar from '../components/CarSearchBar';
 import CarPresentation from '../views/CarPresentation';
+import { LocationProvider } from '../Utils/LocationContext';
 
 document.body.style.display = 'contents';
 
 function Index() {
-  const [location, setLocation] = useState<string>('Hamburg Flughafen'); // Define standard
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
 
   return (
-    <React.Fragment>
-      <AppAppBar />
-      <CarSearchBar setLocation={setLocation} /> 
-      <ProductHero />
-      <CarPresentation location={location} /> 
-      <ProductHowItWorks />
-      <ProductCTA />
-      <ProductSmokingHero />
-      <AppFooter />
-    </React.Fragment>
+    <LocationProvider>
+      <React.Fragment>
+        <AppAppBar />
+        <CarSearchBar />
+        <ProductHero />
+        {isHomePage && <CarPresentation />}
+        <ProductHowItWorks />
+        <ProductCTA />
+        <ProductSmokingHero />
+        <AppFooter />
+      </React.Fragment>
+    </LocationProvider>
   );
 }
 

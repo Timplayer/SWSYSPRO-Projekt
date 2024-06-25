@@ -1,51 +1,35 @@
-// CarSearchBar.tsx
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, MenuItem, Box, Container, Grid, IconButton } from '@mui/material';
+import { TextField, Button, MenuItem, Box, Container, Grid, IconButton} from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import { MobileDateTimePicker } from '@mui/x-date-pickers';
 import axios from 'axios';
+import { Link as RouterLink } from 'react-router-dom';
+import { useLocationContext } from '../Utils/LocationContext';
 
-interface CarSearchBarProps {
-  setLocation: (location: string) => void;
-}
-
-//const locations = [
-//  { label: 'Hamburg Flughafen', value: 'Hamburg Flughafen' },
-//  { label: 'Berlin Hauptbahnhof', value: 'Berlin Hauptbahnhof' },
-  // Add more locations as needed
-//];
-
-
-const CarSearchBar: React.FC<CarSearchBarProps> = ({ setLocation }) => {
-  const [locations, setLocations] = useState<Array<{ label: String, values: string}>>([]);
+const CarSearchBar: React.FC = () => {
+  const { setLocation } = useLocationContext();
+  const [locations, setLocations] = useState<Array<{ label: string, value: string }>>([]);
   const [location, setLocationState] = useState<string>('');
   const [pickupDate, setPickupDate] = useState<Date | null>(new Date());
   const [returnDate, setReturnDate] = useState<Date | null>(new Date());
   const [splitLocation, setSplitLocation] = useState<boolean>(false);
   const [returnLocation, setReturnLocation] = useState<string>('');
 
-
   useEffect(() => {
-
     const fetchLocations = async () => {
-
       const response = await axios.get('/api/stations');
-      
-      const locationsData = response.data.map( (location: any) => ({
-          label: location.name,
-          value: location.name
+      const locationsData = response.data.map((location: any) => ({
+        label: location.name,
+        value: location.name
       }));
-
-      console.log(location);
-
       setLocations(locationsData);
     };
 
     fetchLocations();
-  }, [])
+  }, []);
 
   const handleSubmit = () => {
     console.log({
@@ -142,6 +126,8 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({ setLocation }) => {
           variant="contained"
           color="primary"
           fullWidth
+          component={RouterLink}
+          to="/bookingpage"
           onClick={handleSubmit}
           sx={{ marginTop: 2 }}
         >
