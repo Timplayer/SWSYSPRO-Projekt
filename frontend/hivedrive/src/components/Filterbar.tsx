@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  AppBar, Toolbar, Button, Menu, FormControl, FormControlLabel, Radio, RadioGroup, Checkbox, Box, Typography, MenuItem
+  AppBar, Toolbar, Button, Menu, FormControl, FormControlLabel, Radio, RadioGroup, Checkbox, Box, Typography
 } from '@mui/material';
 
 const FilterBar: React.FC = () => {
