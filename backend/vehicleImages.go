@@ -71,6 +71,7 @@ func postVehicleImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error executing update image: %v", err)
 			return
 		}
+		defer rows.Close()
 
 		_, err = dbpool.Query(context.Background(),
 			"INSERT INTO vehicleImage (vehicleId, imageId) VALUES ($1, $2);", mux.Vars(request)["id"], p.Id)
