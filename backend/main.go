@@ -3,22 +3,30 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/Nerzal/gocloak/v13"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/zitadel/oidc/v3/pkg/client/rs"
-	"github.com/zitadel/oidc/v3/pkg/oidc"
+	//"github.com/zitadel/oidc/v3/pkg/client/rs"
+	//"github.com/zitadel/oidc/v3/pkg/oidc"
 	"log"
 	"net/http"
 	"os"
-	"strings"
+	//"strings"
 	"time"
+)
+
+var (
+	keycloakRealm        string
+	keycloakClientID     string
+	keycloakClientSecret string
 )
 
 func main() {
 	dbpool := getDBpool()
 	defer dbpool.Close()
 
-	provider := getOAuthProvider()
+	initKeycloakConfig()
+	client := gocloak.NewClient("http://keycloak:8080/auth/")
 
 	router := mux.NewRouter()
 
@@ -29,6 +37,24 @@ func main() {
 
 	router.HandleFunc("/api/stations", postStation(dbpool)).Methods("POST")
 	router.HandleFunc("/api/stations", getStations(dbpool)).Methods("GET")
+
+	router.HandleFunc("/api/images", postImage(dbpool)).Methods("POST")
+
+	router.HandleFunc("/api/images/vehicles/id/{id}", postVehicleImage(dbpool)).Methods("POST")
+	router.HandleFunc("/api/images/vehicles/id/{id}", getVehicleImagesByVehicleId(dbpool)).Methods("GET")
+	router.HandleFunc("/api/images/vehicles/id/{id}", deleteVehicleImage(dbpool)).Methods("DELETE")
+
+	router.HandleFunc("/api/images/vehicleCategories/id/{id}", postVehicleCategoryImage(dbpool)).Methods("POST")
+	router.HandleFunc("/api/images/vehicleCategories/id/{id}", getVehicleCategoryImagesByVehicleCategoryId(dbpool)).Methods("GET")
+	router.HandleFunc("/api/images/vehicleCategories/id/{id}", deleteVehicleCategoryImage(dbpool)).Methods("DELETE")
+
+	router.HandleFunc("/api/images/defects/id/{id}", postDefectImage(dbpool)).Methods("POST")
+	router.HandleFunc("/api/images/defects/id/{id}", getDefectImagesByDefectId(dbpool)).Methods("GET")
+	router.HandleFunc("/api/images/defects/id/{id}", deleteDefectImage(dbpool)).Methods("DELETE")
+
+	router.HandleFunc("/api/images", getImages(dbpool)).Methods("GET")                       // List of URLs
+	router.HandleFunc("/api/images/id/{id}", getImageById(dbpool)).Methods("GET")            // URL
+	router.HandleFunc("/api/images/file/id/{id}", getImageByIdAsFile(dbpool)).Methods("GET") // File
 
 	router.HandleFunc("/api/vehicleCategories", postVehicleCategories(dbpool)).Methods("POST")
 	router.HandleFunc("/api/vehicleCategories", getVehicleCategories(dbpool)).Methods("GET")
@@ -49,8 +75,8 @@ func main() {
 	router.HandleFunc("/api/defects/id/{id}", getDefectByID(dbpool)).Methods("GET")
 
 	router.HandleFunc("/api/healthcheck/hello", hello()).Methods("GET")
-	router.HandleFunc("/api/healthcheck/auth", validate(provider,
-		func(writer http.ResponseWriter, request *http.Request, response *oidc.IntrospectionResponse) {
+	router.HandleFunc("/api/healthcheck/auth", validate(client,
+		func(writer http.ResponseWriter, request *http.Request) {
 			hello()(writer, request)
 		}))
 	router.HandleFunc("/api/healthcheck/sql", testDBget(dbpool)).Methods("GET")
@@ -97,73 +123,65 @@ func getDBpool() *pgxpool.Pool {
 	return nil
 }
 
+func initKeycloakConfig() {
+	keycloakRealm = "hivedrive"
+
+	var ok bool
+	keycloakClientID, ok = os.LookupEnv("CLIENT_ID")
+	if !ok {
+		log.Fatalf("CLIENT_ID environment variable not set")
+	}
+
+	keycloakClientSecret, ok = os.LookupEnv("CLIENT_SECRET")
+	if !ok {
+		log.Fatalf("CLIENT_SECRET environment variable not set")
+	}
+
+}
+
 func initializeDatabase(dbpool *pgxpool.Pool) {
 	_, err := dbpool.Exec(context.Background(),
 		"CREATE TABLE IF NOT EXISTS test(id BIGSERIAL PRIMARY KEY, name TEXT)")
 	if err != nil {
 		log.Fatalf("Failed to create table: %v\n", err)
 	}
+	createImagesTable(dbpool)
 	createStationsTable(dbpool)
 	createVehicleCategoriesTable(dbpool)
 	createProducersTable(dbpool)
 	createDefectsTable(dbpool)
 	createVehiclesTable(dbpool) // depends on Producers and VehicleCategories
+
+	createDefectImageTable(dbpool)
+	createVehicleCategoryImageTable(dbpool)
+	createVehicleImageTable(dbpool)
 	createReservationsTable(dbpool)
 }
 
-func getOAuthProvider() rs.ResourceServer {
-	issuer, ok := os.LookupEnv("ISSUER")
-	if !ok {
-		log.Fatalf("ISSUER environment variable not set")
-	}
-	clientID, ok := os.LookupEnv("CLIENT_ID")
-	if !ok {
-		log.Fatalf("CLIENT_ID environment variable not set")
-	}
-	clientSecret, ok := os.LookupEnv("CLIENT_SECRET")
-	if !ok {
-		log.Fatalf("CLIENT_SECRET environment variable not set")
-	}
-
-	for i := 0; i < 10; i++ {
-		provider, err := rs.NewResourceServerClientCredentials(
-			context.TODO(), issuer, clientID, clientSecret)
-		if err == nil {
-			println("successfully initialized resource server")
-			return provider
-		}
-		fmt.Printf("failed to initialize oauth provider client: %v", err)
-		println("retrying after 5 seconds")
-		time.Sleep(5 * time.Second)
-	}
-	log.Fatalf("failed to initialize oauth provider client")
-	panic("")
-}
-
-func validate(provider rs.ResourceServer,
-	handler func(writer http.ResponseWriter,
-		request *http.Request,
-		response *oidc.IntrospectionResponse)) http.HandlerFunc {
+func validate(client *gocloak.GoCloak,
+	handler func(writer http.ResponseWriter, request *http.Request)) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		auth := request.Header.Get("authorization")
+		auth := request.Header.Get("Authorization")
 		if auth == "" {
-			http.Error(writer, "auth header missing", http.StatusUnauthorized)
+			http.Error(writer, "Auth header missing", http.StatusUnauthorized)
 			return
 		}
-		if !strings.HasPrefix(auth, oidc.PrefixBearer) {
-			http.Error(writer, "invalid header", http.StatusUnauthorized)
-			return
-		}
-		token := strings.TrimPrefix(auth, oidc.PrefixBearer)
 
-		resp, err := rs.Introspect[*oidc.IntrospectionResponse](request.Context(), provider, token)
+		token := auth[len("Bearer "):]
+
+		introspection, err := client.RetrospectToken(context.Background(), token, keycloakClientID, keycloakClientSecret, keycloakRealm)
+
 		if err != nil {
-			http.Error(writer, err.Error(), http.StatusForbidden)
+			log.Printf("Token introspection error: %v", err)
+			http.Error(writer, fmt.Sprintf("Token introspection error"), http.StatusUnauthorized)
 			return
 		}
 
-		handler(writer, request, resp)
+		if !*introspection.Active {
+			http.Error(writer, "Invalid or expired token", http.StatusUnauthorized)
+			return
+		}
 
+		handler(writer, request)
 	}
-
 }

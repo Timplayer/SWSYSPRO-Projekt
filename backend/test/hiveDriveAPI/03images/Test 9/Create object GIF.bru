@@ -1,0 +1,45 @@
+meta {
+  name: Create object GIF
+  type: http
+  seq: 2
+}
+
+post {
+  url: https://localhost:8080/api/images
+  body: multipartForm
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Station 1"
+  }
+}
+
+body:form-urlencoded {
+  file_name: testimage
+  file: 
+}
+
+body:multipart-form {
+  file_name: testimage GIF
+  display_order: 0
+  file: @file(gifTest.gif)
+}
+
+tests {
+  test("Status = 201", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("ID is correct?", function() {
+    const data = res.getBody();
+    expect (data.id).to.equal(8);
+  });
+  
+  test("OrderNumber is correct?", function() {
+    const data = res.getBody();
+    expect (data.display_order).to.equal(0);
+  });
+}
