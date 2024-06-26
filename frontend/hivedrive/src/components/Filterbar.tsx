@@ -120,7 +120,6 @@ const FilterBar: React.FC = () => {
               <FormControlLabel control={<Checkbox checked={vehicleCategory.includes("cabriolet")} onChange={handleVehicleCategoryChange} value="cabriolet" />} label="Cabriolet" />
               <FormControlLabel control={<Checkbox checked={vehicleCategory.includes("family")} onChange={handleVehicleCategoryChange} value="family" />} label="Familienauto" />
               <FormControlLabel control={<Checkbox checked={vehicleCategory.includes("kombi")} onChange={handleVehicleCategoryChange} value="kombi" />} label="Kombi" />
-              <FormControlLabel control={<Checkbox checked={vehicleCategory.includes("guaranteedModel")} onChange={handleVehicleCategoryChange} value="guaranteedModel" />} label="Garantiertes Modell" />
               <FormControlLabel control={<Checkbox checked={vehicleCategory.includes("electricVehicle")} onChange={handleVehicleCategoryChange} value="electricVehicle" />} label="Elektrisches Fahrzeug" />
               <FormControlLabel control={<Checkbox checked={vehicleCategory.includes("luxuryVehicle")} onChange={handleVehicleCategoryChange} value="luxuryVehicle" />} label="Luxus Fahrzeug" />
             </FormControl>

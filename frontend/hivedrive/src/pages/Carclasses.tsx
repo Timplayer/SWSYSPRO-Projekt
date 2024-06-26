@@ -1,5 +1,5 @@
 import React from 'react';
-import { AppBar, Toolbar, Typography, Button, Container, Grid, Card, CardMedia, CardContent } from '@mui/material';
+import { Typography, Container, Grid, Card, CardMedia, CardContent } from '@mui/material';
 import withRoot from '../withRoot';
 import AppFooter from '../views/AppFooter';
 import AppAppBar from '../views/AppAppBar';
@@ -36,11 +36,6 @@ const autoKlassen = [
     image: 'https://example.com/kombi.jpg',
   },
   {
-    name: 'Garantiertes Modell',
-    description: 'Ein garantiertes Modell bietet Sicherheit und Zuverlässigkeit. Ideal für sorgenfreies Fahren.',
-    image: 'https://example.com/garantiertes_modell.jpg',
-  },
-  {
     name: 'Elektrisches Fahrzeug',
     description: 'Ein elektrisches Fahrzeug ist umweltfreundlich und effizient. Perfekt für die Stadt und lange Fahrten.',
     image: 'https://example.com/elektrisches_fahrzeug.jpg',
@@ -56,16 +51,6 @@ const Carclasses: React.FC = () => {
   return (
     <React.Fragment>
     <AppAppBar/>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Auto Klassen Übersicht
-          </Typography>
-          {autoKlassen.map((klasse) => (
-            <Button key={klasse.name} color="inherit">{klasse.name}</Button>
-          ))}
-        </Toolbar>
-      </AppBar>
       <Container>
         <Grid container spacing={3} style={{ marginTop: '20px' }}>
           {autoKlassen.map((klasse) => (
