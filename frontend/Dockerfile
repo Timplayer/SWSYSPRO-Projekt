@@ -3,7 +3,7 @@ WORKDIR /usr/local/app
 RUN apk add --no-cache nodejs npm
 
 COPY ./hivedrive/package.json ./package.json
-RUN npm instal
+RUN npm install
 COPY ./hivedrive/ ./
 
 EXPOSE 5173

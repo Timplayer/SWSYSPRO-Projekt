@@ -30,6 +30,24 @@ func main() {
 	router.HandleFunc("/api/stations", postStation(dbpool)).Methods("POST")
 	router.HandleFunc("/api/stations", getStations(dbpool)).Methods("GET")
 
+	router.HandleFunc("/api/images", postImage(dbpool)).Methods("POST")
+
+	router.HandleFunc("/api/images/vehicles/id/{id}", postVehicleImage(dbpool)).Methods("POST")
+	router.HandleFunc("/api/images/vehicles/id/{id}", getVehicleImagesByVehicleId(dbpool)).Methods("GET")
+	router.HandleFunc("/api/images/vehicles/id/{id}", deleteVehicleImage(dbpool)).Methods("DELETE")
+
+	router.HandleFunc("/api/images/vehicleCategories/id/{id}", postVehicleCategoryImage(dbpool)).Methods("POST")
+	router.HandleFunc("/api/images/vehicleCategories/id/{id}", getVehicleCategoryImagesByVehicleCategoryId(dbpool)).Methods("GET")
+	router.HandleFunc("/api/images/vehicleCategories/id/{id}", deleteVehicleCategoryImage(dbpool)).Methods("DELETE")
+
+	router.HandleFunc("/api/images/defects/id/{id}", postDefectImage(dbpool)).Methods("POST")
+	router.HandleFunc("/api/images/defects/id/{id}", getDefectImagesByDefectId(dbpool)).Methods("GET")
+	router.HandleFunc("/api/images/defects/id/{id}", deleteDefectImage(dbpool)).Methods("DELETE")
+
+	router.HandleFunc("/api/images", getImages(dbpool)).Methods("GET")                       // List of URLs
+	router.HandleFunc("/api/images/id/{id}", getImageById(dbpool)).Methods("GET")            // URL
+	router.HandleFunc("/api/images/file/id/{id}", getImageByIdAsFile(dbpool)).Methods("GET") // File
+
 	router.HandleFunc("/api/vehicleCategories", postVehicleCategories(dbpool)).Methods("POST")
 	router.HandleFunc("/api/vehicleCategories", getVehicleCategories(dbpool)).Methods("GET")
 
@@ -103,11 +121,16 @@ func initializeDatabase(dbpool *pgxpool.Pool) {
 	if err != nil {
 		log.Fatalf("Failed to create table: %v\n", err)
 	}
+	createImagesTable(dbpool)
 	createStationsTable(dbpool)
 	createVehicleCategoriesTable(dbpool)
 	createProducersTable(dbpool)
 	createDefectsTable(dbpool)
 	createVehiclesTable(dbpool) // depends on Producers and VehicleCategories
+
+	createDefectImageTable(dbpool)
+	createVehicleCategoryImageTable(dbpool)
+	createVehicleImageTable(dbpool)
 	createReservationsTable(dbpool)
 }
 
