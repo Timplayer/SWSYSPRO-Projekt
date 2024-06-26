@@ -40,7 +40,7 @@ func updateProducer(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		defer rows.Close()
 
-		sendResponseProducers(writer, rows, err, p, body, insertOperation, cStation)
+		sendResponseProducers(writer, rows, err, p, body, insertOperation, cProducer)
 		return
 	}
 }
@@ -69,7 +69,7 @@ func postProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		defer rows.Close()
 
-		sendResponseProducers(writer, rows, err, p, body, insertOperation, cStation)
+		sendResponseProducers(writer, rows, err, p, body, insertOperation, cProducer)
 		return
 	}
 }
