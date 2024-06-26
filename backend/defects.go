@@ -42,7 +42,7 @@ func updateDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		defer rows.Close()
-		sendResponse(writer, rows, err, d, body, updateOperation)
+		sendResponseDefects(writer, rows, err, d, body, updateOperation)
 		return
 	}
 }
@@ -71,7 +71,7 @@ func postDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		defer rows.Close()
-		sendResponse(writer, rows, err, d, body, insertOperation)
+		sendResponseDefects(writer, rows, err, d, body, insertOperation)
 		return
 	}
 }
@@ -145,7 +145,7 @@ func getDefects(dbpool *pgxpool.Pool) http.HandlerFunc {
 	}
 }
 
-func sendResponse(writer http.ResponseWriter, rows pgx.Rows, err error, d defect, body []byte, operationType string) bool {
+func sendResponseDefects(writer http.ResponseWriter, rows pgx.Rows, err error, d defect, body []byte, operationType string) bool {
 	rows.Next()
 	var id int64
 	err = rows.Scan(&id)
