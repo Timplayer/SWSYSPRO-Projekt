@@ -45,25 +45,8 @@ func updateVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		defer rows.Close()
-		rows.Next()
-		var id int64
-		err = rows.Scan(&id)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error updating vehicle: %v\n", err)
-			return
-		}
-		log.Printf("Updated vehicle with id: %d\n", id)
-		v.Id = id
-		body, err = json.Marshal(v)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error serializing vehicle: %v\n", err)
-			return
-		}
-		writer.Header().Set(contentType, applicationJSON)
-		writer.WriteHeader(http.StatusCreated)
-		writer.Write(body)
+
+		sendResponseVehicles(writer, rows, err, v, body, updateOperation, cVehicle)
 	}
 }
 
@@ -90,25 +73,9 @@ func postVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		defer rows.Close()
-		rows.Next()
-		var id int64
-		err = rows.Scan(&id)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error executing insert vehicle: %v", err)
-			return
-		}
-		log.Printf("Inserted vehicle: %d", id)
-		v.Id = id
-		body, err = json.Marshal(v)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error serializing vehicle: %v", err)
-			return
-		}
-		writer.Header().Set(contentType, applicationJSON)
-		writer.WriteHeader(http.StatusCreated)
-		writer.Write(body)
+
+		sendResponseVehicles(writer, rows, err, v, body, insertOperation, cVehicle)
+		return
 	}
 }
 
@@ -180,9 +147,37 @@ func getVehicles(dbpool *pgxpool.Pool) http.HandlerFunc {
 	}
 }
 
+func sendResponseVehicles(writer http.ResponseWriter, rows pgx.Rows, err error, v vehicle, body []byte, operationType string, structName string) bool {
+	rows.Next()
+	var id int64
+	err = rows.Scan(&id)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
+		return false
+	}
+	log.Printf(genericSuccess, operationType, structName, id)
+	v.Id = id
+	body, err = json.Marshal(v)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf(errorSerializingGeneric, err, structName)
+		return false
+	}
+	writer.Header().Set(contentType, applicationJSON)
+	writer.WriteHeader(http.StatusCreated)
+	_, err = writer.Write(body)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
+		return false
+	}
+	return false
+}
+
 func createVehiclesTable(dbpool *pgxpool.Pool) {
 	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS vehicles (id BIGSERIAL PRIMARY KEY, name TEXT NOT NULL, vehicleCategory BIGSERIAL references vehiclecategories(id), producer BIGSERIAL references producers(id), status TEXT NOT NULL, receptionDate timestamp NOT NULL, completionDate timestamp);")
 	if err != nil {
-		log.Fatalf("Failed to create table: %v\n", err)
+		log.Fatalf(failedToCreateTable, err)
 	}
 }
