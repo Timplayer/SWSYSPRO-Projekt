@@ -169,7 +169,7 @@ func sendResponseDefects(writer http.ResponseWriter, rows pgx.Rows, err error, d
 	body, err = json.Marshal(d)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf(errorSerializingGeneric, err, cDefect)
+		log.Printf(errorSerializingGeneric, cDefect, err)
 		return false
 	}
 	writer.Header().Set(contentType, applicationJSON)
