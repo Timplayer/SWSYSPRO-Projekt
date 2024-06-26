@@ -25,20 +25,20 @@ func updateDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 		body, err := io.ReadAll(request.Body)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error reading body: %s", err)
+			log.Printf(errorReadingRequestBody, err)
 			return
 		}
 		var d defect
 		err = json.Unmarshal(body, &d)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error parsing body: %s", err)
+			log.Printf(errorParsingRequestBody, err)
 			return
 		}
 		rows, err := dbpool.Query(context.Background(), "update defects set name = $1, date = $2, description = $3, status = $4 where id = $5", d.Name, d.Id, d.Date, d.Description, d.Status, mux.Vars(request)["id"])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error updating defects: %s", err)
+			log.Printf(errorExecutingOperationGeneric, updateOperation, cDefect, err)
 			return
 		}
 		defer rows.Close()
@@ -52,14 +52,14 @@ func postDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 		body, err := io.ReadAll(request.Body)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error reading request body: %v\n", err)
+			log.Printf(errorReadingRequestBody, err)
 			return
 		}
 		var d defect
 		err = json.Unmarshal(body, &d)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error reading request body: %v\n", err)
+			log.Printf(errorParsingRequestBody, err)
 			return
 		}
 		rows, err := dbpool.Query(context.Background(),
@@ -67,7 +67,7 @@ func postDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 			d.Name, d.Date, d.Description, d.Status)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error executing insert defect: %v", err)
+			log.Printf(errorExecutingOperationGeneric, insertOperation, cDefect, err)
 			return
 		}
 		defer rows.Close()
@@ -82,7 +82,7 @@ func getDefectByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 			mux.Vars(request)["id"])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error finding defect: %v\n", err)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cDefect, err)
 			return
 		}
 		defer rows.Close()
@@ -91,13 +91,13 @@ func getDefectByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 			err = rows.Scan(&d.Id, &d.Name, &d.Date, &d.Description, &d.Status)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf("Error finding defect: %v\n", err)
+				log.Printf(errorExecutingOperationGeneric, findingOperation, cDefect, err)
 				return
 			}
 			str, err := json.Marshal(d)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf("Error finding defect: %v\n", err)
+				log.Printf(errorExecutingOperationGeneric, findingOperation, cDefect, err)
 				return
 			}
 			writer.Header().Set(contentType, applicationJSON)
@@ -107,7 +107,7 @@ func getDefectByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 		if !rows.Next() {
 			writer.WriteHeader(http.StatusNotFound)
-			log.Printf("Error finding defect: defect not found \n")
+			log.Printf(errorGenericNotFound, cDefect, cDefect)
 			return
 		}
 	}
@@ -119,7 +119,7 @@ func getDefects(dbpool *pgxpool.Pool) http.HandlerFunc {
 		rows, err := dbpool.Query(context.Background(), "SELECT * FROM defects")
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error geting Database Connection: %v\n", err)
+			log.Printf(errorDatabaseConnection, err)
 			return
 		}
 		defer rows.Close()
@@ -131,13 +131,13 @@ func getDefects(dbpool *pgxpool.Pool) http.HandlerFunc {
 			})
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error finding defects: %v\n", err)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cDefect, err)
 			return
 		}
 		str, err := json.Marshal(defects)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error finding defects: %v\n", err)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cDefect, err)
 			return
 		}
 		writer.Header().Set(contentType, applicationJSON)
@@ -151,15 +151,15 @@ func sendResponse(writer http.ResponseWriter, rows pgx.Rows, err error, d defect
 	err = rows.Scan(&id)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf("Error executing %s defect: %v", operationType, err)
+		log.Printf(errorExecutingOperationGeneric, operationType, cDefect, err)
 		return false
 	}
-	log.Printf("%sed defect: %d", operationType, id)
+	log.Printf(genericSuccess, operationType, cDefect, id)
 	d.Id = id
 	body, err = json.Marshal(d)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf("Error serializing defect: %v", err)
+		log.Printf(errorSerializingGeneric, err, cDefect)
 		return false
 	}
 	writer.Header().Set(contentType, applicationJSON)
@@ -167,7 +167,7 @@ func sendResponse(writer http.ResponseWriter, rows pgx.Rows, err error, d defect
 	_, err = writer.Write(body)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf("Error executing %s defect: %v", operationType, err)
+		log.Printf(errorExecutingOperationGeneric, operationType, cDefect, err)
 		return false
 	}
 	return false
@@ -176,6 +176,6 @@ func sendResponse(writer http.ResponseWriter, rows pgx.Rows, err error, d defect
 func createDefectsTable(dbpool *pgxpool.Pool) {
 	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS defects (id BIGSERIAL PRIMARY KEY, name TEXT NOT NULL, date TIMESTAMP NOT NULL, description TEXT, status TEXT);")
 	if err != nil {
-		log.Fatalf("Failed to create table: %v\n", err)
+		log.Fatalf(failedToCreateTable, err)
 	}
 }
