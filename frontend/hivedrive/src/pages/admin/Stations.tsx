@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { Box, Button, List, ListItem, ListItemText, Typography, IconButton, Divider, Tabs, Tab, TextField, Chip } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Button, List, ListItem, ListItemText, Typography, IconButton, Divider, Tabs, Tab, TextField } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import axios from 'axios';
 import { styled } from '@mui/material/styles';
 
 const CustomTextField = styled(TextField)({
@@ -54,10 +55,13 @@ interface Station {
     name: string;
     latitude: number;
     longitude: number;
-    numCars: number;
-    address?: string;
-    capacity?: number;
-    operatingHours?: string;
+    country: string;
+    state: string;
+    city: string;
+    zip: string;
+    street: string;
+    house_number: string;
+    capacity: number;
 }
 
 const germanyBounds = [
@@ -70,38 +74,67 @@ const Stations: React.FC = () => {
     const [stationName, setStationName] = useState<string>('');
     const [latitude, setLatitude] = useState<number>(51.1657); // Default latitude for Germany
     const [longitude, setLongitude] = useState<number>(10.4515); // Default longitude for Germany
-    const [numCars, setNumCars] = useState<number>(0);
-    const [address, setAddress] = useState<string>('');
+    const [country, setCountry] = useState<string>('');
+    const [state, setState] = useState<string>('');
+    const [city, setCity] = useState<string>('');
+    const [zip, setZip] = useState<string>('');
+    const [street, setStreet] = useState<string>('');
+    const [houseNumber, setHouseNumber] = useState<string>('');
     const [capacity, setCapacity] = useState<number>(0);
-    const [operatingHours, setOperatingHours] = useState<string>('');
-    const [nextId, setNextId] = useState<number>(1);
     const [tabIndex, setTabIndex] = useState<number>(0);
 
+    useEffect(() => {
+        // Fetch stations from the backend
+        axios.get('/api/stations')
+            .then(response => {
+                setStations(response.data);
+            })
+            .catch(error => {
+                console.error('Error fetching stations:', error);
+            });
+    }, []);
+
     const handleAddStation = () => {
-        if (stationName.trim() && !isNaN(latitude) && !isNaN(longitude) && !isNaN(numCars)) {
-            setStations([...stations, {
-                id: nextId,
-                name: stationName,
-                latitude,
-                longitude,
-                numCars,
-                address,
-                capacity,
-                operatingHours,
-            }]);
-            setStationName('');
-            setLatitude(51.1657);
-            setLongitude(10.4515);
-            setNumCars(0);
-            setAddress('');
-            setCapacity(0);
-            setOperatingHours('');
-            setNextId(nextId + 1);
-        }
+        const newStation = {
+            name: stationName,
+            latitude,
+            longitude,
+            country,
+            state,
+            city,
+            zip,
+            street,
+            house_number: houseNumber,
+            capacity,
+        };
+
+        axios.post('/api/stations', newStation)
+            .then(response => {
+                setStations([...stations, response.data]);
+                setStationName('');
+                setLatitude(51.1657);
+                setLongitude(10.4515);
+                setCountry('');
+                setState('');
+                setCity('');
+                setZip('');
+                setStreet('');
+                setHouseNumber('');
+                setCapacity(0);
+            })
+            .catch(error => {
+                console.error('Error adding station:', error);
+            });
     };
 
     const handleDeleteStation = (id: number) => {
-        setStations(stations.filter(station => station.id !== id));
+        axios.delete(`/stations/${id}`)
+            .then(() => {
+                setStations(stations.filter(station => station.id !== id));
+            })
+            .catch(error => {
+                console.error('Error deleting station:', error);
+            });
     };
 
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -151,19 +184,46 @@ const Stations: React.FC = () => {
                             sx={{ minWidth: '150px' }}
                         />
                         <CustomTextField
-                            label="Number of Cars"
-                            type="number"
-                            value={numCars}
-                            onChange={(e) => setNumCars(parseInt(e.target.value, 10))}
+                            label="Country"
+                            value={country}
+                            onChange={(e) => setCountry(e.target.value)}
                             variant="outlined"
-                            sx={{ minWidth: '150px' }}
+                            sx={{ minWidth: '200px' }}
                         />
                         <CustomTextField
-                            label="Address"
-                            value={address}
-                            onChange={(e) => setAddress(e.target.value)}
+                            label="State"
+                            value={state}
+                            onChange={(e) => setState(e.target.value)}
                             variant="outlined"
-                            sx={{ minWidth: '300px' }}
+                            sx={{ minWidth: '200px' }}
+                        />
+                        <CustomTextField
+                            label="City"
+                            value={city}
+                            onChange={(e) => setCity(e.target.value)}
+                            variant="outlined"
+                            sx={{ minWidth: '200px' }}
+                        />
+                        <CustomTextField
+                            label="Zip"
+                            value={zip}
+                            onChange={(e) => setZip(e.target.value)}
+                            variant="outlined"
+                            sx={{ minWidth: '200px' }}
+                        />
+                        <CustomTextField
+                            label="Street"
+                            value={street}
+                            onChange={(e) => setStreet(e.target.value)}
+                            variant="outlined"
+                            sx={{ minWidth: '200px' }}
+                        />
+                        <CustomTextField
+                            label="House Number"
+                            value={houseNumber}
+                            onChange={(e) => setHouseNumber(e.target.value)}
+                            variant="outlined"
+                            sx={{ minWidth: '150px' }}
                         />
                         <CustomTextField
                             label="Capacity"
@@ -172,13 +232,6 @@ const Stations: React.FC = () => {
                             onChange={(e) => setCapacity(parseInt(e.target.value, 10))}
                             variant="outlined"
                             sx={{ minWidth: '150px' }}
-                        />
-                        <CustomTextField
-                            label="Operating Hours"
-                            value={operatingHours}
-                            onChange={(e) => setOperatingHours(e.target.value)}
-                            variant="outlined"
-                            sx={{ minWidth: '200px' }}
                         />
                         <Button variant="contained" color="primary" onClick={handleAddStation} sx={{ alignSelf: 'center' }}>
                             Add Station
@@ -195,10 +248,10 @@ const Stations: React.FC = () => {
                                     primary={station.name}
                                     secondary={
                                         <>
-                                            Location: ({station.latitude}, {station.longitude}), Cars: {station.numCars}<br />
-                                            Address: {station.address}<br />
-                                            Capacity: {station.capacity}<br />
-                                            Operating Hours: {station.operatingHours}
+                                            Location: ({station.latitude}, {station.longitude})<br />
+                                            Country: {station.country}, State: {station.state}, City: {station.city}, Zip: {station.zip}<br />
+                                            Street: {station.street}, House Number: {station.house_number}<br />
+                                            Capacity: {station.capacity}
                                         </>
                                     }
                                 />
@@ -219,10 +272,9 @@ const Stations: React.FC = () => {
                             <Popup>
                                 {station.name}<br />
                                 Location: ({station.latitude}, {station.longitude})<br />
-                                Cars: {station.numCars}<br />
-                                Address: {station.address}<br />
-                                Capacity: {station.capacity}<br />
-                                Operating Hours: {station.operatingHours}
+                                Country: {station.country}, State: {station.state}, City: {station.city}, Zip: {station.zip}<br />
+                                Street: {station.street}, House Number: {station.house_number}<br />
+                                Capacity: {station.capacity}
                             </Popup>
                         </Marker>
                     ))}
