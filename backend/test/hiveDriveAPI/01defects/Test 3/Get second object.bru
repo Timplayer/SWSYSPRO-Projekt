@@ -35,4 +35,9 @@ tests {
     const data = res.getBody();
     expect (data.description).to.equal("Small sratch on the front bumper");
   });
+  
+  test("Status is correct?", function() {
+    const data = res.getBody();
+    expect (data.status).to.equal("open");
+  });
 }

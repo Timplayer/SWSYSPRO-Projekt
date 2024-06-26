@@ -242,6 +242,6 @@ FROM station_times t
     LEFT JOIN depatures d
         ON t.time = d.time AND t.pos = d.pos AND d.auto_klasse = d.auto_klasse;`)
 	if err != nil {
-		log.Fatalf("Failed to create table: %v\n", err)
+		log.Fatalf(failedToCreateTable, err)
 	}
 }

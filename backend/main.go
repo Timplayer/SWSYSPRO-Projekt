@@ -37,6 +37,7 @@ func main() {
 
 	router.HandleFunc("/api/stations", postStation(dbpool)).Methods("POST")
 	router.HandleFunc("/api/stations", getStations(dbpool)).Methods("GET")
+	router.HandleFunc("/api/stations/id/{id}", updateStation(dbpool)).Methods("PUT")
 
 	router.HandleFunc("/api/images", postImage(dbpool)).Methods("POST")
 
@@ -58,15 +59,19 @@ func main() {
 
 	router.HandleFunc("/api/vehicleCategories", postVehicleCategories(dbpool)).Methods("POST")
 	router.HandleFunc("/api/vehicleCategories", getVehicleCategories(dbpool)).Methods("GET")
+	router.HandleFunc("/api/vehicleCategories/id/{id}", updateVehicleCategory(dbpool)).Methods("PUT")
 
 	router.HandleFunc("/api/vehicles", postVehicle(dbpool)).Methods("POST")
 	router.HandleFunc("/api/vehicles", getVehicles(dbpool)).Methods("GET")
+	router.HandleFunc("/api/vehicles/id/{id}", updateVehicle(dbpool)).Methods("PUT")
 
 	router.HandleFunc("/api/defects", postDefect(dbpool)).Methods("POST")
 	router.HandleFunc("/api/defects", getDefects(dbpool)).Methods("GET")
+	router.HandleFunc("/api/defects/id/{id}", updateDefect(dbpool)).Methods("PUT")
 
 	router.HandleFunc("/api/producers", postProducers(dbpool)).Methods("POST")
 	router.HandleFunc("/api/producers", getProducers(dbpool)).Methods("GET")
+	router.HandleFunc("/api/producers/id/{id}", updateProducer(dbpool)).Methods("PUT")
 
 	router.HandleFunc("/api/stations/id/{id}", getStationByID(dbpool)).Methods("GET")
 	router.HandleFunc("/api/vehicles/id/{id}", getVehicleById(dbpool)).Methods("GET")
