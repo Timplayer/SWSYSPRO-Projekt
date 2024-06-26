@@ -9,9 +9,9 @@ const categories = [
   {
     title: "Vor der Miete",
     items: [
-      { question: "Bezahlung", answer: "Die Bezahlung erfolgt per Kreditkarte, Debitkarte oder über PayPal. Wir akzeptieren Visa, MasterCard, American Express und Discover. Barzahlungen sind nicht möglich." },
+      { question: "Bezahlung", answer: "Die Bezahlung erfolgt per Kreditkarte oder Überweisung. Wir akzeptieren Visa, MasterCard und American Express. Barzahlungen sind leider nicht möglich." },
       { question: "Extras", answer: "Sie können zusätzliche Extras wie GPS, Kindersitze, Zusatzfahrer und Versicherungsschutzoptionen während der Buchung hinzufügen. Diese werden zum Mietpreis hinzugerechnet." },
-      { question: "Fragen vor der Reservierung", answer: "Für Fragen vor der Reservierung können Sie unsere FAQ-Seite besuchen oder unser Kundenservice-Team per E-Mail oder Telefon kontaktieren." },
+      { question: "Fragen vor der Reservierung", answer: "Für Fragen vor der Reservierung können Sie unsere FAQ-Seite besuchen oder unser Kundenservice-Team per E-Mail kontaktieren." },
       { question: "Reservierung und Änderung", answer: "Reservierungen können online über unsere Website vorgenommen werden. Änderungen und Stornierungen sind ebenfalls online möglich. Bitte beachten Sie, dass Stornierungsgebühren anfallen können." },
       { question: "Schutzoptionen", answer: "Wir bieten verschiedene Schutzoptionen wie Haftpflichtversicherung, Vollkaskoschutz ohne Selbstbeteiligung und Diebstahlschutz an. Diese können während der Buchung ausgewählt werden." },
     ],
@@ -19,7 +19,7 @@ const categories = [
   {
     title: "Während der Miete",
     items: [
-      { question: "Bestimmungen während der Miete", answer: "Während der Mietdauer sind Sie für das Fahrzeug verantwortlich. Es ist wichtig, die Straßenverkehrsregeln zu befolgen und das Fahrzeug in gutem Zustand zu halten. Jegliche Schäden oder Verluste müssen sofort gemeldet werden." },
+      { question: "Bestimmungen während der Miete", answer: "Während der Mietdauer sind Sie für das Fahrzeug verantwortlich. Es ist wichtig, die Straßenverkehrsregeln zu befolgen und das Fahrzeug in gutem Zustand zu halten. Jegliche Schäden oder Verluste müssen sofort gemeldet werden und können in Rechnung gestellt werden." },
       { question: "Fahrten über Grenzen", answer: "Fahrten über Landesgrenzen sind in vielen Fällen möglich, jedoch müssen Sie dies bei der Buchung angeben und die entsprechenden Dokumente mitführen. Zusätzliche Gebühren können anfallen." },
       { question: "Technischer Zustand des Mietwagens", answer: "Unsere Fahrzeuge werden regelmäßig gewartet und vor jeder Vermietung gründlich überprüft. Sollte während der Miete ein technisches Problem auftreten, kontaktieren Sie bitte sofort unseren Kundenservice." },
     ],
@@ -55,8 +55,7 @@ const categories = [
     title: "Fragen zu Elektroautos",
     items: [
       { question: "Allgemeine Informationen zur Miete von Elektroautos", answer: "Unsere Elektroautos sind umweltfreundlich und kosteneffizient. Sie können an vielen Ladestationen aufgeladen werden. Weitere Informationen finden Sie in der Fahrzeugbeschreibung." },
-      { question: "Elektroauto laden", answer: "Elektroautos können an öffentlichen Ladestationen oder zu Hause geladen werden. Sie erhalten eine Ladekarte, die Zugang zu einem Netzwerk von Ladestationen bietet." },
-      { question: "Einen Tesla bei HiveDrive mieten / Tesla Supercharger Netzwerk", answer: "Unsere Tesla-Fahrzeuge bieten Zugang zum Tesla Supercharger Netzwerk. Diese Schnellladestationen ermöglichen es Ihnen, in kurzer Zeit eine erhebliche Reichweite nachzuladen." },
+      { question: "Elektroauto laden", answer: "Elektroautos können an öffentlichen Ladestationen oder zu Hause geladen werden. Hierfür sind sie selbst zuständig." },
     ],
   },
   {
@@ -69,13 +68,7 @@ const categories = [
   {
     title: "Unterstützung erhalten",
     items: [
-      { question: "Service und Hilfe", answer: "Unser Kundenservice steht Ihnen rund um die Uhr zur Verfügung. Sie können uns per Telefon, E-Mail oder über unser Kontaktformular auf der Website erreichen." },
-    ],
-  },
-  {
-    title: "HiveDrive Charge",
-    items: [
-      { question: "HiveDrive Charge FAQs", answer: "HiveDrive Charge bietet spezielle Tarife und Zugang zu Ladestationen für Elektroautos. Weitere Informationen finden Sie in unseren HiveDrive Charge FAQs." },
+      { question: "Service und Hilfe", answer: "Unser Kundenservice steht Ihnen rund um die Uhr zur Verfügung. Sie können uns per E-Mail erreichen." },
     ],
   },
 ];
