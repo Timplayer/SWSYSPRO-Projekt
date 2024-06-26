@@ -18,6 +18,7 @@ import AboBookingPage from './pages/AboBookingpage';
 import Abopage from './pages/Abopage';
 import Carclasses from './pages/Carclasses';
 import { LocationProvider } from './Utils/LocationContext';
+import Bonusprogramm from './pages/Bonusprogramm';
 
 
 const routes: RouteObject[] = [
@@ -76,6 +77,10 @@ const routes: RouteObject[] = [
 	{
 		path: '/carclass',
 		element: <Carclasses />,
+	},
+	{
+		path: '/bonus',
+		element: <Bonusprogramm />,
 	},
 ];
 
