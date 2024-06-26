@@ -45,34 +45,6 @@ func updateProducer(dbpool *pgxpool.Pool) http.HandlerFunc {
 	}
 }
 
-func sendResponseProducers(writer http.ResponseWriter, rows pgx.Rows, err error, p producer, body []byte, operationType string, structName string) bool {
-	rows.Next()
-	var id int64
-	err = rows.Scan(&id)
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
-		return false
-	}
-	log.Printf(genericSuccess, operationType, structName, id)
-	p.Id = id
-	body, err = json.Marshal(p)
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf(errorSerializingGeneric, err, structName)
-		return false
-	}
-	writer.Header().Set(contentType, applicationJSON)
-	writer.WriteHeader(http.StatusCreated)
-	_, err = writer.Write(body)
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
-		return false
-	}
-	return false
-}
-
 func postProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		body, err := io.ReadAll(request.Body)
@@ -168,6 +140,34 @@ func getProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
 		writer.Header().Set(contentType, applicationJSON)
 		writer.Write(str)
 	}
+}
+
+func sendResponseProducers(writer http.ResponseWriter, rows pgx.Rows, err error, p producer, body []byte, operationType string, structName string) bool {
+	rows.Next()
+	var id int64
+	err = rows.Scan(&id)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
+		return false
+	}
+	log.Printf(genericSuccess, operationType, structName, id)
+	p.Id = id
+	body, err = json.Marshal(p)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf(errorSerializingGeneric, err, structName)
+		return false
+	}
+	writer.Header().Set(contentType, applicationJSON)
+	writer.WriteHeader(http.StatusCreated)
+	_, err = writer.Write(body)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
+		return false
+	}
+	return false
 }
 
 func createProducersTable(dbpool *pgxpool.Pool) {
