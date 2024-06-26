@@ -109,7 +109,12 @@ func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 				return
 			}
 			writer.Header().Set(contentType, applicationJSON)
-			writer.Write(str)
+			_, err = writer.Write(str)
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
+				return
+			}
 			return
 		}
 
@@ -149,7 +154,12 @@ func getStations(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		writer.Header().Set(contentType, applicationJSON)
-		writer.Write(str)
+		_, err = writer.Write(str)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
+			return
+		}
 	}
 }
 

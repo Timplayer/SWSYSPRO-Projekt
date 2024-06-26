@@ -101,7 +101,12 @@ func getDefectByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 				return
 			}
 			writer.Header().Set(contentType, applicationJSON)
-			writer.Write(str)
+			_, err = writer.Write(str)
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				log.Printf(errorExecutingOperationGeneric, findingOperation, cDefect, err)
+				return
+			}
 			return
 		}
 
@@ -141,7 +146,12 @@ func getDefects(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		writer.Header().Set(contentType, applicationJSON)
-		writer.Write(str)
+		_, err = writer.Write(str)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cDefect, err)
+			return
+		}
 	}
 }
 

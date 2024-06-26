@@ -99,7 +99,12 @@ func getProducerById(dbpool *pgxpool.Pool) http.HandlerFunc {
 				return
 			}
 			writer.Header().Set(contentType, applicationJSON)
-			writer.Write(str)
+			_, err = writer.Write(str)
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				log.Printf(errorExecutingOperationGeneric, findingOperation, cProducer, err)
+				return
+			}
 			return
 		}
 
@@ -138,7 +143,12 @@ func getProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		writer.Header().Set(contentType, applicationJSON)
-		writer.Write(str)
+		_, err = writer.Write(str)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cProducer, err)
+			return
+		}
 	}
 }
 
