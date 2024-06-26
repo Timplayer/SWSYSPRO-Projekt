@@ -1,6 +1,6 @@
 // src/HelpPage.tsx
 import React from 'react';
-import {Typography, List, ListItem, ListItemText, Container} from '@mui/material';
+import {Typography, List, ListItem, ListItemText, Container, Box} from '@mui/material';
 import AppAppBar from '../views/AppAppBar';
 import withRoot from '../withRoot';
 import AppFooter from '../views/AppFooter';
@@ -10,11 +10,9 @@ const HelpPage: React.FC = () => {
   return (
     <React.Fragment>
     <AppAppBar />
-      <Container>
-      <Typography variant="h6">
-      HiveDrive Help         
-       </Typography>
-        <Typography variant="h4" gutterBottom style={{ marginTop: '20px' }}>
+      <Container sx={{ color: '#ffffff' }}>
+      <Box sx={{ mt: 7, mb: 12, color: '#ffffff' }}>
+        <Typography variant="h4" gutterBottom style={{ marginTop: '20px' }} sx={{ color: '#ff9800' }}>
           Häufig gestellte Fragen
         </Typography>
         <List>
@@ -43,6 +41,7 @@ const HelpPage: React.FC = () => {
             />
           </ListItem>
         </List>
+        </Box>
       </Container>
       <AppFooter/>
      </React.Fragment>
