@@ -1,0 +1,18 @@
+meta {
+  name: Get all vehicleCategories
+  type: http
+  seq: 1
+}
+
+get {
+  url: https://localhost:8080/api/vehicleCategories
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status = 200", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(200);
+  });
+}

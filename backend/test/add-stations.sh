@@ -1,3 +1,4 @@
+#!/bin/bash
 set -o errexit
 for (( i = 0; i < 20; i++ )); do
     id=$(curl -k -v -X POST \
