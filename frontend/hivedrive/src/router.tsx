@@ -19,6 +19,7 @@ import Abopage from './pages/Abopage';
 import Carclasses from './pages/Carclasses';
 import { LocationProvider } from './Utils/LocationContext';
 import Bonusprogramm from './pages/Bonusprogramm';
+import OpenSourcethings from './pages/OpenSourcethings';
 
 
 const routes: RouteObject[] = [
@@ -81,6 +82,10 @@ const routes: RouteObject[] = [
 	{
 		path: '/bonus',
 		element: <Bonusprogramm />,
+	},
+	{
+		path: '/licenses',
+		element: <OpenSourcethings />,
 	},
 ];
 

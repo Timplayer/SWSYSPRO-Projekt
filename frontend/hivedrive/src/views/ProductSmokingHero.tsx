@@ -28,12 +28,6 @@ function ProductSmokingHero() {
           Haben Sie Fragen oder brauchen Sie hilfe?
         </Typography>
       </Button>
-      {/* <Box
-        component="img"
-        src="/static/themes/onepirate/productBuoy.svg"
-        alt="buoy"
-        sx={{ width: 60 }}
-      /> */}
     </Container>
   );
 }
