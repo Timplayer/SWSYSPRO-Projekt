@@ -37,6 +37,7 @@ func main() {
 
 	router.HandleFunc("/api/stations", postStation(dbpool)).Methods("POST")
 	router.HandleFunc("/api/stations", getStations(dbpool)).Methods("GET")
+	router.HandleFunc("/api/stations/id/{id}", updateStation(dbpool)).Methods("PUT")
 
 	router.HandleFunc("/api/images", postImage(dbpool)).Methods("POST")
 
