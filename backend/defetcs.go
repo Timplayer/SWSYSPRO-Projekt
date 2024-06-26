@@ -20,6 +20,50 @@ type defect struct {
 	Status      string    `json:"status"`
 }
 
+func updateDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		body, err := io.ReadAll(request.Body)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error reading body: %s", err)
+			return
+		}
+		var d defect
+		err = json.Unmarshal(body, &d)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error parsing body: %s", err)
+			return
+		}
+		rows, err := dbpool.Query(context.Background(), "update defects set name = $1, date = $2, description = $3, status = $4 where id = $2", d.Name, d.Id, d.Date, d.Description, d.Status)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error updating defects: %s", err)
+			return
+		}
+		defer rows.Close()
+		rows.Next()
+		var id int64
+		err = rows.Scan(&id)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error executing update defect: %v", err)
+			return
+		}
+		log.Printf("Updated defect: %d", id)
+		d.Id = id
+		body, err = json.Marshal(d)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error serializing defect: %v", err)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusCreated)
+		writer.Write(body)
+	}
+}
+
 func postDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		body, err := io.ReadAll(request.Body)
