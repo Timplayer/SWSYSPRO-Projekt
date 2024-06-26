@@ -180,7 +180,7 @@ func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 	}
 }
 
-func getImagesPublic(dbpool *pgxpool.Pool) http.HandlerFunc {
+func getImages(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		rows, err := dbpool.Query(context.Background(), "SELECT images.url FROM images ORDER BY displayOrder;")
 		if err != nil {
