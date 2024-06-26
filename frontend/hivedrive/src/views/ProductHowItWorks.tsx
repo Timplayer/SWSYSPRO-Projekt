@@ -110,7 +110,7 @@ function ProductHowItWorks() {
           size="large"
           variant="contained"
           component="a"
-          href="/signup"
+          href="/bookingpage"
           sx={{ mt: 8 }}
         >
           Get started

@@ -1,5 +1,3 @@
-import * as React from 'react';
-import Button from '../components/Button';
 import Typography from '../components/Typography';
 import ProductHeroLayout from './ProductHeroLayout';
 
@@ -10,11 +8,10 @@ export default function ProductHero() {
     <ProductHeroLayout
       sxBackground={{
         backgroundImage: `url(${backgroundImage})`,
-        backgroundColor: '#7fc7d9', // Average color of the background image.
+        backgroundColor: '#7fc7d9', 
         backgroundPosition: 'center',
       }}
     >
-      {/* Increase the network loading priority of the background image. */}
       <img
         style={{ display: 'none' }}
         src={backgroundImage}
@@ -23,20 +20,9 @@ export default function ProductHero() {
       <Typography color="inherit" align="center" variant="h2" marked="center">
         Live LARGE
       </Typography>
-      {/* <Typography
-        color="inherit"
-        align="center"
-        variant="h5"
-        sx={{ mb: 4, mt: { xs: 4, sm: 10 } }}
-      >
-        Pay <b>little</b>
-      </Typography> */}
-      <Typography color="inherit" align="center" variant="h4" margin>
+      <Typography color="inherit" align="center" variant="h4" sx={{ margin: 2 }}>
         Pay little
       </Typography>
-      {/* <Typography variant="body2" color="inherit" sx={{ mt: 2 }}>
-        Discover the experience
-      </Typography> */}
     </ProductHeroLayout>
   );
 }

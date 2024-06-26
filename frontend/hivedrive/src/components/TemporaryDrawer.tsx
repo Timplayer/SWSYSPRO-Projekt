@@ -48,7 +48,6 @@ export default function TemporaryDrawer() {
       </Stack>   
       <Divider />
 
-      
         <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center'}}>
           <Link
             variant="h6"
@@ -82,6 +81,18 @@ export default function TemporaryDrawer() {
           sx={{ fontSize: 24, color: '#FFFFFF' }}
         >
           {'Auto Buchen'}
+        </Link>
+      </Box> 
+
+      <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center'}}>
+        <Link
+          variant="h6"
+          underline="none"
+          color="inherit"
+          href="/bonus"
+          sx={{ fontSize: 24, color: '#FFFFFF' }}
+        >
+          {'Bonusprogramm'}
         </Link>
       </Box> 
 
