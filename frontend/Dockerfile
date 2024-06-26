@@ -5,7 +5,7 @@ RUN apk add --no-cache nodejs npm
 COPY ./hivedrive/package.json ./package.json
 COPY ./hivedrive/package-lock.json ./package-lock.json
 
-RUN npm install --verbose
+RUN npm install --verbose --ignore-scripts
 COPY ./hivedrive/ ./
 
 EXPOSE 5173
