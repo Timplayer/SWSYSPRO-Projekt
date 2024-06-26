@@ -97,6 +97,7 @@ func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 			}
 			writer.Header().Set("Content-Type", "application/json")
 			writer.Write(str)
+			return
 		}
 
 		if !rows.Next() {
