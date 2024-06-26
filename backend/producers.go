@@ -16,6 +16,51 @@ type producer struct {
 	Name string `json:"name"`
 }
 
+func updateProducer(dbpool *pgxpool.Pool) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		body, err := io.ReadAll(request.Body)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Println("Error reading request body: %p\n", err)
+			return
+		}
+
+		var p producer
+		err = json.Unmarshal(body, &p)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error parsing request body: %p\n", err)
+			return
+		}
+		rows, err := dbpool.Query(context.Background(), "UPDATE producers SET name = $1 WHERE id = $7", p.Name, mux.Vars(request)["id"])
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error updating producer: %p\n", err)
+			return
+		}
+		defer rows.Close()
+		rows.Next()
+		var id int64
+		err = rows.Scan(&id)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error updating producer: %p\n", err)
+			return
+		}
+		log.Printf("Updated producer with id: %d\n", id)
+		p.Id = id
+		body, err = json.Marshal(p)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error serializing producer: %p\n", err)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusCreated)
+		writer.Write(body)
+	}
+}
+
 func postProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		body, err := io.ReadAll(request.Body)
