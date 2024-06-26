@@ -70,6 +70,7 @@ func main() {
 
 	router.HandleFunc("/api/producers", postProducers(dbpool)).Methods("POST")
 	router.HandleFunc("/api/producers", getProducers(dbpool)).Methods("GET")
+	router.HandleFunc("/api/producers/id/{id}", updateProducer(dbpool)).Methods("PUT")
 
 	router.HandleFunc("/api/stations/id/{id}", getStationByID(dbpool)).Methods("GET")
 	router.HandleFunc("/api/vehicles/id/{id}", getVehicleById(dbpool)).Methods("GET")
