@@ -61,6 +61,7 @@ func main() {
 
 	router.HandleFunc("/api/vehicles", postVehicle(dbpool)).Methods("POST")
 	router.HandleFunc("/api/vehicles", getVehicles(dbpool)).Methods("GET")
+	router.HandleFunc("/api/vehicles/id/{id}", updateVehicle(dbpool)).Methods("GET")
 
 	router.HandleFunc("/api/defects", postDefect(dbpool)).Methods("POST")
 	router.HandleFunc("/api/defects", getDefects(dbpool)).Methods("GET")
