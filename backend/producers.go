@@ -32,7 +32,7 @@ func updateProducer(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error parsing request body: %p\n", err)
 			return
 		}
-		rows, err := dbpool.Query(context.Background(), "UPDATE producers SET name = $1 WHERE id = $7", p.Name, mux.Vars(request)["id"])
+		rows, err := dbpool.Query(context.Background(), "UPDATE producers SET name = $1 WHERE id = $2", p.Name, mux.Vars(request)["id"])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error updating producer: %p\n", err)
