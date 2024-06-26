@@ -1,0 +1,53 @@
+meta {
+  name: Get changed object
+  type: http
+  seq: 3
+}
+
+get {
+  url: https://localhost:8080/api/vehicles/id/3
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status = 200", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("ID is correct?", function() {
+    const data = res.getBody();
+    expect (data.id).to.equal(3);
+  });
+  
+  test("Name is correct?", function() {
+    const data = res.getBody();
+    expect (data.name).to.equal("Station 2");
+  });
+  
+  test("vehicleCategory is correct?", function() {
+    const data = res.getBody();
+    expect (data.vehicleCategory).to.equal(1);
+  });
+  
+  test("Producer is correct?", function() {
+    const data = res.getBody();
+    expect (data.producer).to.equal(1);
+  });
+  
+  test("Status is correct?", function() {
+    const data = res.getBody();
+    expect (data.status).to.equal("Werkstatt");
+  });
+  
+    test("ReceptionDate is correct?", function() {
+      const data = res.getBody();
+      expect (data.receptionDate).to.equal("2021-08-15T14:30:45Z");
+    });
+  
+    test("CompletionDate is correct?", function() {
+      const data = res.getBody();
+      expect (data.completionDate).to.equal("2021-08-15T14:30:45Z");
+    });
+}
