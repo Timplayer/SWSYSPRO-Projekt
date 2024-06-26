@@ -35,7 +35,7 @@ func updateDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error parsing body: %s", err)
 			return
 		}
-		rows, err := dbpool.Query(context.Background(), "update defects set name = $1, date = $2, description = $3, status = $4 where id = $2", d.Name, d.Id, d.Date, d.Description, d.Status)
+		rows, err := dbpool.Query(context.Background(), "update defects set name = $1, date = $2, description = $3, status = $4 where id = $5", d.Name, d.Id, d.Date, d.Description, d.Status, mux.Vars(request)["id"])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error updating defects: %s", err)
