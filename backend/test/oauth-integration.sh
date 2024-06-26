@@ -9,7 +9,7 @@ token=$(curl -f -k \
 -d "password=${memberSecret}" \
 -d "grant_type=password" \
 https://localhost:8080/auth/realms/hivedrive/protocol/openid-connect/token \
-| jq .access_token)
+| jq -r .access_token)
 
 curl -f -k \
 -H "Authorization: Bearer $token" \
