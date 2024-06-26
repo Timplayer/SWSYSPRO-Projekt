@@ -14,7 +14,8 @@ body:json {
   {
     "name": "Station 1",
     "date": "2021-08-15T14:30:45Z",
-    "description": "Small sratch on the front bumper"
+    "description": "Small sratch on the front bumper",
+    "status": "open"
   }
 }
 
@@ -42,5 +43,10 @@ tests {
   test("Description is correct?", function() {
     const data = res.getBody();
     expect (data.description).to.equal("Small sratch on the front bumper");
+  });
+  
+  test("Status is correct?", function() {
+    const data = res.getBody();
+    expect (data.status).to.equal("open");
   });
 }
