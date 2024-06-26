@@ -30,7 +30,7 @@ func updateStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		body, err := io.ReadAll(request.Body)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Println(errorReadingRequestBody, err)
+			log.Printf(errorReadingRequestBody, err)
 			return
 		}
 

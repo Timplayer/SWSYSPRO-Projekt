@@ -21,7 +21,7 @@ func updateProducer(dbpool *pgxpool.Pool) http.HandlerFunc {
 		body, err := io.ReadAll(request.Body)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Println("Error reading request body: %p\n", err)
+			log.Printf("Error reading request body: %p\n", err)
 			return
 		}
 
