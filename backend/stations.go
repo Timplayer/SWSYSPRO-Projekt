@@ -64,7 +64,7 @@ func updateStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error serializing station: %s\n", err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(body)
 	}
@@ -110,7 +110,7 @@ func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error serializing station: %v", err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(body)
 	}
@@ -140,7 +140,7 @@ func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 				log.Printf("Error finding Stations: %v\n", err)
 				return
 			}
-			writer.Header().Set("Content-Type", "application/json")
+			writer.Header().Set(contentType, applicationJSON)
 			writer.Write(str)
 			return
 		}
@@ -180,7 +180,7 @@ func getStations(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error finding Stations: %v\n", err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.Write(str)
 	}
 }

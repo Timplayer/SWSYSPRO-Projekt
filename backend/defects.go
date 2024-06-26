@@ -58,7 +58,7 @@ func updateDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error serializing defect: %v", err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(body)
 	}
@@ -104,7 +104,7 @@ func postDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error serializing defect: %v", err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(body)
 	}
@@ -134,7 +134,7 @@ func getDefectByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 				log.Printf("Error finding defect: %v\n", err)
 				return
 			}
-			writer.Header().Set("Content-Type", "application/json")
+			writer.Header().Set(contentType, applicationJSON)
 			writer.Write(str)
 			return
 		}
@@ -174,7 +174,7 @@ func getDefects(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error finding defects: %v\n", err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.Write(str)
 	}
 }

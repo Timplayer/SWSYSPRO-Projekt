@@ -55,7 +55,7 @@ func updateProducer(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error serializing producer: %p\n", err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(body)
 	}
@@ -100,7 +100,7 @@ func postProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error serializing producer: %v", err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(body)
 	}
@@ -130,7 +130,7 @@ func getProducerById(dbpool *pgxpool.Pool) http.HandlerFunc {
 				log.Printf("Error finding producer: %v\n", err)
 				return
 			}
-			writer.Header().Set("Content-Type", "application/json")
+			writer.Header().Set(contentType, applicationJSON)
 			writer.Write(str)
 			return
 		}
@@ -169,7 +169,7 @@ func getProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error finding producers: %v\n", err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.Write(str)
 	}
 }

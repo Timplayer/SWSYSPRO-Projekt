@@ -61,7 +61,7 @@ func updateVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error serializing vehicle: %v\n", err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(body)
 	}
@@ -106,7 +106,7 @@ func postVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error serializing vehicle: %v", err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(body)
 	}
@@ -136,7 +136,7 @@ func getVehicleById(dbpool *pgxpool.Pool) http.HandlerFunc {
 				log.Printf("Error finding vehicle: %v\n", err)
 				return
 			}
-			writer.Header().Set("Content-Type", "application/json")
+			writer.Header().Set(contentType, applicationJSON)
 			writer.Write(str)
 			return
 		}
@@ -175,7 +175,7 @@ func getVehicles(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error finding vehicles: %v\n", err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.Write(str)
 	}
 }
