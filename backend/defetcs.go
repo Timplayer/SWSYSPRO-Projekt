@@ -17,6 +17,7 @@ type defect struct {
 	Name        string    `json:"name"`
 	Date        time.Time `json:"date"`
 	Description string    `json:"description"`
+	Status      string    `json:"status"`
 }
 
 func postDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
@@ -35,8 +36,8 @@ func postDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		rows, err := dbpool.Query(context.Background(),
-			"INSERT INTO defects (name, date, description) VALUES ($1, $2, $3) RETURNING id",
-			d.Name, d.Date, d.Description)
+			"INSERT INTO defects (name, date, description, status) VALUES ($1, $2, $3, $4) RETURNING id",
+			d.Name, d.Date, d.Description, d.Status)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing insert defect: %v", err)
@@ -77,7 +78,7 @@ func getDefectByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 		defer rows.Close()
 		if rows.Next() {
 			var d defect
-			err = rows.Scan(&d.Id, &d.Name, &d.Date, &d.Description)
+			err = rows.Scan(&d.Id, &d.Name, &d.Date, &d.Description, &d.Status)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
 				log.Printf("Error finding defect: %v\n", err)
@@ -115,7 +116,7 @@ func getDefects(dbpool *pgxpool.Pool) http.HandlerFunc {
 		defects, err := pgx.CollectRows(rows,
 			func(row pgx.CollectableRow) (defect, error) {
 				var d defect
-				err := rows.Scan(&d.Id, &d.Name, &d.Date, &d.Description)
+				err := rows.Scan(&d.Id, &d.Name, &d.Date, &d.Description, &d.Status)
 				return d, err
 			})
 		if err != nil {
@@ -135,7 +136,7 @@ func getDefects(dbpool *pgxpool.Pool) http.HandlerFunc {
 }
 
 func createDefectsTable(dbpool *pgxpool.Pool) {
-	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS defects (id BIGSERIAL PRIMARY KEY, name TEXT NOT NULL, date TIMESTAMP NOT NULL, description TEXT);")
+	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS defects (id BIGSERIAL PRIMARY KEY, name TEXT NOT NULL, date TIMESTAMP NOT NULL, description TEXT, status TEXT);")
 	if err != nil {
 		log.Fatalf("Failed to create table: %v\n", err)
 	}
