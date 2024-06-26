@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Grid } from '@mui/material';
+import { Container, Grid, Typography } from '@mui/material';
 import CarCard from '../components/CarCardProps';
 import FilterBar from '../components/Filterbar';
 import withRoot from '../withRoot';
 import AppAppBar from '../views/AppAppBar';
 import AppFooter from '../views/AppFooter';
 import CarSearchBar from '../components/CarSearchBar';
+import { useLocation } from 'react-router-dom';
 
 interface Car {
   name: string;
@@ -17,7 +18,9 @@ interface Car {
   kmIncluded: string;
 }
 
-const Bookingpage : React.FC = () => {
+const Bookingpage: React.FC = () => {
+  const location = useLocation();
+  const { car } = location.state || {};
   const [cars, setCars] = useState<Car[]>([]);
 
   useEffect(() => {
@@ -32,19 +35,32 @@ const Bookingpage : React.FC = () => {
 
   return (
     <React.Fragment>
-      <AppAppBar/>
+      <AppAppBar />
       <CarSearchBar />
       <FilterBar />
       <Container>
-        <Grid container spacing={3}>
-          {cars.map((car, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
+        {car ? (
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Typography variant="h4" gutterBottom>
+                Details for {car.name}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
               <CarCard {...car} />
             </Grid>
-          ))}
-        </Grid>
+          </Grid>
+        ) : (
+          <Grid container spacing={3}>
+            {cars.map((car, index) => (
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <CarCard {...car} />
+              </Grid>
+            ))}
+          </Grid>
+        )}
       </Container>
-      <AppFooter/>
+      <AppFooter />
     </React.Fragment>
   );
 }
