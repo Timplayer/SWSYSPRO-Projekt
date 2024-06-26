@@ -42,25 +42,8 @@ func updateDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		defer rows.Close()
-		rows.Next()
-		var id int64
-		err = rows.Scan(&id)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error executing update defect: %v", err)
-			return
-		}
-		log.Printf("Updated defect: %d", id)
-		d.Id = id
-		body, err = json.Marshal(d)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error serializing defect: %v", err)
-			return
-		}
-		writer.Header().Set(contentType, applicationJSON)
-		writer.WriteHeader(http.StatusCreated)
-		writer.Write(body)
+		sendResponse(writer, rows, err, d, body, updateOperation)
+		return
 	}
 }
 
@@ -88,25 +71,8 @@ func postDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		defer rows.Close()
-		rows.Next()
-		var id int64
-		err = rows.Scan(&id)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error executing insert defect: %v", err)
-			return
-		}
-		log.Printf("Inserted defect: %d", id)
-		d.Id = id
-		body, err = json.Marshal(d)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error serializing defect: %v", err)
-			return
-		}
-		writer.Header().Set(contentType, applicationJSON)
-		writer.WriteHeader(http.StatusCreated)
-		writer.Write(body)
+		sendResponse(writer, rows, err, d, body, insertOperation)
+		return
 	}
 }
 
@@ -177,6 +143,34 @@ func getDefects(dbpool *pgxpool.Pool) http.HandlerFunc {
 		writer.Header().Set(contentType, applicationJSON)
 		writer.Write(str)
 	}
+}
+
+func sendResponse(writer http.ResponseWriter, rows pgx.Rows, err error, d defect, body []byte, operationType string) bool {
+	rows.Next()
+	var id int64
+	err = rows.Scan(&id)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf("Error executing %s defect: %v", operationType, err)
+		return false
+	}
+	log.Printf("%sed defect: %d", operationType, id)
+	d.Id = id
+	body, err = json.Marshal(d)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf("Error serializing defect: %v", err)
+		return false
+	}
+	writer.Header().Set(contentType, applicationJSON)
+	writer.WriteHeader(http.StatusCreated)
+	_, err = writer.Write(body)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf("Error executing %s defect: %v", operationType, err)
+		return false
+	}
+	return false
 }
 
 func createDefectsTable(dbpool *pgxpool.Pool) {
