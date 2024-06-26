@@ -6,6 +6,9 @@ import Grid from '@mui/material/Grid';
 import Container from '@mui/material/Container';
 import Button from '../components/Button';
 import Typography from '../components/Typography';
+import bild1 from '../../images/standortchoose.png'; 
+import bild2 from '../../images/autowaehlen.png'; 
+import bild3 from '../../images/losfahren.png'; 
 
 const item: SxProps<Theme> = {
   display: 'flex',
@@ -22,7 +25,7 @@ const number = {
 };
 
 const image = {
-  height: 55,
+  height: 90,
   my: 4,
 };
 
@@ -63,9 +66,9 @@ function ProductHowItWorks() {
                 <Box sx={number}>1.</Box>
                 <Box
                   component="img"
-                  src=""
+                  sx={image}  
+                  src={bild1}  
                   alt="choose start location"
-                  sx={image}
                 />
                 <Typography variant="h5" align="center">
                   Startort wählen
@@ -77,9 +80,9 @@ function ProductHowItWorks() {
                 <Box sx={number}>2.</Box>
                 <Box
                   component="img"
-                  src=""
+                  sx={image}  
+                  src={bild2}  
                   alt="car choose"
-                  sx={image}
                 />
                 <Typography variant="h5" align="center">
                   Auto aussuchen
@@ -91,9 +94,9 @@ function ProductHowItWorks() {
                 <Box sx={number}>3.</Box>
                 <Box
                   component="img"
-                  src=""
+                  sx={image}  
+                  src={bild3}  
                   alt="start driving"
-                  sx={image}
                 />
                 <Typography variant="h5" align="center">
                   Losfahren

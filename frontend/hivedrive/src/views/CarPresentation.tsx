@@ -51,7 +51,7 @@ const CarPresentation: React.FC = () => {
 
   return (
     <Container maxWidth={false} sx={{ backgroundColor: '#1c1c1e', color: '#fff', padding: '2rem 0', textAlign: 'center', width: '100%' }}>
-      <Typography variant="h4" gutterBottom>
+      <Typography color={'#ff9800'} variant="h4" gutterBottom>
         DAS PERFEKTE AUTO FÜR IHRE NÄCHSTE REISE VON {location.toUpperCase()}
       </Typography>
       <Box display="flex" justifyContent="center" alignItems="center">
@@ -71,14 +71,14 @@ const CarPresentation: React.FC = () => {
                 <Typography gutterBottom variant="h5" component="div">
                   {car.name}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color='#ff9800'>
                   {car.type}
                 </Typography>
-                <Typography variant="body2" color="text.primary">
+                <Typography variant="body2" color='#ff9800'>
                   Ab {car.price}
                 </Typography>
                 {car.electric && (
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color='#ff9800'>
                     Elektro
                   </Typography>
                 )}
