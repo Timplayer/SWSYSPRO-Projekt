@@ -1,0 +1,50 @@
+meta {
+  name: addAvailability
+  type: http
+  seq: 1
+}
+
+post {
+  url: https://localhost:8080/api/stations/availability
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "station": 1,
+    "time": "2024-07-20T00:00:00Z",
+    "auto_klasse": 1
+  }
+}
+
+tests {
+  test("Status = 201", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("ID is correct?", function() {
+    const data = res.getBody();
+    expect (data.id).exists;
+  });
+  
+  test("Time is correct?", function() {
+    const data = res.getBody();
+    expect (data.time).to.equal("2024-07-20T00:00:00Z");
+  });
+  
+  test("auto_klasse is correct?", function() {
+    const data = res.getBody();
+    expect (data.auto_klasse).to.equal(1);
+  });
+  
+  test("station is correct?", function() {
+    const data = res.getBody();
+    expect (data.station).to.equal(1);
+  });
+}
