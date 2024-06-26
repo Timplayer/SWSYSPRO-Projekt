@@ -31,7 +31,7 @@ func updateVehicleCategory(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error parsing request body: %vC\n", err)
 			return
 		}
-		rows, err := dbpool.Query(context.Background(), "UPDATE vehicleCategories SET name = $1 WHERE id = $2 RETURNING id", vC.Name, mux.Vars(request)["id"])
+		rows, err := dbpool.Query(context.Background(), "UPDATE vehicleCategories SET name = $1 WHERE id = $2 RETURNING id;", vC.Name, mux.Vars(request)["id"])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error updating vehicleCategory: %vC\n", err)
@@ -39,7 +39,7 @@ func updateVehicleCategory(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		defer rows.Close()
 
-		sendResponseVehilceCategories(writer, rows, err, vC, body, updateOperation, cVehicleCategory)
+		sendResponseVehicleCategories(writer, rows, err, vC, body, updateOperation, cVehicleCategory)
 		return
 	}
 }
@@ -68,7 +68,7 @@ func postVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		defer rows.Close()
 
-		sendResponseVehilceCategories(writer, rows, err, vC, body, insertOperation, cVehicleCategory)
+		sendResponseVehicleCategories(writer, rows, err, vC, body, insertOperation, cVehicleCategory)
 		return
 	}
 }
@@ -151,7 +151,7 @@ func getVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
 	}
 }
 
-func sendResponseVehilceCategories(writer http.ResponseWriter, rows pgx.Rows, err error, vC vehicleCategory, body []byte, operationType string, structName string) bool {
+func sendResponseVehicleCategories(writer http.ResponseWriter, rows pgx.Rows, err error, vC vehicleCategory, body []byte, operationType string, structName string) bool {
 	rows.Next()
 	var id int64
 	err = rows.Scan(&id)
