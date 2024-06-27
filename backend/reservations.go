@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"slices"
 	"time"
 )
 
@@ -108,9 +109,31 @@ func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
 	}
 }
 
-func getReservations(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "Select id, auto_klasse as AutoKlasse, start_time as StartZeit, start_pos as StartStation, end_time as EndZeit, end_pos as EndStation from reservations")
+func getReservations(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
+	request *http.Request, introspectionResult introspection) {
+	return func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
+		var rows pgx.Rows
+		var err error
+
+		if slices.Contains(introspectionResult.Access.Roles, "employee") {
+			rows, err = dbpool.Query(context.Background(),
+				`Select id, auto_klasse as AutoKlasse,
+                                start_time as StartZeit, 
+                                start_pos as StartStation, 
+                                end_time as EndZeit, 
+                                end_pos as EndStation 
+                    from reservations`)
+		} else {
+			rows, err = dbpool.Query(context.Background(),
+				`Select id, auto_klasse as AutoKlasse,
+                                start_time as StartZeit, 
+                                start_pos as StartStation, 
+                                end_time as EndZeit, 
+                                end_pos as EndStation 
+                    from reservations
+                    WHERE user_id = $1`, introspectionResult.UserId)
+		}
+
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error geting Database Connection: %v\n", err)
