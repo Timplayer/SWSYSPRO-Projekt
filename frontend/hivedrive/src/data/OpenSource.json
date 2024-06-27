@@ -2,12 +2,12 @@
     "title": "Opensource Lizenzen",
     "sections": [
       {
-        "heading": "Opensource bla bla",
-        "content": "Autovermietung Beispiel GmbH\nMusterstraße 1\n12345 Musterstadt\nDeutschland"
+        "heading": "React",
+        "content": "MIT"
       },
       {
-        "heading": "Vertreten durch",
-        "content": "Geschäftsführer: Max Mustermann"
+        "heading": "Material UI",
+        "content": "MIT"
       }
     ]
   }
