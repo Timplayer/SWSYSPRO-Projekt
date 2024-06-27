@@ -2,7 +2,7 @@
 name: FA template
 about: Add FA
 title: ''
-labels: ''
+labels: 'FA'
 assignees: ''
 
 ---
