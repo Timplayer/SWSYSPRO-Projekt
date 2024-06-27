@@ -68,7 +68,7 @@ const Overview: React.FC = () => {
             <Typography variant="h4" gutterBottom>
                 Overview
             </Typography>
-            <Link href="https://your-keycloak-domain/auth/admin/" target="_blank" rel="noopener" sx={{ display: 'block', mb: 3 }}>
+            <Link href="/auth/admin/hivedrive/console/" target="_blank" rel="noopener" sx={{ display: 'block', mb: 3 }}>
                 Go to Keycloak Back Office
             </Link>
             <Grid container spacing={3}>
