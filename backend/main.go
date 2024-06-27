@@ -23,7 +23,8 @@ var (
 )
 
 type introspection struct {
-	Active bool `json:"active"`
+	Active bool   `json:"active"`
+	UserId string `json:"user_id"`
 }
 
 func main() {
