@@ -23,8 +23,12 @@ var (
 )
 
 type introspection struct {
-	Active bool   `json:"active"`
-	UserId string `json:"user_id"`
+	Active bool        `json:"active"`
+	UserId string      `json:"user_id"`
+	Access realmAccess `json:"realm_access"`
+}
+type realmAccess struct {
+	Roles []string `json:"roles"`
 }
 
 func main() {
