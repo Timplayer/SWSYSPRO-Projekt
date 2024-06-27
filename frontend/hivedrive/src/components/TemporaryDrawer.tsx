@@ -8,10 +8,21 @@ import { IconButton, Stack, useMediaQuery } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import logo from '../../images/HiveDriveLogo.png'; // Pfad zum Logo
 import {Link as RouterLink } from 'react-router-dom';
+import { styled } from '@mui/material/styles';
 
 export default function TemporaryDrawer() {
   const [open, setOpen] = React.useState(false);
   
+  const CustomRouterLink = styled(RouterLink)(() => ({
+    textDecoration: 'none',
+    fontSize: 24,
+    color: '#FFFFFF',
+    fontFamily: "'Roboto Condensed', sans-serif",
+    '&:hover': {
+      color: '#646cff',
+    },
+  }));
+
   // Media query hooks to determine screen size
   const isSmallScreen = useMediaQuery('(max-width:600px)');
   const isMediumScreen = useMediaQuery('(min-width:600px) and (max-width:1200px)');
@@ -33,51 +44,47 @@ export default function TemporaryDrawer() {
             <CloseIcon sx={{ fontSize: 24, color: '#FFFFFF' }} />
           </IconButton>
           <img src={logo} alt="Logo" style={{ height: 40, marginRight: 8 }} />
-          <RouterLink
+          <CustomRouterLink
             to="/"
-            style={{ textDecoration: 'none', fontSize: 24, color: '#FFFFFF' }}
           >
             {'HiveDrive'}
-          </RouterLink>
+          </CustomRouterLink>
         </Box>
       </Stack>   
       <Divider />
-
+      <Stack spacing={1}>
       <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-        <RouterLink
+        <CustomRouterLink
           to="/subscription"
-          style={{ textDecoration: 'none', fontSize: 24, color: '#FFFFFF' }}
         >
           {'Hive-Abos'}
-        </RouterLink>
+        </CustomRouterLink>
       </Box>
 
       <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-        <RouterLink
+        <CustomRouterLink
           to="/carclass"
-          style={{ textDecoration: 'none', fontSize: 24, color: '#FFFFFF' }}
         >
           {'Klassen Übersicht'}
-        </RouterLink>
+        </CustomRouterLink>
       </Box> 
      
       <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-        <RouterLink
+        <CustomRouterLink
           to="/bookingpage"
-          style={{ textDecoration: 'none', fontSize: 24, color: '#FFFFFF' }}
         >
           {'Auto Buchen'}
-        </RouterLink>
+        </CustomRouterLink>
       </Box> 
 
       <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-        <RouterLink
+        <CustomRouterLink
           to="/bonus"
-          style={{ textDecoration: 'none', fontSize: 24, color: '#FFFFFF' }}
         >
           {'Bonusprogramm'}
-        </RouterLink>
+        </CustomRouterLink>
       </Box> 
+    </Stack>
     </Box>
   );
 

@@ -14,8 +14,6 @@ const rightLink = {
   ml: 3,
 };
 
-
-
 const handleLogout = (event: { preventDefault: () => void; }) => {
   event.preventDefault();
   keycloak.logout();
