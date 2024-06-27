@@ -4,9 +4,10 @@ import Drawer from '@mui/material/Drawer';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import MenuIcon from '@mui/icons-material/Menu';
-import { IconButton, Link, Stack, useMediaQuery } from '@mui/material';
+import { IconButton, Stack, useMediaQuery } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import logo from '../../images/HiveDriveLogo.png'; // Pfad zum Logo
+import {Link as RouterLink } from 'react-router-dom';
 
 export default function TemporaryDrawer() {
   const [open, setOpen] = React.useState(false);
@@ -24,93 +25,74 @@ export default function TemporaryDrawer() {
     setOpen(newOpen);
   };
 
-
   const DrawerList = (
     <Box sx={{ width: drawerWidth }} role="presentation" onClick={toggleDrawer(false)}>
       <Stack spacing={2} direction="row" sx={{ backgroundColor: '#021927', padding: '16px' }}>
-        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center'}}>
-          <IconButton aria-label="close">
-            <CloseIcon 
-            sx={{ fontSize: 24, color: '#FFFFFF' }}
-            />
-          </IconButton> 
+        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+          <IconButton aria-label="close" onClick={toggleDrawer(false)}>
+            <CloseIcon sx={{ fontSize: 24, color: '#FFFFFF' }} />
+          </IconButton>
           <img src={logo} alt="Logo" style={{ height: 40, marginRight: 8 }} />
-          <Link
-            variant="h6"
-            underline="none"
-            color="inherit"
-            href="/"
-            sx={{ fontSize: 24, color: '#FFFFFF' }}
+          <RouterLink
+            to="/"
+            style={{ textDecoration: 'none', fontSize: 24, color: '#FFFFFF' }}
           >
             {'HiveDrive'}
-          </Link>
+          </RouterLink>
         </Box>
       </Stack>   
       <Divider />
 
-        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center'}}>
-          <Link
-            variant="h6"
-            underline="none"
-            color="inherit"
-            href="/subscription"
-            sx={{ fontSize: 24, color: '#FFFFFF' }}
-          >
-            {'Hive-Abos'}
-          </Link>
-        </Box>
+      <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+        <RouterLink
+          to="/subscription"
+          style={{ textDecoration: 'none', fontSize: 24, color: '#FFFFFF' }}
+        >
+          {'Hive-Abos'}
+        </RouterLink>
+      </Box>
 
-      <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center'}}>
-        <Link
-          variant="h6"
-          underline="none"
-          color="inherit"
-          href="/carclass"
-          sx={{ fontSize: 24, color: '#FFFFFF' }}
+      <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+        <RouterLink
+          to="/carclass"
+          style={{ textDecoration: 'none', fontSize: 24, color: '#FFFFFF' }}
         >
           {'Klassen Übersicht'}
-        </Link>
+        </RouterLink>
       </Box> 
      
-      <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center'}}>
-        <Link
-          variant="h6"
-          underline="none"
-          color="inherit"
-          href="/bookingpage"
-          sx={{ fontSize: 24, color: '#FFFFFF' }}
+      <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+        <RouterLink
+          to="/bookingpage"
+          style={{ textDecoration: 'none', fontSize: 24, color: '#FFFFFF' }}
         >
           {'Auto Buchen'}
-        </Link>
+        </RouterLink>
       </Box> 
 
-      <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center'}}>
-        <Link
-          variant="h6"
-          underline="none"
-          color="inherit"
-          href="/bonus"
-          sx={{ fontSize: 24, color: '#FFFFFF' }}
+      <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+        <RouterLink
+          to="/bonus"
+          style={{ textDecoration: 'none', fontSize: 24, color: '#FFFFFF' }}
         >
           {'Bonusprogramm'}
-        </Link>
+        </RouterLink>
       </Box> 
-
     </Box>
   );
 
   return (
-      <div>
-        <Button onClick={toggleDrawer(true)}>
-          <MenuIcon sx={{ color: 'white' }} />
-        </Button>
-        <Drawer 
-          open={open} 
-          onClose={toggleDrawer(false)}
-          sx={{ "& .MuiDrawer-paper": { backgroundColor: 'secondary.light' } }} // Hier ändere die Hintergrundfarbe
-        >
-          {DrawerList}
-        </Drawer>
-      </div>
+    <div>
+      <Button onClick={toggleDrawer(true)}>
+        <MenuIcon sx={{ color: 'white' }} />
+      </Button>
+      <Drawer 
+        open={open} 
+        onClose={toggleDrawer(false)}
+        sx={{ "& .MuiDrawer-paper": { backgroundColor: 'secondary.light' } }} // Hier ändere die Hintergrundfarbe
+      >
+        {DrawerList}
+      </Drawer>
+    </div>
   );
 }

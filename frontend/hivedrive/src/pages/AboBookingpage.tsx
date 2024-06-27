@@ -10,7 +10,6 @@ const AboBookingPage: React.FC = () => {
       <Typography variant="body1">
         Hier können Sie Ihr Abonnement buchen.
       </Typography>
-      {/* Fügen Sie hier Ihr Buchungsformular oder weitere Buchungsinformationen hinzu */}
     </Container>
   );
 };
