@@ -474,11 +474,17 @@
     "groups" : [ ]
   }, {
     "id" : "56745a7b-bb28-4c50-9e6b-b6d39a829531",
-    "username" : "member_test",
+    "username" : "member_test@example.com",
     "firstName" : "member",
     "lastName" : "test",
     "email" : "member_test@example.com",
     "emailVerified" : true,
+    "attributes" : {
+      "locality" : [ "test" ],
+      "country" : [ "test" ],
+      "postal_code" : [ "12345" ],
+      "street" : [ "test" ]
+    },
     "createdTimestamp" : 1716381194714,
     "enabled" : true,
     "totp" : false,
@@ -1338,7 +1344,7 @@
       "subType" : "authenticated",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "oidc-address-mapper", "oidc-usermodel-property-mapper", "oidc-usermodel-attribute-mapper", "saml-role-list-mapper", "oidc-full-name-mapper", "saml-user-attribute-mapper", "oidc-sha256-pairwise-sub-mapper" ]
+        "allowed-protocol-mapper-types" : [ "saml-user-property-mapper", "saml-user-attribute-mapper", "saml-role-list-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "oidc-full-name-mapper", "oidc-usermodel-property-mapper", "oidc-sha256-pairwise-sub-mapper" ]
       }
     }, {
       "id" : "39ebacdd-0e7c-479b-a6cb-ad6596cd10cd",
@@ -1363,7 +1369,7 @@
       "subType" : "anonymous",
       "subComponents" : { },
       "config" : {
-        "allowed-protocol-mapper-types" : [ "oidc-full-name-mapper", "oidc-usermodel-property-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-user-attribute-mapper", "saml-user-property-mapper", "oidc-address-mapper", "oidc-usermodel-attribute-mapper", "saml-role-list-mapper" ]
+        "allowed-protocol-mapper-types" : [ "oidc-address-mapper", "oidc-sha256-pairwise-sub-mapper", "saml-role-list-mapper", "oidc-usermodel-attribute-mapper", "saml-user-attribute-mapper", "oidc-full-name-mapper", "saml-user-property-mapper", "oidc-usermodel-property-mapper" ]
       }
     }, {
       "id" : "419ae18b-969a-46eb-ac28-419186ce8920",
