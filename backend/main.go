@@ -39,7 +39,7 @@ func main() {
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/api/reservations", getReservations(dbpool)).Methods("GET")
+	router.HandleFunc("/api/reservations", validate(getReservations(dbpool))).Methods("GET")
 	router.HandleFunc("/api/reservations", validate(postReservation(dbpool))).Methods("POST")
 
 	router.HandleFunc("/api/stations/id/{id}/availability", getAvailabilityAtStation(dbpool)).Methods("GET")
