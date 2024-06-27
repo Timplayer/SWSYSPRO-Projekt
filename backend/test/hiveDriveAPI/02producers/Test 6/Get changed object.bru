@@ -1,0 +1,28 @@
+meta {
+  name: Get changed object
+  type: http
+  seq: 3
+}
+
+get {
+  url: https://localhost:8080/api/producers/id/3
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status = 200", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("ID is correct?", function() {
+    const data = res.getBody();
+    expect (data.id).to.equal(3);
+  });
+  
+  test("Name is correct?", function() {
+    const data = res.getBody();
+    expect (data.name).to.equal("Station 2");
+  });
+}

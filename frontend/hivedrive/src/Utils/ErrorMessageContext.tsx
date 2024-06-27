@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useMemo  } from 'react';
 import ErrorMessage from './ErrorMessage';
 
 interface ErrorMessageContextProps {
@@ -19,11 +19,11 @@ export const ErrorMessageProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const [message, setMessage] = useState('');
     const [show, setShow] = useState(false);
 
-    const showMessage = (message: string) => {
-        setMessage(message);
+    const showMessage = useMemo(() => (msg: string) => {
+        setMessage(msg);
         setShow(true);
         setTimeout(() => setShow(false), 3000);
-    };
+    }, []);
 
     return (
         <ErrorMessageContext.Provider value={{ showMessage }}>
