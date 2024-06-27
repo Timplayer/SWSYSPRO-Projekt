@@ -21,6 +21,15 @@ type reservation struct {
 	AutoKlasse   int64     `json:"auto_klasse"`
 }
 
+type reservationNullabl struct {
+	Id           int64      `json:"id"`
+	StartZeit    *time.Time `json:"start_zeit"`
+	StartStation *int64     `json:"start_station"`
+	EndZeit      *time.Time `json:"end_zeit"`
+	EndStation   *int64     `json:"end_station"`
+	AutoKlasse   int64      `json:"auto_klasse"`
+}
+
 type availability struct {
 	Time       time.Time `json:"time"`
 	Pos        int64     `json:"pos"`
@@ -96,6 +105,37 @@ func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
 		writer.Header().Set("Content-Type", "application/json")
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(body)
+	}
+}
+
+func getReservations(dbpool *pgxpool.Pool) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		rows, err := dbpool.Query(context.Background(), "Select id, auto_klasse as AutoKlasse, start_time as StartZeit, start_pos as StartStation, end_time as EndZeit, end_pos as EndStation from reservations")
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error geting Database Connection: %v\n", err)
+			return
+		}
+		defer rows.Close()
+		reservations, err := pgx.CollectRows(rows, pgx.RowToStructByName[reservationNullabl])
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error finding reservations: %v\n", err)
+			return
+		}
+		str, err := json.Marshal(reservations)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error marshaling reservations: %v\n", err)
+			return
+		}
+		writer.Header().Set(contentType, applicationJSON)
+		_, err = writer.Write(str)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
+			return
+		}
 	}
 }
 
