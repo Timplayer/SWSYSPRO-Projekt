@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useLocation } from 'react-router-dom';
-import ProductSmokingHero from '../views/ProductSmokingHero';
+import ProductSmokingHero from '../views/Needhelp';
 import AppFooter from '../views/AppFooter';
 import ProductHero from '../views/ProductHero';
 import ProductHowItWorks from '../views/ProductHowItWorks';

@@ -4,8 +4,8 @@ import Grid from '@mui/material/Grid';
 import Container from '@mui/material/Container';
 import Typography from '../components/Typography';
 import Button from '../components/Button';
-import { Link } from '@mui/material';
 import bild from '../../images/bonusimage.png'
+import { Link} from 'react-router-dom';
 
 function ProductCTA() {
 
@@ -33,13 +33,8 @@ function ProductCTA() {
                 Kunden, die häufig fahren, erhalten Freifahrten, Rabatte und Upgrades auf bessere Fahrzeuge.
                 Melden Sie sich jetzt an und sichern Sie sich Ihre Vorteile!
               </Typography>
-              <Button variant="contained" color="primary" size="large">
-                <Link
-                  color="inherit"
-                  href="/bonus"
-                >
-                  {'Jetzt anmelden'}
-                </Link>
+              <Button variant="contained" color="primary" size="large"  component={Link}  to="/bonus">
+                {'Jetzt anmelden'}
               </Button>
             </Box>
 

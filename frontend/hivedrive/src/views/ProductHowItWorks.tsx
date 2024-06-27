@@ -9,6 +9,7 @@ import Typography from '../components/Typography';
 import bild1 from '../../images/standortchoose.png'; 
 import bild2 from '../../images/autowaehlen.png'; 
 import bild3 from '../../images/losfahren.png'; 
+import { Link as RouterLink } from 'react-router-dom';
 
 const item: SxProps<Theme> = {
   display: 'flex',
@@ -109,8 +110,8 @@ function ProductHowItWorks() {
           color="secondary"
           size="large"
           variant="contained"
-          component="a"
-          href="/bookingpage"
+          component={RouterLink}
+          to="/bookingpage"
           sx={{ mt: 8 }}
         >
           Get started

@@ -4,8 +4,6 @@ import Typography from '../components/Typography';
 import { Link } from 'react-router-dom';
 import withRoot from '../withRoot';
 
-
-
 function ProductSmokingHero() {
   return (
     <Container
