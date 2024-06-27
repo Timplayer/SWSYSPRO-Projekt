@@ -48,7 +48,7 @@ services:
     environment:
       - ISSUER=http://keycloak:8080/auth/realms/hivedrive
       - CLIENT_ID=go-backend
-      - CLIENT_SECRET=QYkmaGk96FsGytwSYqaz6sus4oFrj6iv
+      - CLIENT_SECRET=Q09xvcW2dwvqBzKzRTUF3I9Q6RS25qco
       - DATABASE_URL=db
       - DATABASE_USER=postgres
       - DATABASE_PASS=example
