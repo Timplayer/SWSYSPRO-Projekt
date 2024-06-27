@@ -1,6 +1,6 @@
 set -o errexit
 client="admin-cli"
-memberName="member_test"
+memberName="member_test@example.com"
 memberSecret="test"
 
 token=$(curl -f -k \
