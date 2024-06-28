@@ -5,6 +5,7 @@ import Overview from "./admin/Overview.tsx";
 import Cars from "./admin/Cars.tsx";
 import Stations from "./admin/Stations.tsx";
 import Reservations from './admin/Reservations.tsx';
+import Users from './admin/Users.tsx';
 
 const theme = createTheme({
     palette: {
@@ -37,8 +38,8 @@ const App: React.FC = () => {
                 return <Stations/>;
             case 'Reservations':
                 return <Reservations/>;
-            case 'Account':
-                return <Typography paragraph>Account Content</Typography>;
+            case 'Accounts':
+                return <Users/>
             case 'Error':
                 return <Typography paragraph>Error Content</Typography>;
             default:

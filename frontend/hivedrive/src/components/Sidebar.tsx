@@ -2,6 +2,7 @@ import React from 'react';
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Typography, Toolbar, Box, Avatar } from '@mui/material';
 import {Home, CarRental, EvStation, EventNote} from '@mui/icons-material';
 import Logo from '../assets/HiveDriveLogo.jpeg'; // Update the path to where your logo is located
+import Users from '../pages/admin/Users';
 
 const drawerWidth = 240;
 
@@ -16,7 +17,7 @@ export const tabs: TabItem[] = [
     { key: 'Cars', label: 'Cars', icon: <CarRental /> },
     { key: 'Stations', label: 'Stations', icon: <EvStation /> },
     { key: 'Reservations', label: 'Reservations', icon: <EventNote /> },
-    { key: 'Accounts', label: 'Accounts', icon: <EventNote /> },
+    { key: 'Accounts', label: 'Accounts', icon: <Avatar /> },
 
 ];
 
