@@ -28,8 +28,10 @@ type availability struct {
 	Cars       int64     `json:"availability"`
 }
 
-func postReservation(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
+func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
+	request *http.Request,
+	introspectionResult introspection) {
+	return func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
 		body, err := io.ReadAll(request.Body)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
@@ -56,8 +58,8 @@ func postReservation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		defer tx.Rollback(request.Context())
 
 		err = tx.QueryRow(context.Background(),
-			"INSERT INTO reservations (auto_klasse, start_time, start_pos, end_time, end_pos) VALUES ($1, $2, $3, $4, $5) RETURNING id",
-			r.AutoKlasse, r.StartZeit, r.StartStation, r.EndZeit, r.EndStation).Scan(&r.Id)
+			"INSERT INTO reservations (user_id, auto_klasse, start_time, start_pos, end_time, end_pos) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
+			introspectionResult.UserId, r.AutoKlasse, r.StartZeit, r.StartStation, r.EndZeit, r.EndStation).Scan(&r.Id)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error adding Reservation: %v", err)
@@ -206,6 +208,7 @@ func createReservationsTable(dbpool *pgxpool.Pool) {
 CREATE TABLE IF NOT EXISTS reservations
 (
     id              BIGSERIAL PRIMARY KEY,
+    user_id         varchar,
     auto_klasse     BIGINT,
     start_time      timestamp,
     start_pos       BIGINT,

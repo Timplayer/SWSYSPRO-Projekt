@@ -2,16 +2,17 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"github.com/Nerzal/gocloak/v13"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgxpool"
-	//"github.com/zitadel/oidc/v3/pkg/client/rs"
-	//"github.com/zitadel/oidc/v3/pkg/oidc"
+	"github.com/zitadel/oidc/v3/pkg/oidc"
+	"io"
 	"log"
 	"net/http"
+	neturl "net/url"
 	"os"
-	//"strings"
+	"strings"
 	"time"
 )
 
@@ -21,16 +22,20 @@ var (
 	keycloakClientSecret string
 )
 
+type introspection struct {
+	Active bool   `json:"active"`
+	UserId string `json:"user_id"`
+}
+
 func main() {
 	dbpool := getDBpool()
 	defer dbpool.Close()
 
 	initKeycloakConfig()
-	client := gocloak.NewClient("http://keycloak:8080/auth/")
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/api/reservations", postReservation(dbpool)).Methods("POST")
+	router.HandleFunc("/api/reservations", validate(postReservation(dbpool))).Methods("POST")
 
 	router.HandleFunc("/api/stations/id/{id}/availability", getAvailabilityAtStation(dbpool)).Methods("GET")
 	router.HandleFunc("/api/stations/availability", addCarToStation(dbpool)).Methods("POST")
@@ -80,8 +85,8 @@ func main() {
 	router.HandleFunc("/api/defects/id/{id}", getDefectByID(dbpool)).Methods("GET")
 
 	router.HandleFunc("/api/healthcheck/hello", hello()).Methods("GET")
-	router.HandleFunc("/api/healthcheck/auth", validate(client,
-		func(writer http.ResponseWriter, request *http.Request) {
+	router.HandleFunc("/api/healthcheck/auth", validate(
+		func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
 			hello()(writer, request)
 		}))
 	router.HandleFunc("/api/healthcheck/sql", testDBget(dbpool)).Methods("GET")
@@ -129,8 +134,6 @@ func getDBpool() *pgxpool.Pool {
 }
 
 func initKeycloakConfig() {
-	keycloakRealm = "hivedrive"
-
 	var ok bool
 	keycloakClientID, ok = os.LookupEnv("CLIENT_ID")
 	if !ok {
@@ -141,7 +144,6 @@ func initKeycloakConfig() {
 	if !ok {
 		log.Fatalf("CLIENT_SECRET environment variable not set")
 	}
-
 }
 
 func initializeDatabase(dbpool *pgxpool.Pool) {
@@ -163,30 +165,46 @@ func initializeDatabase(dbpool *pgxpool.Pool) {
 	createReservationsTable(dbpool)
 }
 
-func validate(client *gocloak.GoCloak,
-	handler func(writer http.ResponseWriter, request *http.Request)) http.HandlerFunc {
+func validate(
+	handler func(writer http.ResponseWriter,
+		request *http.Request,
+		introspectionResult introspection)) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		auth := request.Header.Get("Authorization")
 		if auth == "" {
 			http.Error(writer, "Auth header missing", http.StatusUnauthorized)
 			return
 		}
+		if !strings.HasPrefix(auth, oidc.PrefixBearer) {
+			http.Error(writer, "invalid header", http.StatusUnauthorized)
+			return
+		}
+		token := strings.TrimPrefix(auth, oidc.PrefixBearer)
 
-		token := auth[len("Bearer "):]
+		var urlValues neturl.Values
+		urlValues = neturl.Values{"token": {token}}
+		urlValues.Set("token_type_hint", "access_token")
+		urlValues.Set("client_id", keycloakClientID)
+		urlValues.Set("client_secret", keycloakClientSecret)
 
-		introspection, err := client.RetrospectToken(context.Background(), token, keycloakClientID, keycloakClientSecret, keycloakRealm)
+		r, _ := http.PostForm("http://keycloak:8080/auth/realms/hivedrive/protocol/openid-connect/token/introspect", urlValues)
 
+		res, err := io.ReadAll(r.Body)
 		if err != nil {
-			log.Printf("Token introspection error: %v", err)
-			http.Error(writer, fmt.Sprintf("Token introspection error"), http.StatusUnauthorized)
+			log.Fatal(err)
+		}
+
+		var introspectionResult introspection
+		err = json.Unmarshal(res, &introspectionResult)
+		if err != nil {
+			http.Error(writer, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		if !introspectionResult.Active {
+			http.Error(writer, "Invalid Token", http.StatusUnauthorized)
 			return
 		}
 
-		if !*introspection.Active {
-			http.Error(writer, "Invalid or expired token", http.StatusUnauthorized)
-			return
-		}
-
-		handler(writer, request)
+		handler(writer, request, introspectionResult)
 	}
 }
