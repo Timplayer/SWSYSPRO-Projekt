@@ -66,7 +66,7 @@ const routes: RouteObject[] = [
 	},
 	{
 		path: '/mybookings',
-		element: <ProtectedRoute element={<Bookings />} requiredRoles={['member,employee,admin']} />,
+		element: <ProtectedRoute element={<Bookings />} requiredRoles={['member', 'admin', 'employee']} />,
 	},
 	{
 		path: '/subscription',
@@ -74,7 +74,7 @@ const routes: RouteObject[] = [
 	},
 	{
 		path: '/subscriptionbooking',
-		element: <ProtectedRoute element={<AboBookingPage />} requiredRoles={['member,employee,admin']} />,
+		element: <ProtectedRoute element={<AboBookingPage />} requiredRoles={['member', 'admin', 'employee']} />,
 	},
 	{
 		path: '/carclass',
