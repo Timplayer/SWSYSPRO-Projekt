@@ -27,7 +27,7 @@ type url struct {
 
 func checkFileType(fileType string) bool {
 	log.Printf(fileType)
-	if fileType != "image/jpeg" && fileType != "image/png" && fileType != "image/gif" && fileType != "image/webp" && fileType != "image/svg" {
+	if fileType != imageJPEG && fileType != imagePNG && fileType != imageGIF && fileType != imageWEBP && fileType != imageSVG {
 		return true
 	}
 	return false
@@ -35,9 +35,6 @@ func checkFileType(fileType string) bool {
 
 func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-
-		var path string
-		path = "/api/images/file/id/"
 
 		err := request.ParseMultipartForm(1000) // maxMemory in MB
 		if err != nil {
@@ -47,14 +44,14 @@ func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		var p picture
-		p.DisplayOrder, err = strconv.ParseInt(request.FormValue("display_order"), 10, 64)
+		p.DisplayOrder, err = strconv.ParseInt(request.FormValue(displayOrderKey), 10, 64)
 		if err != nil {
 			writer.WriteHeader(http.StatusBadRequest)
 			log.Printf("Error parsing order number: %v\n", err)
 			return
 		}
 
-		file, header, err := request.FormFile("file")
+		file, header, err := request.FormFile(formFileKey)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error parsing file: %v\n", err)
@@ -91,7 +88,7 @@ func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		rows, err = dbpool.Query(context.Background(),
-			"UPDATE images SET url = $1 WHERE id = $2;", "https://"+request.Host+path+strconv.FormatInt(p.Id, 10), p.Id)
+			"UPDATE images SET url = $1 WHERE id = $2;", httpsPrefix+request.Host+fileAPIpath+strconv.FormatInt(p.Id, 10), p.Id)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing update image (rows.Scan): %v", err)
@@ -108,7 +105,7 @@ func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		log.Printf("Image inserted: %d", p.Id)
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(body)
 	}
@@ -167,14 +164,14 @@ func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 				log.Printf("Error executing get image by id: %v", err)
 				return
 			}
-			writer.Header().Set("Content-Type", "octet-stream")
+			writer.Header().Set(contentType, octetStream)
 			writer.Write(p.File)
 			return
 		}
 
 		if !rows.Next() {
 			writer.WriteHeader(http.StatusNotFound)
-			log.Printf("Error finding image: image not found \n")
+			log.Printf(errorGenericNotFound, cImage, cImage)
 			return
 		}
 	}
@@ -206,7 +203,7 @@ func getImages(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error finding images: %v\n", err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.Write(str)
 	}
 }
@@ -214,6 +211,6 @@ func getImages(dbpool *pgxpool.Pool) http.HandlerFunc {
 func createImagesTable(dbpool *pgxpool.Pool) {
 	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS images (id BIGSERIAL PRIMARY KEY, fileName TEXT, url TEXT, file bytea, displayOrder INTEGER)")
 	if err != nil {
-		log.Fatalf("Failed to create table: %v\n", err)
+		log.Fatalf(failedToCreateTable, err)
 	}
 }
