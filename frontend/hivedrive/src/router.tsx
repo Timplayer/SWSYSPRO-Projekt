@@ -20,6 +20,7 @@ import Carclasses from './pages/Carclasses';
 import { LocationProvider } from './Utils/LocationContext';
 import Bonusprogramm from './pages/Bonusprogramm';
 import OpenSourcethings from './pages/OpenSourcethings';
+import Reservation from './pages/CarBookingPage';
 
 
 const routes: RouteObject[] = [
@@ -86,6 +87,10 @@ const routes: RouteObject[] = [
 	{
 		path: '/licenses',
 		element: <OpenSourcethings />,
+	},
+	{
+		path: '/reservation',
+		element: <Reservation />,
 	},
 ];
 
