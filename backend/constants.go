@@ -20,6 +20,7 @@ const errorSerializingGeneric = "Error serializing %s: %v"
 const errorExecutingOperationGeneric = "Error executing %s %s: %v"
 const errorDatabaseConnection = "Error getting Database Connection: %v\n"
 const errorGenericNotFound = "Error finding %s: %s not found \n"
+const errorGetGenericById = "Error getting %s by id %v\n"
 
 const genericSuccess = "%sed %s: %d"
 
