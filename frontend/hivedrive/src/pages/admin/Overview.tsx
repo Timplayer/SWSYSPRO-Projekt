@@ -109,7 +109,7 @@ const Overview: React.FC = () => {
                                     position={[station.latitude, station.longitude]}
                                     icon={L.divIcon({
                                         className: 'custom-icon',
-                                        html: `<div style="background-color:blue;color:white;border-radius:50%;width:2rem;height:2rem;text-align:center;line-height:2rem;">${getStationCarsCount(station.id)}</div>`,
+                                        html: `<div style="background-color:blue;color:white;border-radius:50%;width:1rem;height:1rem;text-align:center;line-height:1rem;">${getStationCarsCount(station.id)}</div>`,
                                     })}
                                 >
                                     <Popup>

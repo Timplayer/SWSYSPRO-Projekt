@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { CssBaseline, Toolbar, Typography, Box, ThemeProvider, createTheme } from '@mui/material';
 import Sidebar from '../components/Sidebar';
 import Overview from "./admin/Overview.tsx";
-import Cars from "./admin/Cars.tsx";
+import Vehicles from "./admin/Vehicles/Vehicles.tsx";
 import Stations from "./admin/Stations.tsx";
 import Reservations from './admin/Reservations.tsx';
 import Users from './admin/Users.tsx';
@@ -33,7 +33,7 @@ const App: React.FC = () => {
             case 'Overview':
                 return <Overview/>
             case 'Cars':
-                return <Cars/>;
+                return <Vehicles/>;
             case 'Stations':
                 return <Stations/>;
             case 'Reservations':
