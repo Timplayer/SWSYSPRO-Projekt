@@ -11,7 +11,7 @@ import (
 )
 
 func postVehicleCategoryImage(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return postImageGeneric(dbpool, "vehicleCategoryImage", "vehicleCategoryId")
+	return postImageGeneric(dbpool, "INSERT INTO vehicleCategoryImage (vehicleCategoryId, imageId) VALUES ($1, $2);")
 }
 
 func deleteVehicleCategoryImage(dbpool *pgxpool.Pool) http.HandlerFunc {
