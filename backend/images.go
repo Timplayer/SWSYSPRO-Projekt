@@ -228,6 +228,57 @@ func getImages(dbpool *pgxpool.Pool) http.HandlerFunc {
 	}
 }
 
+func deleteImageGeneric(dbpool *pgxpool.Pool, deleteConnectionSQL string) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+
+		if (len(deleteConnectionSQL) != 0) && (len(mux.Vars(request)[idKey]) != 0) {
+			rows, err := dbpool.Query(context.Background(),
+				deleteConnectionSQL, mux.Vars(request)["id"])
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				log.Printf(errorExecutingOperationGeneric, deleteOperation, cImage, err)
+				return
+			}
+			defer rows.Close()
+		}
+
+		rows, err := dbpool.Query(context.Background(),
+			"DELETE FROM images WHERE id = $1 RETURNING images.id;", mux.Vars(request)["id"])
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf(errorExecutingOperationGeneric, deleteOperation, cImage, err)
+			return
+		}
+		defer rows.Close()
+
+		if rows.Next() {
+			var p picture
+			err = rows.Scan(&p.Id)
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				log.Printf(errorExecutingOperationGeneric, deleteOperation, cImage, err)
+				return
+			}
+			str, err := json.Marshal(p)
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				log.Printf(errorExecutingOperationGeneric, deleteOperation, cImage, err)
+				return
+			}
+			writer.Header().Set(contentType, applicationJSON)
+			writer.WriteHeader(http.StatusOK)
+			writer.Write(str)
+			return
+		}
+
+		if !rows.Next() {
+			writer.WriteHeader(http.StatusNotFound)
+			log.Printf("Error deleting image: image not found \n")
+			return
+		}
+	}
+}
+
 func createImagesTable(dbpool *pgxpool.Pool) {
 	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS images (id BIGSERIAL PRIMARY KEY, fileName TEXT, url TEXT, file bytea, displayOrder INTEGER)")
 	if err != nil {
