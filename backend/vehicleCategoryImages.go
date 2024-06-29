@@ -11,9 +11,7 @@ import (
 )
 
 func postVehicleCategoryImage(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		postImageGeneric(dbpool, "vehicleCategoryImage", "vehicleCategoryId")
-	}
+	return postImageGeneric(dbpool, "vehicleCategoryImage", "vehicleCategoryId")
 }
 
 func deleteVehicleCategoryImage(dbpool *pgxpool.Pool) http.HandlerFunc {
