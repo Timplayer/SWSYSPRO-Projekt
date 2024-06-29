@@ -34,10 +34,10 @@ func checkFileType(fileType string) bool {
 }
 
 func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return postImageGeneric(dbpool, "", "")
+	return postImageGeneric(dbpool, "")
 }
 
-func postImageGeneric(dbpool *pgxpool.Pool, connectionTable string, columnName string) http.HandlerFunc {
+func postImageGeneric(dbpool *pgxpool.Pool, insertSQL string) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 
 		err := request.ParseMultipartForm(1000) // maxMemory in MB
@@ -101,14 +101,15 @@ func postImageGeneric(dbpool *pgxpool.Pool, connectionTable string, columnName s
 		}
 		defer rows.Close()
 
-		if (len(connectionTable) != 0) && (len(mux.Vars(request)[idKey]) != 0) {
+		if (len(insertSQL) != 0) && (len(mux.Vars(request)[idKey]) != 0) {
 			rows, err = dbpool.Query(context.Background(),
-				"INSERT INTO $1 ($2, imageId) VALUES ($3, $4);", connectionTable, columnName, mux.Vars(request)[idKey], p.Id)
+				insertSQL, mux.Vars(request)[idKey], p.Id)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
 				log.Printf("Error creating connection: %v", err)
 				return
 			}
+			defer rows.Close()
 		}
 
 		var body []byte
