@@ -46,21 +46,21 @@ func main() {
 
 	router.HandleFunc(imagesAPIpath, postImage(dbpool)).Methods("POST")
 
-	router.HandleFunc(vehiclesIdAPIpath, postVehicleImage(dbpool)).Methods("POST")
-	router.HandleFunc(vehiclesIdAPIpath, getVehicleImagesByVehicleId(dbpool)).Methods("GET")
-	router.HandleFunc(vehiclesIdAPIpath, deleteVehicleImage(dbpool)).Methods("DELETE")
+	router.HandleFunc(imagesVehicleAPIpath, postVehicleImage(dbpool)).Methods("POST")
+	router.HandleFunc(imagesVehicleAPIpath, getVehicleImagesByVehicleId(dbpool)).Methods("GET")
+	router.HandleFunc(imagesVehicleAPIpath, deleteVehicleImage(dbpool)).Methods("DELETE")
 
-	router.HandleFunc(vehicleCategoriesIdAPIpath, postVehicleCategoryImage(dbpool)).Methods("POST")
-	router.HandleFunc(vehicleCategoriesIdAPIpath, getVehicleCategoryImagesByVehicleCategoryId(dbpool)).Methods("GET")
-	router.HandleFunc(vehicleCategoriesIdAPIpath, deleteVehicleCategoryImage(dbpool)).Methods("DELETE")
+	router.HandleFunc(imagesVehicleCategoryAPIpath, postVehicleCategoryImage(dbpool)).Methods("POST")
+	router.HandleFunc(imagesVehicleCategoryAPIpath, getVehicleCategoryImagesByVehicleCategoryId(dbpool)).Methods("GET")
+	router.HandleFunc(imagesVehicleCategoryAPIpath, deleteVehicleCategoryImage(dbpool)).Methods("DELETE")
 
-	router.HandleFunc(defectsIdAPIpath, postDefectImage(dbpool)).Methods("POST")
-	router.HandleFunc(defectsIdAPIpath, getDefectImagesByDefectId(dbpool)).Methods("GET")
-	router.HandleFunc(defectsIdAPIpath, deleteDefectImage(dbpool)).Methods("DELETE")
+	router.HandleFunc(imagesDefectAPIpath, postDefectImage(dbpool)).Methods("POST")
+	router.HandleFunc(imagesDefectAPIpath, getDefectImagesByDefectId(dbpool)).Methods("GET")
+	router.HandleFunc(imagesDefectAPIpath, deleteDefectImage(dbpool)).Methods("DELETE")
 
-	router.HandleFunc(imagesAPIpath, getImages(dbpool)).Methods("GET")                       // List of URLs
-	router.HandleFunc("/api/images/id/{id}", getImageById(dbpool)).Methods("GET")            // URL
-	router.HandleFunc("/api/images/file/id/{id}", getImageByIdAsFile(dbpool)).Methods("GET") // File
+	router.HandleFunc(imagesAPIpath, getImages(dbpool)).Methods("GET")                 // List of URLs
+	router.HandleFunc("/api/images/id/{id}", getImageById(dbpool)).Methods("GET")      // URL
+	router.HandleFunc(imagesFilesIDAPIpath, getImageByIdAsFile(dbpool)).Methods("GET") // File
 
 	router.HandleFunc(vehicleCategoriesAPIpath, postVehicleCategories(dbpool)).Methods("POST")
 	router.HandleFunc(vehicleCategoriesAPIpath, getVehicleCategories(dbpool)).Methods("GET")
