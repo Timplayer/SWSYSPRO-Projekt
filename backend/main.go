@@ -59,7 +59,7 @@ func main() {
 	router.HandleFunc(imagesDefectAPIpath, deleteDefectImage(dbpool)).Methods("DELETE")
 
 	router.HandleFunc(imagesAPIpath, getImages(dbpool)).Methods("GET")                 // List of URLs
-	router.HandleFunc("/api/images/id/{id}", getImageById(dbpool)).Methods("GET")      // URL
+	router.HandleFunc(imagesIdAPIpath, getImageById(dbpool)).Methods("GET")            // URL
 	router.HandleFunc(imagesFilesIDAPIpath, getImageByIdAsFile(dbpool)).Methods("GET") // File
 
 	router.HandleFunc(vehicleCategoriesAPIpath, postVehicleCategories(dbpool)).Methods("POST")
