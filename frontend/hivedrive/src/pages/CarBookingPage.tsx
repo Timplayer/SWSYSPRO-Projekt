@@ -15,7 +15,6 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
-import FormGroup from '@mui/material/FormGroup';
 
 const carOptions = [
   { value: 'economy', label: 'Economy' },
@@ -26,12 +25,12 @@ const carOptions = [
 ];
 
 const locationOptions = [
-    { "value": "Airport Bremen", "label": "Airport Bremen" },
-    { "value": "Airport Munich", "label": "Airport Munich" },
-    { "value": "Innenstadt Bremen", "label": "City Bremen" },
-    { "value": "Hauptbahnhof Bremen", "label": "HBF Bremen" },
-    { "value": "Hauptbahnhof Hamburg", "label": "HBF Hamburg" },
-    { "value": "Hauptbahnhof Berlin", "label": "HBF Berlin" }
+  { value: 'Airport Bremen', label: 'Airport Bremen' },
+  { value: 'Airport Munich', label: 'Airport Munich' },
+  { value: 'Innenstadt Bremen', label: 'City Bremen' },
+  { value: 'Hauptbahnhof Bremen', label: 'HBF Bremen' },
+  { value: 'Hauptbahnhof Hamburg', label: 'HBF Hamburg' },
+  { value: 'Hauptbahnhof Berlin', label: 'HBF Berlin' },
 ];
 
 function Reservation() {
@@ -48,10 +47,11 @@ function Reservation() {
   const [driverAge, setDriverAge] = useState('');
   const [rentalType, setRentalType] = useState('');
   const [discountCode, setDiscountCode] = useState('');
+  const [additionalDriverName, setAdditionalDriverName] = useState('');
+  const [additionalDriverAge, setAdditionalDriverAge] = useState('');
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    //wohin kommen die Daten ?
     console.log({
       carType,
       additionalDriver,
@@ -64,9 +64,13 @@ function Reservation() {
       customerPhone,
       driverAge,
       rentalType,
-      discountCode
+      discountCode,
+      additionalDriverName,
+      additionalDriverAge,
     });
   };
+
+  const inputStyle = { backgroundColor: '#ff9800' };
 
   return (
     <React.Fragment>
@@ -84,6 +88,7 @@ function Reservation() {
                   label="Name"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
+                  sx={inputStyle}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -94,6 +99,7 @@ function Reservation() {
                   type="email"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
+                  sx={inputStyle}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -104,6 +110,7 @@ function Reservation() {
                   type="tel"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
+                  sx={inputStyle}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -114,6 +121,7 @@ function Reservation() {
                   label="Autotyp"
                   value={carType}
                   onChange={(e) => setCarType(e.target.value)}
+                  sx={inputStyle}
                 >
                   {carOptions.map((option) => (
                     <MenuItem key={option.value} value={option.value}>
@@ -130,6 +138,7 @@ function Reservation() {
                   label="Abholort"
                   value={pickupLocation}
                   onChange={(e) => setPickupLocation(e.target.value)}
+                  sx={inputStyle}
                 >
                   {locationOptions.map((option) => (
                     <MenuItem key={option.value} value={option.value}>
@@ -158,6 +167,7 @@ function Reservation() {
                     label="Rückgabeort"
                     value={returnLocation}
                     onChange={(e) => setReturnLocation(e.target.value)}
+                    sx={inputStyle}
                   >
                     {locationOptions.map((option) => (
                       <MenuItem key={option.value} value={option.value}>
@@ -176,6 +186,7 @@ function Reservation() {
                   InputLabelProps={{ shrink: true }}
                   value={pickupDate}
                   onChange={(e) => setPickupDate(e.target.value)}
+                  sx={inputStyle}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -187,10 +198,11 @@ function Reservation() {
                   InputLabelProps={{ shrink: true }}
                   value={returnDate}
                   onChange={(e) => setReturnDate(e.target.value)}
+                  sx={inputStyle}
                 />
               </Grid>
               <Grid item xs={12}>
-                <FormControl component="fieldset">
+                <FormControl component="fieldset" sx={inputStyle}>
                   <FormLabel component="legend">Alter des Fahrers</FormLabel>
                   <RadioGroup
                     row
@@ -212,10 +224,11 @@ function Reservation() {
                   label="Rabattcode"
                   value={discountCode}
                   onChange={(e) => setDiscountCode(e.target.value)}
+                  sx={inputStyle}
                 />
               </Grid>
               <Grid item xs={12}>
-                <FormControl component="fieldset">
+                <FormControl component="fieldset" sx={inputStyle}>
                   <FormLabel component="legend">Art der Anmietung</FormLabel>
                   <RadioGroup
                     row
@@ -242,6 +255,36 @@ function Reservation() {
                   label="Zusatzfahrer hinzufügen"
                 />
               </Grid>
+              {additionalDriver && (
+                <>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Zusatzfahrer Name"
+                      value={additionalDriverName}
+                      onChange={(e) => setAdditionalDriverName(e.target.value)}
+                      sx={inputStyle}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <FormControl component="fieldset" sx={inputStyle}>
+                      <FormLabel component="legend">Alter des Zusatzfahrers</FormLabel>
+                      <RadioGroup
+                        row
+                        aria-label="additionalDriverAge"
+                        name="additionalDriverAge"
+                        value={additionalDriverAge}
+                        onChange={(e) => setAdditionalDriverAge(e.target.value)}
+                      >
+                        <FormControlLabel value="18-21" control={<Radio />} label="18-21" />
+                        <FormControlLabel value="21-25" control={<Radio />} label="21-25" />
+                        <FormControlLabel value="25-60" control={<Radio />} label="25-60" />
+                        <FormControlLabel value="over60" control={<Radio />} label="Über 60" />
+                      </RadioGroup>
+                    </FormControl>
+                  </Grid>
+                </>
+              )}
               <Grid item xs={12}>
                 <Button type="submit" variant="contained" color="primary">
                   Reservation abschicken
