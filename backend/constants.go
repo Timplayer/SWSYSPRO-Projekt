@@ -23,6 +23,7 @@ const errorGenericNotFound = "Error finding %s: %s not found \n"
 const errorGetGenericById = "Error getting %s by id %v\n"
 
 const genericSuccess = "%sed %s: %d"
+const idKey = "id"
 
 const cDefect = "defect"
 const cProducer = "producer"
