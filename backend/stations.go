@@ -25,19 +25,48 @@ type station struct {
 	Capacity    int64   `json:"capacity"`
 }
 
+func updateStation(dbpool *pgxpool.Pool) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		body, err := io.ReadAll(request.Body)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Println(errorReadingRequestBody, err)
+			return
+		}
+
+		var s station
+		err = json.Unmarshal(body, &s)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error parsing request body: %s\n", err)
+			return
+		}
+		rows, err := dbpool.Query(context.Background(), "UPDATE stations SET name = $1, location = point($2, $3), country = $4, state = $5, city = $6, zip = $7, street = $8, houseNumber = $9, capacity = $10 WHERE id = $11 RETURNING id", s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber, s.Capacity, mux.Vars(request)["id"])
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error updating station: %s\n", err)
+			return
+		}
+		defer rows.Close()
+
+		sendResponseStations(writer, rows, err, s, body, updateOperation, cStation)
+		return
+	}
+}
+
 func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		body, err := io.ReadAll(request.Body)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error reading request body: %v\n", err)
+			log.Printf(errorReadingRequestBody, err)
 			return
 		}
 		var s station
 		err = json.Unmarshal(body, &s)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error reading request body: %v\n", err)
+			log.Printf(errorReadingRequestBody, err)
 			return
 		}
 		rows, err := dbpool.Query(context.Background(),
@@ -45,29 +74,13 @@ func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 			s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber, s.Capacity)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error executing inserist station: %v", err)
+			log.Printf(errorExecutingOperationGeneric, insertOperation, cStation, err)
 			return
 		}
 		defer rows.Close()
-		rows.Next()
-		var id int64
-		err = rows.Scan(&id)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error executing insert station: %v", err)
-			return
-		}
-		log.Printf("Inserted station: %d", id)
-		s.Id = id
-		body, err = json.Marshal(s)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error serializing station: %v", err)
-			return
-		}
-		writer.Header().Set("Content-Type", "application/json")
-		writer.WriteHeader(http.StatusCreated)
-		writer.Write(body)
+
+		sendResponseStations(writer, rows, err, s, body, insertOperation, cStation)
+		return
 	}
 }
 
@@ -77,7 +90,7 @@ func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 			mux.Vars(request)["id"])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error finding Stitions: %v\n", err)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
 			return
 		}
 		defer rows.Close()
@@ -86,22 +99,28 @@ func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 			err = rows.Scan(&s.Id, &s.Name, &s.Latitude, &s.Longitude, &s.Country, &s.State, &s.City, &s.Zip, &s.Street, &s.HouseNumber, &s.Capacity)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf("Error finding Stitions: %v\n", err)
+				log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
 				return
 			}
 			str, err := json.Marshal(s)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf("Error finding Stations: %v\n", err)
+				log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
 				return
 			}
-			writer.Header().Set("Content-Type", "application/json")
-			writer.Write(str)
+			writer.Header().Set(contentType, applicationJSON)
+			_, err = writer.Write(str)
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
+				return
+			}
+			return
 		}
 
 		if !rows.Next() {
 			writer.WriteHeader(http.StatusNotFound)
-			log.Printf("Error finding station: station not found \n")
+			log.Printf(errorGenericNotFound, cStation, cStation)
 			return
 		}
 	}
@@ -125,24 +144,57 @@ func getStations(dbpool *pgxpool.Pool) http.HandlerFunc {
 			})
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error finding Stations: %v\n", err)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
 			return
 		}
 		str, err := json.Marshal(stations)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error finding Stations: %v\n", err)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
-		writer.Write(str)
+		writer.Header().Set(contentType, applicationJSON)
+		_, err = writer.Write(str)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
+			return
+		}
 	}
+}
+
+func sendResponseStations(writer http.ResponseWriter, rows pgx.Rows, err error, s station, body []byte, operationType string, structName string) bool {
+	rows.Next()
+	var id int64
+	err = rows.Scan(&id)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
+		return false
+	}
+	log.Printf(genericSuccess, operationType, structName, id)
+	s.Id = id
+	body, err = json.Marshal(s)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf(errorSerializingGeneric, err, structName)
+		return false
+	}
+	writer.Header().Set(contentType, applicationJSON)
+	writer.WriteHeader(http.StatusCreated)
+	_, err = writer.Write(body)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
+		return false
+	}
+	return false
 }
 
 func createStationsTable(dbpool *pgxpool.Pool) {
 	_, err := dbpool.Exec(context.Background(),
 		"CREATE TABLE IF NOT EXISTS stations(id BIGSERIAL PRIMARY KEY, name TEXT, location POINT, country TEXT, state TEXT, city TEXT, zip TEXT, street TEXT, houseNumber TEXT, capacity INTEGER);")
 	if err != nil {
-		log.Fatalf("Failed to create table: %v\n", err)
+		log.Fatalf(failedToCreateTable, err)
 	}
 }

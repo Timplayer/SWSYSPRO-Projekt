@@ -2,16 +2,17 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"github.com/Nerzal/gocloak/v13"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgxpool"
-	//"github.com/zitadel/oidc/v3/pkg/client/rs"
-	//"github.com/zitadel/oidc/v3/pkg/oidc"
+	"github.com/zitadel/oidc/v3/pkg/oidc"
+	"io"
 	"log"
 	"net/http"
+	neturl "net/url"
 	"os"
-	//"strings"
+	"strings"
 	"time"
 )
 
@@ -21,62 +22,76 @@ var (
 	keycloakClientSecret string
 )
 
+type introspection struct {
+	Active bool        `json:"active"`
+	UserId string      `json:"user_id"`
+	Access realmAccess `json:"realm_access"`
+}
+type realmAccess struct {
+	Roles []string `json:"roles"`
+}
+
 func main() {
 	dbpool := getDBpool()
 	defer dbpool.Close()
 
 	initKeycloakConfig()
-	client := gocloak.NewClient("http://keycloak:8080/auth/")
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/api/reservations", postReservation(dbpool)).Methods("POST")
+	router.HandleFunc("/api/reservations", validate(getReservations(dbpool))).Methods("GET")
+	router.HandleFunc("/api/reservations", validate(postReservation(dbpool))).Methods("POST")
 
 	router.HandleFunc("/api/stations/id/{id}/availability", getAvailabilityAtStation(dbpool)).Methods("GET")
 	router.HandleFunc("/api/stations/availability", addCarToStation(dbpool)).Methods("POST")
 
-	router.HandleFunc("/api/stations", postStation(dbpool)).Methods("POST")
-	router.HandleFunc("/api/stations", getStations(dbpool)).Methods("GET")
+	router.HandleFunc(stationsAPIpath, postStation(dbpool)).Methods("POST")
+	router.HandleFunc(stationsAPIpath, getStations(dbpool)).Methods("GET")
+	router.HandleFunc(stationsIdAPIpath, updateStation(dbpool)).Methods("PUT")
 
-	router.HandleFunc("/api/images", postImage(dbpool)).Methods("POST")
+	router.HandleFunc(imagesAPIpath, postImage(dbpool)).Methods("POST")
 
-	router.HandleFunc("/api/images/vehicles/id/{id}", postVehicleImage(dbpool)).Methods("POST")
-	router.HandleFunc("/api/images/vehicles/id/{id}", getVehicleImagesByVehicleId(dbpool)).Methods("GET")
-	router.HandleFunc("/api/images/vehicles/id/{id}", deleteVehicleImage(dbpool)).Methods("DELETE")
+	router.HandleFunc(imagesVehicleAPIpath, postVehicleImage(dbpool)).Methods("POST")
+	router.HandleFunc(imagesVehicleAPIpath, getVehicleImagesByVehicleId(dbpool)).Methods("GET")
+	router.HandleFunc(imagesVehicleAPIpath, deleteVehicleImage(dbpool)).Methods("DELETE")
 
-	router.HandleFunc("/api/images/vehicleCategories/id/{id}", postVehicleCategoryImage(dbpool)).Methods("POST")
-	router.HandleFunc("/api/images/vehicleCategories/id/{id}", getVehicleCategoryImagesByVehicleCategoryId(dbpool)).Methods("GET")
-	router.HandleFunc("/api/images/vehicleCategories/id/{id}", deleteVehicleCategoryImage(dbpool)).Methods("DELETE")
+	router.HandleFunc(imagesVehicleCategoryAPIpath, postVehicleCategoryImage(dbpool)).Methods("POST")
+	router.HandleFunc(imagesVehicleCategoryAPIpath, getVehicleCategoryImagesByVehicleCategoryId(dbpool)).Methods("GET")
+	router.HandleFunc(imagesVehicleCategoryAPIpath, deleteVehicleCategoryImage(dbpool)).Methods("DELETE")
 
-	router.HandleFunc("/api/images/defects/id/{id}", postDefectImage(dbpool)).Methods("POST")
-	router.HandleFunc("/api/images/defects/id/{id}", getDefectImagesByDefectId(dbpool)).Methods("GET")
-	router.HandleFunc("/api/images/defects/id/{id}", deleteDefectImage(dbpool)).Methods("DELETE")
+	router.HandleFunc(imagesDefectAPIpath, postDefectImage(dbpool)).Methods("POST")
+	router.HandleFunc(imagesDefectAPIpath, getDefectImagesByDefectId(dbpool)).Methods("GET")
+	router.HandleFunc(imagesDefectAPIpath, deleteDefectImage(dbpool)).Methods("DELETE")
 
-	router.HandleFunc("/api/images", getImages(dbpool)).Methods("GET")                       // List of URLs
-	router.HandleFunc("/api/images/id/{id}", getImageById(dbpool)).Methods("GET")            // URL
-	router.HandleFunc("/api/images/file/id/{id}", getImageByIdAsFile(dbpool)).Methods("GET") // File
+	router.HandleFunc(imagesAPIpath, getImages(dbpool)).Methods("GET")                 // List of URLs
+	router.HandleFunc(imagesIdAPIpath, getImageById(dbpool)).Methods("GET")            // URL
+	router.HandleFunc(imagesFilesIDAPIpath, getImageByIdAsFile(dbpool)).Methods("GET") // File
 
-	router.HandleFunc("/api/vehicleCategories", postVehicleCategories(dbpool)).Methods("POST")
-	router.HandleFunc("/api/vehicleCategories", getVehicleCategories(dbpool)).Methods("GET")
+	router.HandleFunc(vehicleCategoriesAPIpath, postVehicleCategories(dbpool)).Methods("POST")
+	router.HandleFunc(vehicleCategoriesAPIpath, getVehicleCategories(dbpool)).Methods("GET")
+	router.HandleFunc(vehicleCategoriesIdAPIpath, updateVehicleCategory(dbpool)).Methods("PUT")
 
-	router.HandleFunc("/api/vehicles", postVehicle(dbpool)).Methods("POST")
-	router.HandleFunc("/api/vehicles", getVehicles(dbpool)).Methods("GET")
+	router.HandleFunc(vehiclesAPIpath, postVehicle(dbpool)).Methods("POST")
+	router.HandleFunc(vehiclesAPIpath, getVehicles(dbpool)).Methods("GET")
+	router.HandleFunc(vehiclesIdAPIpath, updateVehicle(dbpool)).Methods("PUT")
 
-	router.HandleFunc("/api/defects", postDefect(dbpool)).Methods("POST")
-	router.HandleFunc("/api/defects", getDefects(dbpool)).Methods("GET")
+	router.HandleFunc(defectsAPIpath, postDefect(dbpool)).Methods("POST")
+	router.HandleFunc(defectsAPIpath, getDefects(dbpool)).Methods("GET")
+	router.HandleFunc(defectsIdAPIpath, updateDefect(dbpool)).Methods("PUT")
 
-	router.HandleFunc("/api/producers", postProducers(dbpool)).Methods("POST")
-	router.HandleFunc("/api/producers", getProducers(dbpool)).Methods("GET")
+	router.HandleFunc(producersAPIpath, postProducers(dbpool)).Methods("POST")
+	router.HandleFunc(producersAPIpath, getProducers(dbpool)).Methods("GET")
+	router.HandleFunc(producersIdAPIpath, updateProducer(dbpool)).Methods("PUT")
 
-	router.HandleFunc("/api/stations/id/{id}", getStationByID(dbpool)).Methods("GET")
-	router.HandleFunc("/api/vehicles/id/{id}", getVehicleById(dbpool)).Methods("GET")
-	router.HandleFunc("/api/vehicleCategories/id/{id}", getVehicleCategoryById(dbpool)).Methods("GET")
-	router.HandleFunc("/api/producers/id/{id}", getProducerById(dbpool)).Methods("GET")
-	router.HandleFunc("/api/defects/id/{id}", getDefectByID(dbpool)).Methods("GET")
+	router.HandleFunc(stationsIdAPIpath, getStationByID(dbpool)).Methods("GET")
+	router.HandleFunc(vehiclesIdAPIpath, getVehicleById(dbpool)).Methods("GET")
+	router.HandleFunc(vehicleCategoriesIdAPIpath, getVehicleCategoryById(dbpool)).Methods("GET")
+	router.HandleFunc(producersIdAPIpath, getProducerById(dbpool)).Methods("GET")
+	router.HandleFunc(defectsIdAPIpath, getDefectByID(dbpool)).Methods("GET")
 
 	router.HandleFunc("/api/healthcheck/hello", hello()).Methods("GET")
-	router.HandleFunc("/api/healthcheck/auth", validate(client,
-		func(writer http.ResponseWriter, request *http.Request) {
+	router.HandleFunc("/api/healthcheck/auth", validate(
+		func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
 			hello()(writer, request)
 		}))
 	router.HandleFunc("/api/healthcheck/sql", testDBget(dbpool)).Methods("GET")
@@ -124,8 +139,6 @@ func getDBpool() *pgxpool.Pool {
 }
 
 func initKeycloakConfig() {
-	keycloakRealm = "hivedrive"
-
 	var ok bool
 	keycloakClientID, ok = os.LookupEnv("CLIENT_ID")
 	if !ok {
@@ -136,7 +149,6 @@ func initKeycloakConfig() {
 	if !ok {
 		log.Fatalf("CLIENT_SECRET environment variable not set")
 	}
-
 }
 
 func initializeDatabase(dbpool *pgxpool.Pool) {
@@ -158,30 +170,46 @@ func initializeDatabase(dbpool *pgxpool.Pool) {
 	createReservationsTable(dbpool)
 }
 
-func validate(client *gocloak.GoCloak,
-	handler func(writer http.ResponseWriter, request *http.Request)) http.HandlerFunc {
+func validate(
+	handler func(writer http.ResponseWriter,
+		request *http.Request,
+		introspectionResult introspection)) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		auth := request.Header.Get("Authorization")
 		if auth == "" {
 			http.Error(writer, "Auth header missing", http.StatusUnauthorized)
 			return
 		}
+		if !strings.HasPrefix(auth, oidc.PrefixBearer) {
+			http.Error(writer, "invalid header", http.StatusUnauthorized)
+			return
+		}
+		token := strings.TrimPrefix(auth, oidc.PrefixBearer)
 
-		token := auth[len("Bearer "):]
+		var urlValues neturl.Values
+		urlValues = neturl.Values{"token": {token}}
+		urlValues.Set("token_type_hint", "access_token")
+		urlValues.Set("client_id", keycloakClientID)
+		urlValues.Set("client_secret", keycloakClientSecret)
 
-		introspection, err := client.RetrospectToken(context.Background(), token, keycloakClientID, keycloakClientSecret, keycloakRealm)
+		r, _ := http.PostForm("http://keycloak:8080/auth/realms/hivedrive/protocol/openid-connect/token/introspect", urlValues)
 
+		res, err := io.ReadAll(r.Body)
 		if err != nil {
-			log.Printf("Token introspection error: %v", err)
-			http.Error(writer, fmt.Sprintf("Token introspection error"), http.StatusUnauthorized)
+			log.Fatal(err)
+		}
+
+		var introspectionResult introspection
+		err = json.Unmarshal(res, &introspectionResult)
+		if err != nil {
+			http.Error(writer, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		if !introspectionResult.Active {
+			http.Error(writer, "Invalid Token", http.StatusUnauthorized)
 			return
 		}
 
-		if !*introspection.Active {
-			http.Error(writer, "Invalid or expired token", http.StatusUnauthorized)
-			return
-		}
-
-		handler(writer, request)
+		handler(writer, request, introspectionResult)
 	}
 }

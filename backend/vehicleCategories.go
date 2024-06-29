@@ -16,8 +16,32 @@ type vehicleCategory struct {
 	Name string `json:"name"`
 }
 
-func updateVehicleCategory(w http.ResponseWriter, r *http.Request) {
+func updateVehicleCategory(dbpool *pgxpool.Pool) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		body, err := io.ReadAll(request.Body)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Println(errorReadingRequestBody, err)
+			return
+		}
+		var vC vehicleCategory
+		err = json.Unmarshal(body, &vC)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf(errorParsingRequestBody, err)
+			return
+		}
+		rows, err := dbpool.Query(context.Background(), "UPDATE vehicleCategories SET name = $1 WHERE id = $2 RETURNING id;", vC.Name, mux.Vars(request)["id"])
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error updating vehicleCategory: %vC\n", err)
+			return
+		}
+		defer rows.Close()
 
+		sendResponseVehicleCategories(writer, rows, err, vC, body, updateOperation, cVehicleCategory)
+		return
+	}
 }
 
 func postVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
@@ -25,14 +49,14 @@ func postVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
 		body, err := io.ReadAll(request.Body)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error reading request body: %v\n", err)
+			log.Printf(errorReadingRequestBody, err)
 			return
 		}
 		var vC vehicleCategory
 		err = json.Unmarshal(body, &vC)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error reading request body: %v\n", err)
+			log.Printf(errorReadingRequestBody, err)
 			return
 		}
 		rows, err := dbpool.Query(context.Background(),
@@ -43,25 +67,9 @@ func postVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		defer rows.Close()
-		rows.Next()
-		var id int64
-		err = rows.Scan(&id)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error executing insert vehicleCategory: %v", err)
-			return
-		}
-		log.Printf("Inserted vehicleCategory: %d", id)
-		vC.Id = id
-		body, err = json.Marshal(vC)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error serializing vehicleCategory: %v", err)
-			return
-		}
-		writer.Header().Set("Content-Type", "application/json")
-		writer.WriteHeader(http.StatusCreated)
-		writer.Write(body)
+
+		sendResponseVehicleCategories(writer, rows, err, vC, body, insertOperation, cVehicleCategory)
+		return
 	}
 }
 
@@ -71,7 +79,7 @@ func getVehicleCategoryById(dbpool *pgxpool.Pool) http.HandlerFunc {
 			mux.Vars(request)["id"])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error finding vehicleCategories: %v\n", err)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleCategory, err)
 		}
 		defer rows.Close()
 
@@ -80,22 +88,28 @@ func getVehicleCategoryById(dbpool *pgxpool.Pool) http.HandlerFunc {
 			err = rows.Scan(&vC.Id, &vC.Name)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf("Error finding vehicleCategories: %v\n", err)
+				log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleCategory, err)
 				return
 			}
 			str, err := json.Marshal(vC)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf("Error finding vehicleCategories: %v\n", err)
+				log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleCategory, err)
 				return
 			}
-			writer.Header().Set("Content-Type", "application/json")
-			writer.Write(str)
+			writer.Header().Set(contentType, applicationJSON)
+			_, err = writer.Write(str)
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleCategory, err)
+				return
+			}
+			return
 		}
 
 		if !rows.Next() {
 			writer.WriteHeader(http.StatusNotFound)
-			log.Printf("Error finding vehicleCategory: vehicleCategory not found \n")
+			log.Printf(errorGenericNotFound, cVehicleCategory, cVehicleCategory)
 			return
 		}
 	}
@@ -118,23 +132,56 @@ func getVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
 			})
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error finding vehicleCategories: %v\n", err)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleCategory, err)
 			return
 		}
 		str, err := json.Marshal(vehicleCategories)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error finding vehicleCategories: %v\n", err)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleCategory, err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
-		writer.Write(str)
+		writer.Header().Set(contentType, applicationJSON)
+		_, err = writer.Write(str)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleCategory, err)
+			return
+		}
 	}
+}
+
+func sendResponseVehicleCategories(writer http.ResponseWriter, rows pgx.Rows, err error, vC vehicleCategory, body []byte, operationType string, structName string) bool {
+	rows.Next()
+	var id int64
+	err = rows.Scan(&id)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
+		return false
+	}
+	log.Printf(genericSuccess, operationType, structName, id)
+	vC.Id = id
+	body, err = json.Marshal(vC)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf(errorSerializingGeneric, err, structName)
+		return false
+	}
+	writer.Header().Set(contentType, applicationJSON)
+	writer.WriteHeader(http.StatusCreated)
+	_, err = writer.Write(body)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
+		return false
+	}
+	return false
 }
 
 func createVehicleCategoriesTable(dbpool *pgxpool.Pool) {
 	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS vehicleCategories (id BIGSERIAL PRIMARY KEY, name TEXT)")
 	if err != nil {
-		log.Fatalf("Failed to create table: %v\n", err)
+		log.Fatalf(failedToCreateTable, err)
 	}
 }

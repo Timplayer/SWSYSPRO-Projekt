@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"slices"
 	"time"
 )
 
@@ -21,6 +22,15 @@ type reservation struct {
 	AutoKlasse   int64     `json:"auto_klasse"`
 }
 
+type reservationNullabl struct {
+	Id           int64      `json:"id"`
+	StartZeit    *time.Time `json:"start_zeit"`
+	StartStation *int64     `json:"start_station"`
+	EndZeit      *time.Time `json:"end_zeit"`
+	EndStation   *int64     `json:"end_station"`
+	AutoKlasse   int64      `json:"auto_klasse"`
+}
+
 type availability struct {
 	Time       time.Time `json:"time"`
 	Pos        int64     `json:"pos"`
@@ -28,19 +38,21 @@ type availability struct {
 	Cars       int64     `json:"availability"`
 }
 
-func postReservation(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
+func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
+	request *http.Request,
+	introspectionResult introspection) {
+	return func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
 		body, err := io.ReadAll(request.Body)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error reading request body: %v\n", err)
+			log.Printf(errorReadingRequestBody, err)
 			return
 		}
 		var r reservation
 		err = json.Unmarshal(body, &r)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error reading request body: %v\n", err)
+			log.Printf(errorReadingRequestBody, err)
 			return
 		}
 
@@ -56,8 +68,8 @@ func postReservation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		defer tx.Rollback(request.Context())
 
 		err = tx.QueryRow(context.Background(),
-			"INSERT INTO reservations (auto_klasse, start_time, start_pos, end_time, end_pos) VALUES ($1, $2, $3, $4, $5) RETURNING id",
-			r.AutoKlasse, r.StartZeit, r.StartStation, r.EndZeit, r.EndStation).Scan(&r.Id)
+			"INSERT INTO reservations (user_id, auto_klasse, start_time, start_pos, end_time, end_pos) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
+			introspectionResult.UserId, r.AutoKlasse, r.StartZeit, r.StartStation, r.EndZeit, r.EndStation).Scan(&r.Id)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error adding Reservation: %v", err)
@@ -97,6 +109,59 @@ func postReservation(dbpool *pgxpool.Pool) http.HandlerFunc {
 	}
 }
 
+func getReservations(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
+	request *http.Request, introspectionResult introspection) {
+	return func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
+		var rows pgx.Rows
+		var err error
+
+		if slices.Contains(introspectionResult.Access.Roles, "employee") {
+			rows, err = dbpool.Query(context.Background(),
+				`Select id, auto_klasse as AutoKlasse,
+                                start_time as StartZeit, 
+                                start_pos as StartStation, 
+                                end_time as EndZeit, 
+                                end_pos as EndStation 
+                    from reservations`)
+		} else {
+			rows, err = dbpool.Query(context.Background(),
+				`Select id, auto_klasse as AutoKlasse,
+                                start_time as StartZeit, 
+                                start_pos as StartStation, 
+                                end_time as EndZeit, 
+                                end_pos as EndStation 
+                    from reservations
+                    WHERE user_id = $1`, introspectionResult.UserId)
+		}
+
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error geting Database Connection: %v\n", err)
+			return
+		}
+		defer rows.Close()
+		reservations, err := pgx.CollectRows(rows, pgx.RowToStructByName[reservationNullabl])
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error finding reservations: %v\n", err)
+			return
+		}
+		str, err := json.Marshal(reservations)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error marshaling reservations: %v\n", err)
+			return
+		}
+		writer.Header().Set(contentType, applicationJSON)
+		_, err = writer.Write(str)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
+			return
+		}
+	}
+}
+
 type stationAndTime struct {
 	Id         int64     `json:"id"`
 	Time       time.Time `json:"time"`
@@ -109,14 +174,14 @@ func addCarToStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		body, err := io.ReadAll(request.Body)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error reading request body: %v\n", err)
+			log.Printf(errorReadingRequestBody, err)
 			return
 		}
 		var r stationAndTime
 		err = json.Unmarshal(body, &r)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error reading request body: %v\n", err)
+			log.Printf(errorReadingRequestBody, err)
 			return
 		}
 
@@ -167,7 +232,7 @@ func addCarToStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error serializing station: %v", err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(body)
 	}
@@ -195,7 +260,7 @@ func getAvailabilityAtStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error serializing availability: %v", err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.WriteHeader(http.StatusOK)
 		writer.Write(body)
 	}
@@ -206,6 +271,7 @@ func createReservationsTable(dbpool *pgxpool.Pool) {
 CREATE TABLE IF NOT EXISTS reservations
 (
     id              BIGSERIAL PRIMARY KEY,
+    user_id         varchar,
     auto_klasse     BIGINT,
     start_time      timestamp,
     start_pos       BIGINT,
@@ -242,6 +308,6 @@ FROM station_times t
     LEFT JOIN depatures d
         ON t.time = d.time AND t.pos = d.pos AND d.auto_klasse = d.auto_klasse;`)
 	if err != nil {
-		log.Fatalf("Failed to create table: %v\n", err)
+		log.Fatalf(failedToCreateTable, err)
 	}
 }

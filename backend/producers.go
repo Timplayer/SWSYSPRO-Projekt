@@ -16,6 +16,35 @@ type producer struct {
 	Name string `json:"name"`
 }
 
+func updateProducer(dbpool *pgxpool.Pool) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		body, err := io.ReadAll(request.Body)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Println("Error reading request body: %p\n", err)
+			return
+		}
+
+		var p producer
+		err = json.Unmarshal(body, &p)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error parsing request body: %p\n", err)
+			return
+		}
+		rows, err := dbpool.Query(context.Background(), "UPDATE producers SET name = $1 WHERE id = $2 RETURNING id", p.Name, mux.Vars(request)["id"])
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error updating producer: %p\n", err)
+			return
+		}
+		defer rows.Close()
+
+		sendResponseProducers(writer, rows, err, p, body, updateOperation, cProducer)
+		return
+	}
+}
+
 func postProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		body, err := io.ReadAll(request.Body)
@@ -35,29 +64,13 @@ func postProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
 			"INSERT INTO producers (name) VALUES ($1) RETURNING id", p.Name)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error executing insert producer: %v", err)
+			log.Printf(errorExecutingOperationGeneric, insertOperation, cProducer, err)
 			return
 		}
 		defer rows.Close()
-		rows.Next()
-		var id int64
-		err = rows.Scan(&id)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error executing insert producer: %v", err)
-			return
-		}
-		log.Printf("Inserted producer: %d", id)
-		p.Id = id
-		body, err = json.Marshal(p)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error serializing producer: %v", err)
-			return
-		}
-		writer.Header().Set("Content-Type", "application/json")
-		writer.WriteHeader(http.StatusCreated)
-		writer.Write(body)
+
+		sendResponseProducers(writer, rows, err, p, body, insertOperation, cProducer)
+		return
 	}
 }
 
@@ -67,7 +80,7 @@ func getProducerById(dbpool *pgxpool.Pool) http.HandlerFunc {
 			mux.Vars(request)["id"])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error finding producer: %v\n", err)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cProducer, err)
 		}
 		defer rows.Close()
 
@@ -76,22 +89,28 @@ func getProducerById(dbpool *pgxpool.Pool) http.HandlerFunc {
 			err = rows.Scan(&p.Id, &p.Name)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf("Error finding producer: %v\n", err)
+				log.Printf(errorExecutingOperationGeneric, findingOperation, cProducer, err)
 				return
 			}
 			str, err := json.Marshal(p)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf("Error finding producer: %v\n", err)
+				log.Printf(errorExecutingOperationGeneric, findingOperation, cProducer, err)
 				return
 			}
-			writer.Header().Set("Content-Type", "application/json")
-			writer.Write(str)
+			writer.Header().Set(contentType, applicationJSON)
+			_, err = writer.Write(str)
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				log.Printf(errorExecutingOperationGeneric, findingOperation, cProducer, err)
+				return
+			}
+			return
 		}
 
 		if !rows.Next() {
 			writer.WriteHeader(http.StatusNotFound)
-			log.Printf("Error finding producer: producer not found \n")
+			log.Printf(errorGenericNotFound, cProducer, cProducer)
 			return
 		}
 	}
@@ -114,23 +133,56 @@ func getProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
 			})
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error finding producers: %v\n", err)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cProducer, err)
 			return
 		}
 		str, err := json.Marshal(producers)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error finding producers: %v\n", err)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cProducer, err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
-		writer.Write(str)
+		writer.Header().Set(contentType, applicationJSON)
+		_, err = writer.Write(str)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cProducer, err)
+			return
+		}
 	}
+}
+
+func sendResponseProducers(writer http.ResponseWriter, rows pgx.Rows, err error, p producer, body []byte, operationType string, structName string) bool {
+	rows.Next()
+	var id int64
+	err = rows.Scan(&id)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
+		return false
+	}
+	log.Printf(genericSuccess, operationType, structName, id)
+	p.Id = id
+	body, err = json.Marshal(p)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf(errorSerializingGeneric, err, structName)
+		return false
+	}
+	writer.Header().Set(contentType, applicationJSON)
+	writer.WriteHeader(http.StatusCreated)
+	_, err = writer.Write(body)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
+		return false
+	}
+	return false
 }
 
 func createProducersTable(dbpool *pgxpool.Pool) {
 	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS producers (id BIGSERIAL PRIMARY KEY, name TEXT NOT NULL)")
 	if err != nil {
-		log.Fatalf("Failed to create table: %v\n", err)
+		log.Fatalf(failedToCreateTable, err)
 	}
 }
