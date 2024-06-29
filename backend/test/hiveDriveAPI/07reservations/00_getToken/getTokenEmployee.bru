@@ -1,0 +1,22 @@
+meta {
+  name: getTokenEmployee
+  type: http
+  seq: 2
+}
+
+post {
+  url: https://localhost:8080/auth/realms/hivedrive/protocol/openid-connect/token
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  client_id: admin-cli
+  username: employee_test
+  password: test
+  grant_type: password
+}
+
+vars:post-response {
+  access_token_employee: res.body.access_token
+}

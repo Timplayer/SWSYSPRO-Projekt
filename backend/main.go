@@ -23,8 +23,12 @@ var (
 )
 
 type introspection struct {
-	Active bool   `json:"active"`
-	UserId string `json:"user_id"`
+	Active bool        `json:"active"`
+	UserId string      `json:"user_id"`
+	Access realmAccess `json:"realm_access"`
+}
+type realmAccess struct {
+	Roles []string `json:"roles"`
 }
 
 func main() {
@@ -35,54 +39,55 @@ func main() {
 
 	router := mux.NewRouter()
 
+	router.HandleFunc("/api/reservations", validate(getReservations(dbpool))).Methods("GET")
 	router.HandleFunc("/api/reservations", validate(postReservation(dbpool))).Methods("POST")
 
 	router.HandleFunc("/api/stations/id/{id}/availability", getAvailabilityAtStation(dbpool)).Methods("GET")
 	router.HandleFunc("/api/stations/availability", addCarToStation(dbpool)).Methods("POST")
 
-	router.HandleFunc("/api/stations", postStation(dbpool)).Methods("POST")
-	router.HandleFunc("/api/stations", getStations(dbpool)).Methods("GET")
-	router.HandleFunc("/api/stations/id/{id}", updateStation(dbpool)).Methods("PUT")
+	router.HandleFunc(stationsAPIpath, postStation(dbpool)).Methods("POST")
+	router.HandleFunc(stationsAPIpath, getStations(dbpool)).Methods("GET")
+	router.HandleFunc(stationsIdAPIpath, updateStation(dbpool)).Methods("PUT")
 
-	router.HandleFunc("/api/images", postImage(dbpool)).Methods("POST")
+	router.HandleFunc(imagesAPIpath, postImage(dbpool)).Methods("POST")
 
-	router.HandleFunc("/api/images/vehicles/id/{id}", postVehicleImage(dbpool)).Methods("POST")
-	router.HandleFunc("/api/images/vehicles/id/{id}", getVehicleImagesByVehicleId(dbpool)).Methods("GET")
-	router.HandleFunc("/api/images/vehicles/id/{id}", deleteVehicleImage(dbpool)).Methods("DELETE")
+	router.HandleFunc(imagesVehicleAPIpath, postVehicleImage(dbpool)).Methods("POST")
+	router.HandleFunc(imagesVehicleAPIpath, getVehicleImagesByVehicleId(dbpool)).Methods("GET")
+	router.HandleFunc(imagesVehicleAPIpath, deleteVehicleImage(dbpool)).Methods("DELETE")
 
-	router.HandleFunc("/api/images/vehicleCategories/id/{id}", postVehicleCategoryImage(dbpool)).Methods("POST")
-	router.HandleFunc("/api/images/vehicleCategories/id/{id}", getVehicleCategoryImagesByVehicleCategoryId(dbpool)).Methods("GET")
-	router.HandleFunc("/api/images/vehicleCategories/id/{id}", deleteVehicleCategoryImage(dbpool)).Methods("DELETE")
+	router.HandleFunc(imagesVehicleCategoryAPIpath, postVehicleCategoryImage(dbpool)).Methods("POST")
+	router.HandleFunc(imagesVehicleCategoryAPIpath, getVehicleCategoryImagesByVehicleCategoryId(dbpool)).Methods("GET")
+	router.HandleFunc(imagesVehicleCategoryAPIpath, deleteVehicleCategoryImage(dbpool)).Methods("DELETE")
 
-	router.HandleFunc("/api/images/defects/id/{id}", postDefectImage(dbpool)).Methods("POST")
-	router.HandleFunc("/api/images/defects/id/{id}", getDefectImagesByDefectId(dbpool)).Methods("GET")
-	router.HandleFunc("/api/images/defects/id/{id}", deleteDefectImage(dbpool)).Methods("DELETE")
+	router.HandleFunc(imagesDefectAPIpath, postDefectImage(dbpool)).Methods("POST")
+	router.HandleFunc(imagesDefectAPIpath, getDefectImagesByDefectId(dbpool)).Methods("GET")
+	router.HandleFunc(imagesDefectAPIpath, deleteDefectImage(dbpool)).Methods("DELETE")
 
-	router.HandleFunc("/api/images", getImages(dbpool)).Methods("GET")                       // List of URLs
-	router.HandleFunc("/api/images/id/{id}", getImageById(dbpool)).Methods("GET")            // URL
-	router.HandleFunc("/api/images/file/id/{id}", getImageByIdAsFile(dbpool)).Methods("GET") // File
+	router.HandleFunc(imagesAPIpath, getImages(dbpool)).Methods("GET")                 // List of URLs
+	router.HandleFunc(imagesIdAPIpath, getImageById(dbpool)).Methods("GET")            // URL
+	router.HandleFunc(imagesFilesIDAPIpath, getImageByIdAsFile(dbpool)).Methods("GET") // File
 
-	router.HandleFunc("/api/vehicleCategories", postVehicleCategories(dbpool)).Methods("POST")
-	router.HandleFunc("/api/vehicleCategories", getVehicleCategories(dbpool)).Methods("GET")
-	router.HandleFunc("/api/vehicleCategories/id/{id}", updateVehicleCategory(dbpool)).Methods("PUT")
+	router.HandleFunc(vehicleCategoriesAPIpath, postVehicleCategories(dbpool)).Methods("POST")
+	router.HandleFunc(vehicleCategoriesAPIpath, getVehicleCategories(dbpool)).Methods("GET")
+	router.HandleFunc(vehicleCategoriesIdAPIpath, updateVehicleCategory(dbpool)).Methods("PUT")
 
-	router.HandleFunc("/api/vehicles", postVehicle(dbpool)).Methods("POST")
-	router.HandleFunc("/api/vehicles", getVehicles(dbpool)).Methods("GET")
-	router.HandleFunc("/api/vehicles/id/{id}", updateVehicle(dbpool)).Methods("PUT")
+	router.HandleFunc(vehiclesAPIpath, postVehicle(dbpool)).Methods("POST")
+	router.HandleFunc(vehiclesAPIpath, getVehicles(dbpool)).Methods("GET")
+	router.HandleFunc(vehiclesIdAPIpath, updateVehicle(dbpool)).Methods("PUT")
 
-	router.HandleFunc("/api/defects", postDefect(dbpool)).Methods("POST")
-	router.HandleFunc("/api/defects", getDefects(dbpool)).Methods("GET")
-	router.HandleFunc("/api/defects/id/{id}", updateDefect(dbpool)).Methods("PUT")
+	router.HandleFunc(defectsAPIpath, postDefect(dbpool)).Methods("POST")
+	router.HandleFunc(defectsAPIpath, getDefects(dbpool)).Methods("GET")
+	router.HandleFunc(defectsIdAPIpath, updateDefect(dbpool)).Methods("PUT")
 
-	router.HandleFunc("/api/producers", postProducers(dbpool)).Methods("POST")
-	router.HandleFunc("/api/producers", getProducers(dbpool)).Methods("GET")
-	router.HandleFunc("/api/producers/id/{id}", updateProducer(dbpool)).Methods("PUT")
+	router.HandleFunc(producersAPIpath, postProducers(dbpool)).Methods("POST")
+	router.HandleFunc(producersAPIpath, getProducers(dbpool)).Methods("GET")
+	router.HandleFunc(producersIdAPIpath, updateProducer(dbpool)).Methods("PUT")
 
-	router.HandleFunc("/api/stations/id/{id}", getStationByID(dbpool)).Methods("GET")
-	router.HandleFunc("/api/vehicles/id/{id}", getVehicleById(dbpool)).Methods("GET")
-	router.HandleFunc("/api/vehicleCategories/id/{id}", getVehicleCategoryById(dbpool)).Methods("GET")
-	router.HandleFunc("/api/producers/id/{id}", getProducerById(dbpool)).Methods("GET")
-	router.HandleFunc("/api/defects/id/{id}", getDefectByID(dbpool)).Methods("GET")
+	router.HandleFunc(stationsIdAPIpath, getStationByID(dbpool)).Methods("GET")
+	router.HandleFunc(vehiclesIdAPIpath, getVehicleById(dbpool)).Methods("GET")
+	router.HandleFunc(vehicleCategoriesIdAPIpath, getVehicleCategoryById(dbpool)).Methods("GET")
+	router.HandleFunc(producersIdAPIpath, getProducerById(dbpool)).Methods("GET")
+	router.HandleFunc(defectsIdAPIpath, getDefectByID(dbpool)).Methods("GET")
 
 	router.HandleFunc("/api/healthcheck/hello", hello()).Methods("GET")
 	router.HandleFunc("/api/healthcheck/auth", validate(
