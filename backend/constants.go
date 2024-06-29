@@ -6,6 +6,7 @@ const octetStream = "octet-stream"
 const updateOperation = "update"
 const insertOperation = "insert"
 const findingOperation = "finding"
+const deleteOperation = "delete"
 const failedToCreateTable = "Failed to create table: %v\n"
 
 const imageJPEG = "image/jpeg"
