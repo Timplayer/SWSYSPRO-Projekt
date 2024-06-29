@@ -1,27 +1,36 @@
-import React from 'react';
-import keycloak from '../keycloak';
+import * as React from 'react';
+import { useLocation } from 'react-router-dom';
+import ProductSmokingHero from '../views/Needhelp';
+import AppFooter from '../views/AppFooter';
+import ProductHero from '../views/ProductHero';
+import ProductHowItWorks from '../views/ProductHowItWorks';
+import ProductCTA from '../views/ProductCTA';
+import AppAppBar from '../views/AppAppBar';
+import withRoot from '../withRoot';
+import CarSearchBar from '../components/CarSearchBar';
+import CarPresentation from '../views/CarPresentation';
+import { LocationProvider } from '../Utils/LocationContext';
 
+document.body.style.display = 'contents';
 
-const Home: React.FC = () => {
+function Index() {
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
+
   return (
-    <div>
-      <h1>Welcome to the Home Page</h1>
-      {keycloak.authenticated ? (
-        <div>
-            <h1>
-            Account Page: <a href='/account'> Account Page</a>
-            </h1>
-            <p>You are logged in</p>
-            <a href="/logout">Logout</a>
-        </div>
-      ) : (
-        <div>
-          <p>You are not logged in</p>
-          <a href="/login">Login</a>
-        </div>
-      )}
-    </div>
+    <LocationProvider>
+      <React.Fragment>
+        <AppAppBar />
+        <CarSearchBar />
+        <ProductHero />
+        {isHomePage && <CarPresentation />}
+        <ProductHowItWorks />
+        <ProductCTA />
+        <ProductSmokingHero />
+        <AppFooter />
+      </React.Fragment>
+    </LocationProvider>
   );
-};
+}
 
-export default Home;
+export default withRoot(Index);

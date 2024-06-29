@@ -17,6 +17,19 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+
+      - name: Build and start Docker Compose services
+        run: docker-compose -f ./infra/docker-compose.yaml up -d
+  
+      - name: Display Docker Compose service status
+        if: always()
+        run: docker-compose -f ./infra/docker-compose.yaml ps
+
+      - name: List and Inspect Docker Containers
+        if: always()
+        run: |
+          docker inspect --format='{{json .State.Health}}' infra_keycloak_1
+
       - name: Build the stack
         id: build
         run: |
@@ -40,4 +53,3 @@ jobs:
           ./backend/test/add-stations.sh
           ./backend/test/add-vehicleCategories.sh
           docker compose -f ./infra/docker-compose.yaml down
-

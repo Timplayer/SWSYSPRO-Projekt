@@ -1,0 +1,14 @@
+{
+    "title": "Opensource Lizenzen",
+    "sections": [
+      {
+        "heading": "React",
+        "content": "MIT"
+      },
+      {
+        "heading": "Material UI",
+        "content": "MIT"
+      }
+    ]
+  }
+  

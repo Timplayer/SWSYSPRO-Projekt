@@ -8,6 +8,20 @@ import Home from './pages/Home';
 import Account from './pages/Account';
 import ProtectedRoute from './ProtectedRoute';
 import { ErrorMessageProvider } from './Utils/ErrorMessageContext';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
+import Impressum from './pages/Impressum';
+import Help from './pages/Help';
+import Bookingpage from './pages/Bookingpage';
+import Bookings from './pages/Bookings';
+import AboBookingPage from './pages/AboBookingpage';
+import Abopage from './pages/Abopage';
+import Carclasses from './pages/Carclasses';
+import { LocationProvider } from './Utils/LocationContext';
+import Bonusprogramm from './pages/Bonusprogramm';
+import OpenSourcethings from './pages/OpenSourcethings';
+import Reservation from './pages/CarBookingPage';
+
 
 const routes: RouteObject[] = [
 	{
@@ -27,8 +41,56 @@ const routes: RouteObject[] = [
 		element: <ProtectedRoute element={<Account />} requiredRoles={['admin']} />,
 	},
 	{
+		path: '/privacy',
+		element: <Privacy />,
+	},
+	{
+		path: '/terms',
+		element: <Terms />,
+	},
+	{
+		path: '/impressum',
+		element: <Impressum />,
+	},
+	{
+		path: '/help',
+		element: <Help />,
+	},
+	{
 		path: '*',
 		element: <NotFound />,
+	},
+	{
+		path: '/bookingpage',
+		element: (<LocationProvider> <Bookingpage /> </LocationProvider>),
+	},
+	{
+		path: '/mybookings',
+		element: <ProtectedRoute element={<Bookings />} requiredRoles={['member', 'admin', 'employee']} />,
+	},
+	{
+		path: '/subscription',
+		element: <Abopage />,
+	},
+	{
+		path: '/subscriptionbooking',
+		element: <ProtectedRoute element={<AboBookingPage />} requiredRoles={['member', 'admin', 'employee']} />,
+	},
+	{
+		path: '/carclass',
+		element: <Carclasses />,
+	},
+	{
+		path: '/bonus',
+		element: <Bonusprogramm />,
+	},
+	{
+		path: '/licenses',
+		element: <OpenSourcethings />,
+	},
+	{
+		path: '/reservation',
+		element: <Reservation />,
 	},
 ];
 
