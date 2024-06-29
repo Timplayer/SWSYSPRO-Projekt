@@ -16,9 +16,6 @@ import (
 func postVehicleCategoryImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 
-		var path string
-		path = "/api/images/file/id/"
-
 		err := request.ParseMultipartForm(1000) // maxMemory in MB
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
@@ -72,7 +69,7 @@ func postVehicleCategoryImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		rows, err = dbpool.Query(context.Background(),
-			"UPDATE images SET url = $1 WHERE id = $2;", "https://"+request.Host+path+strconv.FormatInt(p.Id, 10), p.Id)
+			"UPDATE images SET url = $1 WHERE id = $2;", "https://"+request.Host+fileAPIpath+strconv.FormatInt(p.Id, 10), p.Id)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing update image: %v", err)
@@ -100,7 +97,7 @@ func postVehicleCategoryImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		log.Printf("Image inserted: %d", p.Id)
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(body)
 	}
@@ -139,7 +136,7 @@ func deleteVehicleCategoryImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 				log.Printf("Error deleting image: %p\n", err)
 				return
 			}
-			writer.Header().Set("Content-Type", "application/json")
+			writer.Header().Set(contentType, applicationJSON)
 			writer.WriteHeader(http.StatusOK)
 			writer.Write(str)
 			return
@@ -179,7 +176,7 @@ func getVehicleCategoryImagesByVehicleCategoryId(dbpool *pgxpool.Pool) http.Hand
 			log.Printf("Error finding images: %v\n", err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.Write(str)
 	}
 }
