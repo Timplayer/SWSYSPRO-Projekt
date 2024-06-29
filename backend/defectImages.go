@@ -1,105 +1,17 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"io"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 func postDefectImage(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-
-		err := request.ParseMultipartForm(1000) // maxMemory in MB
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error parsing multipart form: %v\n", err)
-			return
-		}
-
-		file, header, err := request.FormFile("file")
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error parsing file: %v\n", err)
-			return
-		}
-
-		buf := bytes.NewBuffer(nil)
-		if _, err := io.Copy(buf, file); err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error reading file: %v\n", err)
-			return
-		}
-
-		wrongFileType := checkFileType(http.DetectContentType(buf.Bytes()))
-		if wrongFileType {
-			writer.WriteHeader(http.StatusUnsupportedMediaType)
-			log.Printf("Unsupported Media Type\n")
-			return
-		}
-
-		var p picture
-		p.DisplayOrder, err = strconv.ParseInt(request.FormValue(displayOrderKey), 10, 64)
-		if err != nil {
-			writer.WriteHeader(http.StatusBadRequest)
-			log.Printf("Error parsing order number: %v\n", err)
-			return
-		}
-
-		rows, err := dbpool.Query(context.Background(),
-			"INSERT INTO images (fileName, file, displayOrder) VALUES ($1, $2, $3) RETURNING id;", header.Filename, buf.Bytes(), p.DisplayOrder)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error executing insert image: %v", err)
-			return
-		}
-		defer rows.Close()
-
-		rows.Next()
-		err = rows.Scan(&p.Id)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error executing insert image (rows.Scan): %v", err)
-			return
-		}
-		rows, err = dbpool.Query(context.Background(),
-			"UPDATE images SET url = $1 WHERE id = $2;", "https://"+request.Host+fileAPIpath+strconv.FormatInt(p.Id, 10), p.Id)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error executing update image: %v", err)
-			return
-		}
-		defer rows.Close()
-
-		rows, err = dbpool.Query(context.Background(),
-			"INSERT INTO defectImage (defectId, imageId) VALUES ($1, $2);", mux.Vars(request)[idKey], p.Id)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error creating connection: %v", err)
-			return
-		}
-
-		defer rows.Close()
-
-		var body []byte
-		body, err = json.Marshal(p)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error executing insert image (json.Marshal): %v", err)
-			return
-		}
-
-		log.Printf("Image inserted: %d", p.Id)
-		writer.Header().Set(contentType, "application/json")
-		writer.WriteHeader(http.StatusCreated)
-		writer.Write(body)
-	}
+	return postImageGeneric(dbpool, "INSERT INTO defectImage (defectId, imageId) VALUES ($1, $2);")
 }
 
 func deleteDefectImage(dbpool *pgxpool.Pool) http.HandlerFunc {
