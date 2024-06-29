@@ -12,11 +12,19 @@ post {
 
 body:form-urlencoded {
   client_id: admin-cli
-  username: member_test
+  username: member_test@example.com
   password: test
   grant_type: password
 }
 
 vars:post-response {
   access_token_member: res.body.access_token
+}
+
+tests {
+  test("Status = 200", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(200);
+  });
+  
 }
