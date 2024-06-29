@@ -37,6 +37,10 @@ func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return postImageGeneric(dbpool, "")
 }
 
+func getImageById(dbpool *pgxpool.Pool) http.HandlerFunc {
+	return getImageGenericById(dbpool, "SELECT url FROM images WHERE id = $1")
+}
+
 func postImageGeneric(dbpool *pgxpool.Pool, insertSQL string) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 
@@ -125,10 +129,6 @@ func postImageGeneric(dbpool *pgxpool.Pool, insertSQL string) http.HandlerFunc {
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(body)
 	}
-}
-
-func getImageById(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return getImageGenericById(dbpool, "SELECT url FROM images WHERE id = $1")
 }
 
 func getImageGenericById(dbpool *pgxpool.Pool, selectSQL string) http.HandlerFunc {
