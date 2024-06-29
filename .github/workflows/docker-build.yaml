@@ -53,6 +53,3 @@ jobs:
           ./backend/test/add-stations.sh
           ./backend/test/add-vehicleCategories.sh
           docker compose -f ./infra/docker-compose.yaml down
-
-      - name: Display Docker Compose service status
-        run: docker-compose ps
