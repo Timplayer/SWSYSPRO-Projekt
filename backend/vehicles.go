@@ -27,7 +27,7 @@ func updateVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
 		body, err := io.ReadAll(request.Body)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Println("Error reading request body: %v\n", err)
+			log.Println(errorReadingRequestBody, err)
 			return
 		}
 
@@ -35,7 +35,7 @@ func updateVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
 		err = json.Unmarshal(body, &v)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error parsing request body: %v\n", err)
+			log.Printf(errorParsingRequestBody, err)
 			return
 		}
 		rows, err := dbpool.Query(context.Background(), "UPDATE vehicles SET name = $1, vehiclecategory = $2, producer = $3, status = $4, receptionDate = $5, completionDate = $6 WHERE id = $7 RETURNING id", v.Name, v.VehicleCategory, v.Producer, v.Status, v.ReceptionDate, v.CompletionDate, mux.Vars(request)["id"])
@@ -62,7 +62,7 @@ func postVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
 		err = json.Unmarshal(body, &v)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error reading request body: %v\n", err)
+			log.Printf(errorReadingRequestBody, err)
 			return
 		}
 		rows, err := dbpool.Query(context.Background(),
@@ -85,7 +85,7 @@ func getVehicleById(dbpool *pgxpool.Pool) http.HandlerFunc {
 			mux.Vars(request)["id"])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error finding vehicle: %v\n", err)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicle, err)
 		}
 		defer rows.Close()
 
@@ -94,13 +94,13 @@ func getVehicleById(dbpool *pgxpool.Pool) http.HandlerFunc {
 			err = rows.Scan(&v.Id, &v.Name, &v.VehicleCategory, &v.Producer, &v.Status, &v.ReceptionDate, &v.CompletionDate)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf("Error finding vehicle: %v\n", err)
+				log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicle, err)
 				return
 			}
 			str, err := json.Marshal(v)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf("Error finding vehicle: %v\n", err)
+				log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicle, err)
 				return
 			}
 			writer.Header().Set(contentType, applicationJSON)
@@ -115,7 +115,7 @@ func getVehicleById(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 		if !rows.Next() {
 			writer.WriteHeader(http.StatusNotFound)
-			log.Printf("Error finding vehicle: vehicle not found \n")
+			log.Printf(errorGenericNotFound, cVehicle, cVehicle)
 			return
 		}
 	}
@@ -138,13 +138,13 @@ func getVehicles(dbpool *pgxpool.Pool) http.HandlerFunc {
 			})
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error finding vehicles: %v\n", err)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicle, err)
 			return
 		}
 		str, err := json.Marshal(vehicles)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error finding vehicles: %v\n", err)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicle, err)
 			return
 		}
 		writer.Header().Set(contentType, applicationJSON)
