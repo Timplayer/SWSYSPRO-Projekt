@@ -39,7 +39,7 @@ const httpsPrefix = "https://"
 const stationsAPIpath = "/api/stations/"
 const producersAPIpath = "/api/producers/"
 const vehiclesAPIpath = "/api/vehicles/"
-const vehicleCategoriesAPIpath = "/api/vehicles/categories/"
+const vehicleCategoriesAPIpath = "/api/vehiclesCategories/"
 const imagesAPIpath = "/api/images/"
 const defectsAPIpath = "/api/defects/"
 
