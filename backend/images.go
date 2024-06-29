@@ -128,8 +128,12 @@ func postImageGeneric(dbpool *pgxpool.Pool, insertSQL string) http.HandlerFunc {
 }
 
 func getImageById(dbpool *pgxpool.Pool) http.HandlerFunc {
+	return getImageGenericById(dbpool, "SELECT url FROM images WHERE id = $1")
+}
+
+func getImageGenericById(dbpool *pgxpool.Pool, selectSQL string) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT url FROM images WHERE id = $1", mux.Vars(request)["id"])
+		rows, err := dbpool.Query(context.Background(), selectSQL, mux.Vars(request)["id"])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing get image by id: %v", err)
