@@ -35,14 +35,14 @@ func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
 		body, err := io.ReadAll(request.Body)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error reading request body: %v\n", err)
+			log.Printf(errorReadingRequestBody, err)
 			return
 		}
 		var r reservation
 		err = json.Unmarshal(body, &r)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error reading request body: %v\n", err)
+			log.Printf(errorReadingRequestBody, err)
 			return
 		}
 
@@ -111,14 +111,14 @@ func addCarToStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		body, err := io.ReadAll(request.Body)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error reading request body: %v\n", err)
+			log.Printf(errorReadingRequestBody, err)
 			return
 		}
 		var r stationAndTime
 		err = json.Unmarshal(body, &r)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error reading request body: %v\n", err)
+			log.Printf(errorReadingRequestBody, err)
 			return
 		}
 
@@ -169,7 +169,7 @@ func addCarToStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error serializing station: %v", err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(body)
 	}
@@ -197,7 +197,7 @@ func getAvailabilityAtStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error serializing availability: %v", err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.WriteHeader(http.StatusOK)
 		writer.Write(body)
 	}
