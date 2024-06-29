@@ -47,7 +47,7 @@ const defectsAPIpath = "/api/defects/"
 const stationsIdAPIpath = "/api/stations/id/{id}"
 const defectsIdAPIpath = "/api/defects/id/{id}"
 const producersIdAPIpath = "/api/producers/id/{id}"
-const vehiclesIdAPIpath = "/api/vechiles/id/{id}"
+const vehiclesIdAPIpath = "/api/vehicles/id/{id}"
 const vehicleCategoriesIdAPIpath = "/api/vehicleCategories/id/{id}"
 
 const imagesVehicleAPIpath = "/api/images/vehicles/id/{id}"
