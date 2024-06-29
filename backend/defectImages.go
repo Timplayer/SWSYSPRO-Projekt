@@ -16,9 +16,6 @@ import (
 func postDefectImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 
-		var path string
-		path = "/api/images/file/id/"
-
 		err := request.ParseMultipartForm(1000) // maxMemory in MB
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
@@ -48,7 +45,7 @@ func postDefectImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		var p picture
-		p.DisplayOrder, err = strconv.ParseInt(request.FormValue("display_order"), 10, 64)
+		p.DisplayOrder, err = strconv.ParseInt(request.FormValue(displayOrderKey), 10, 64)
 		if err != nil {
 			writer.WriteHeader(http.StatusBadRequest)
 			log.Printf("Error parsing order number: %v\n", err)
@@ -72,7 +69,7 @@ func postDefectImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		rows, err = dbpool.Query(context.Background(),
-			"UPDATE images SET url = $1 WHERE id = $2;", "https://"+request.Host+path+strconv.FormatInt(p.Id, 10), p.Id)
+			"UPDATE images SET url = $1 WHERE id = $2;", "https://"+request.Host+fileAPIpath+strconv.FormatInt(p.Id, 10), p.Id)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing update image: %v", err)
@@ -81,7 +78,7 @@ func postDefectImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 		defer rows.Close()
 
 		rows, err = dbpool.Query(context.Background(),
-			"INSERT INTO defectImage (defectId, imageId) VALUES ($1, $2);", mux.Vars(request)["id"], p.Id)
+			"INSERT INTO defectImage (defectId, imageId) VALUES ($1, $2);", mux.Vars(request)[idKey], p.Id)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error creating connection: %v", err)
@@ -99,7 +96,7 @@ func postDefectImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		log.Printf("Image inserted: %d", p.Id)
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, "application/json")
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(body)
 	}
@@ -108,7 +105,7 @@ func postDefectImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 func deleteDefectImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		rows, err := dbpool.Query(context.Background(),
-			"DELETE FROM defectImage WHERE imageId = $1;", mux.Vars(request)["id"])
+			"DELETE FROM defectImage WHERE imageId = $1;", mux.Vars(request)[idKey])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing delete image: %v", err)
@@ -116,7 +113,7 @@ func deleteDefectImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		defer rows.Close()
 		rows, err = dbpool.Query(context.Background(),
-			"DELETE FROM images WHERE id = $1 RETURNING images.id;", mux.Vars(request)["id"])
+			"DELETE FROM images WHERE id = $1 RETURNING images.id;", mux.Vars(request)[idKey])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing delete image: %v", err)
@@ -138,7 +135,7 @@ func deleteDefectImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 				log.Printf("Error deleting image: %p\n", err)
 				return
 			}
-			writer.Header().Set("Content-Type", "application/json")
+			writer.Header().Set(contentType, applicationJSON)
 			writer.WriteHeader(http.StatusOK)
 			writer.Write(str)
 			return
@@ -154,7 +151,7 @@ func deleteDefectImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getDefectImagesByDefectId(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT images.url FROM defects JOIN defectImage ON defects.id = defectImage.defectId JOIN images ON defectImage.imageId = images.id WHERE defect.id = $1", mux.Vars(request)["id"])
+		rows, err := dbpool.Query(context.Background(), "SELECT images.url FROM defects JOIN defectImage ON defects.id = defectImage.defectId JOIN images ON defectImage.imageId = images.id WHERE defect.id = $1", mux.Vars(request)[idKey])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error executing get image by id: %v", err)
@@ -178,7 +175,7 @@ func getDefectImagesByDefectId(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error finding images: %v\n", err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.Write(str)
 	}
 }
