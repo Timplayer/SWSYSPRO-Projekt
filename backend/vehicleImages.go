@@ -99,7 +99,7 @@ func postVehicleImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		log.Printf("Image inserted: %d", p.Id)
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(body)
 	}
@@ -138,7 +138,7 @@ func deleteVehicleImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 				log.Printf("Error deleting image: %p\n", err)
 				return
 			}
-			writer.Header().Set("Content-Type", "application/json")
+			writer.Header().Set(contentType, applicationJSON)
 			writer.WriteHeader(http.StatusOK)
 			writer.Write(str)
 			return
@@ -178,7 +178,7 @@ func getVehicleImagesByVehicleId(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error finding images: %v\n", err)
 			return
 		}
-		writer.Header().Set("Content-Type", "application/json")
+		writer.Header().Set(contentType, applicationJSON)
 		writer.Write(str)
 	}
 }
