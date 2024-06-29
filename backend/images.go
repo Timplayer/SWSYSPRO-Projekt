@@ -101,7 +101,7 @@ func postImageGeneric(dbpool *pgxpool.Pool, connectionTable string, columnName s
 		}
 		defer rows.Close()
 
-		if len(connectionTable) != 0 && len(mux.Vars(request)[idKey]) != 0 {
+		if (len(connectionTable) != 0) && (len(mux.Vars(request)[idKey]) != 0) {
 			rows, err = dbpool.Query(context.Background(),
 				"INSERT INTO $1 ($2, imageId) VALUES ($3, $4);", connectionTable, columnName, mux.Vars(request)[idKey], p.Id)
 			if err != nil {
