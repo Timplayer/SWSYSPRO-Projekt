@@ -7,7 +7,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"io"
 	"log"
 	"net/http"
 	"slices"
@@ -39,21 +38,10 @@ type availability struct {
 	Cars       int64     `json:"availability"`
 }
 
-func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
-	request *http.Request,
-	introspectionResult introspection) {
-	return func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
-		body, err := io.ReadAll(request.Body)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorReadingRequestBody, err)
-			return
-		}
-		var r reservation
-		err = json.Unmarshal(body, &r)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorReadingRequestBody, err)
+func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+		r, fail := getRequestBody[reservation](writer, request.Body)
+		if fail {
 			return
 		}
 
@@ -63,7 +51,7 @@ func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
 		}
 		defer tx.Rollback(request.Context())
 
-		err = tx.QueryRow(context.Background(),
+		err := tx.QueryRow(context.Background(),
 			"INSERT INTO reservations (user_id, auto_klasse, start_time, start_pos, end_time, end_pos) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
 			introspectionResult.UserId, r.AutoKlasse, r.StartZeit, r.StartStation, r.EndZeit, r.EndStation).Scan(&r.Id)
 		if err != nil {
@@ -93,7 +81,7 @@ func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
 		}
 
 		log.Printf("added Reservation: %d", r.Id)
-		body, err = json.Marshal(r)
+		body, err := json.Marshal(r)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error serializing station: %v", err)
@@ -105,21 +93,10 @@ func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
 	}
 }
 
-func putReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
-	request *http.Request,
-	introspectionResult introspection) {
-	return func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
-		body, err := io.ReadAll(request.Body)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorReadingRequestBody, err)
-			return
-		}
-		var r reservation
-		err = json.Unmarshal(body, &r)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorReadingRequestBody, err)
+func putReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+		r, done := getRequestBody[reservation](writer, request.Body)
+		if done {
 			return
 		}
 
@@ -173,7 +150,7 @@ func putReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
 		}
 
 		log.Printf("edited Reservation: %d", r.Id)
-		body, err = json.Marshal(r)
+		body, err := json.Marshal(r)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error serializing station: %v", err)
@@ -185,9 +162,8 @@ func putReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
 	}
 }
 
-func getReservations(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
-	request *http.Request, introspectionResult introspection) {
-	return func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
+func getReservations(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 		var rows pgx.Rows
 		var err error
 
@@ -238,9 +214,8 @@ func getReservations(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
 	}
 }
 
-func deleteReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
-	request *http.Request, introspectionResult introspection) {
-	return func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
+func deleteReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 		tx, fail := startTransaction(writer, request, dbpool)
 		if fail {
 			return
@@ -303,17 +278,8 @@ type stationAndTime struct {
 
 func addCarToStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		body, err := io.ReadAll(request.Body)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorReadingRequestBody, err)
-			return
-		}
-		var r stationAndTime
-		err = json.Unmarshal(body, &r)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorReadingRequestBody, err)
+		r, fail := getRequestBody[stationAndTime](writer, request.Body)
+		if fail {
 			return
 		}
 
@@ -323,7 +289,7 @@ func addCarToStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		defer tx.Rollback(request.Context())
 
-		err = tx.QueryRow(context.Background(),
+		err := tx.QueryRow(context.Background(),
 			"INSERT INTO reservations (auto_klasse, end_time, end_pos) VALUES ($1, $2, $3) RETURNING id",
 			r.AutoKlasse, r.Time, r.Station).Scan(&r.Id)
 		if err != nil {
@@ -353,7 +319,7 @@ func addCarToStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		log.Printf("added Reservation: %d", r.Id)
-		body, err = json.Marshal(r)
+		body, err := json.Marshal(r)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error serializing station: %v", err)

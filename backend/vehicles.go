@@ -6,7 +6,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"io"
 	"log"
 	"net/http"
 	"time"
@@ -24,18 +23,8 @@ type vehicle struct {
 
 func updateVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		body, err := io.ReadAll(request.Body)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Println(errorReadingRequestBody, err)
-			return
-		}
-
-		var v vehicle
-		err = json.Unmarshal(body, &v)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorParsingRequestBody, err)
+		v, fail := getRequestBody[vehicle](writer, request.Body)
+		if fail {
 			return
 		}
 		rows, err := dbpool.Query(context.Background(), "UPDATE vehicles SET name = $1, vehiclecategory = $2, producer = $3, status = $4, receptionDate = $5, completionDate = $6 WHERE id = $7 RETURNING id", v.Name, v.VehicleCategory, v.Producer, v.Status, v.ReceptionDate, v.CompletionDate, mux.Vars(request)["id"])
@@ -46,23 +35,14 @@ func updateVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		defer rows.Close()
 
-		sendResponseVehicles(writer, rows, err, v, body, updateOperation, cVehicle)
+		sendResponseVehicles(writer, rows, err, v, updateOperation, cVehicle)
 	}
 }
 
 func postVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		body, err := io.ReadAll(request.Body)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error serializing request body: %v\n", err)
-			return
-		}
-		var v vehicle
-		err = json.Unmarshal(body, &v)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorReadingRequestBody, err)
+		v, fail := getRequestBody[vehicle](writer, request.Body)
+		if fail {
 			return
 		}
 		rows, err := dbpool.Query(context.Background(),
@@ -74,7 +54,7 @@ func postVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		defer rows.Close()
 
-		sendResponseVehicles(writer, rows, err, v, body, insertOperation, cVehicle)
+		sendResponseVehicles(writer, rows, err, v, insertOperation, cVehicle)
 		return
 	}
 }
@@ -157,7 +137,7 @@ func getVehicles(dbpool *pgxpool.Pool) http.HandlerFunc {
 	}
 }
 
-func sendResponseVehicles(writer http.ResponseWriter, rows pgx.Rows, err error, v vehicle, body []byte, operationType string, structName string) bool {
+func sendResponseVehicles(writer http.ResponseWriter, rows pgx.Rows, err error, v *vehicle, operationType string, structName string) bool {
 	rows.Next()
 	var id int64
 	err = rows.Scan(&id)
@@ -168,7 +148,7 @@ func sendResponseVehicles(writer http.ResponseWriter, rows pgx.Rows, err error, 
 	}
 	log.Printf(genericSuccess, operationType, structName, id)
 	v.Id = id
-	body, err = json.Marshal(v)
+	body, err := json.Marshal(v)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		log.Printf(errorSerializingGeneric, err, structName)

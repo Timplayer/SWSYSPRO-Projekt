@@ -6,7 +6,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"io"
 	"log"
 	"net/http"
 )
@@ -18,18 +17,8 @@ type producer struct {
 
 func updateProducer(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		body, err := io.ReadAll(request.Body)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Println("Error reading request body: %p\n", err)
-			return
-		}
-
-		var p producer
-		err = json.Unmarshal(body, &p)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error parsing request body: %p\n", err)
+		p, fail := getRequestBody[producer](writer, request.Body)
+		if fail {
 			return
 		}
 		rows, err := dbpool.Query(context.Background(), "UPDATE producers SET name = $1 WHERE id = $2 RETURNING id", p.Name, mux.Vars(request)["id"])
@@ -40,24 +29,15 @@ func updateProducer(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		defer rows.Close()
 
-		sendResponseProducers(writer, rows, err, p, body, updateOperation, cProducer)
+		sendResponseProducers(writer, rows, err, p, updateOperation, cProducer)
 		return
 	}
 }
 
 func postProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		body, err := io.ReadAll(request.Body)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error reading request body: %v\n", err)
-			return
-		}
-		var p producer
-		err = json.Unmarshal(body, &p)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error reading request body: %v\n", err)
+		p, fail := getRequestBody[producer](writer, request.Body)
+		if fail {
 			return
 		}
 		rows, err := dbpool.Query(context.Background(),
@@ -69,7 +49,7 @@ func postProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		defer rows.Close()
 
-		sendResponseProducers(writer, rows, err, p, body, insertOperation, cProducer)
+		sendResponseProducers(writer, rows, err, p, insertOperation, cProducer)
 		return
 	}
 }
@@ -152,7 +132,7 @@ func getProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
 	}
 }
 
-func sendResponseProducers(writer http.ResponseWriter, rows pgx.Rows, err error, p producer, body []byte, operationType string, structName string) bool {
+func sendResponseProducers(writer http.ResponseWriter, rows pgx.Rows, err error, p *producer, operationType string, structName string) bool {
 	rows.Next()
 	var id int64
 	err = rows.Scan(&id)
@@ -163,7 +143,7 @@ func sendResponseProducers(writer http.ResponseWriter, rows pgx.Rows, err error,
 	}
 	log.Printf(genericSuccess, operationType, structName, id)
 	p.Id = id
-	body, err = json.Marshal(p)
+	body, err := json.Marshal(p)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		log.Printf(errorSerializingGeneric, err, structName)
