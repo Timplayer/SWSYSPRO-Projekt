@@ -32,11 +32,9 @@ const carData = {
   kmIncluded: '200 km'
 };
 
-
-
 const Bookingpage: React.FC = () => {
   const location = useLocation();
-  const { car } = location.state || {};
+  const { location: searchLocation, returnLocation, pickupDate, returnDate } = location.state || {};
   const [cars, setCars] = useState<Car[]>([]);
 
   useEffect(() => {
@@ -52,21 +50,15 @@ const Bookingpage: React.FC = () => {
   return (
     <React.Fragment>
       <AppAppBar />
-      <CarSearchBar />
+      <CarSearchBar
+        initialLocation={searchLocation}
+        initialReturnLocation={returnLocation}
+        initialPickupDate={pickupDate}
+        initialReturnDate={returnDate}
+      />
       <FilterBar />
       <Container>
-        {car ? (
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Typography variant="h4" gutterBottom>
-                Details for {car.name}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <CarCard {...carData} />
-            </Grid>
-          </Grid>
-        ) : (
+        {cars.length > 0 ? (
           <Grid container spacing={3}>
             {cars.map((car, index) => (
               <Grid item xs={12} sm={6} md={4} key={index}>
@@ -74,11 +66,15 @@ const Bookingpage: React.FC = () => {
               </Grid>
             ))}
           </Grid>
+        ) : (
+          <Typography variant="h6" gutterBottom>
+            Keine Autos gefunden für die ausgewählten Kriterien.
+          </Typography>
         )}
       </Container>
       <AppFooter />
     </React.Fragment>
   );
-}
+};
 
 export default withRoot(Bookingpage);

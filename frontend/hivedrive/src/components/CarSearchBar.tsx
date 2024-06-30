@@ -1,22 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, MenuItem, Box, Container, Grid, IconButton} from '@mui/material';
+import { TextField, Button, MenuItem, Box, Container, Grid, IconButton } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import { MobileDateTimePicker } from '@mui/x-date-pickers';
 import axios from 'axios';
-import { Link as RouterLink } from 'react-router-dom';
-import { useLocationContext } from '../Utils/LocationContext';
+import { useNavigate } from 'react-router-dom';
 
-const CarSearchBar: React.FC = () => {
-  const { setLocation } = useLocationContext();
+interface CarSearchBarProps {
+  initialLocation?: string;
+  initialReturnLocation?: string;
+  initialPickupDate?: Date | null;
+  initialReturnDate?: Date | null;
+}
+
+const CarSearchBar: React.FC<CarSearchBarProps> = ({
+  initialLocation = '',
+  initialReturnLocation = '',
+  initialPickupDate = new Date(),
+  initialReturnDate = new Date(),
+}) => {
+  const navigate = useNavigate();
   const [locations, setLocations] = useState<Array<{ label: string, value: string }>>([]);
-  const [location, setLocationState] = useState<string>('');
-  const [pickupDate, setPickupDate] = useState<Date | null>(new Date());
-  const [returnDate, setReturnDate] = useState<Date | null>(new Date());
-  const [splitLocation, setSplitLocation] = useState<boolean>(false);
-  const [returnLocation, setReturnLocation] = useState<string>('');
+  const [location, setLocationState] = useState<string>(initialLocation);
+  const [pickupDate, setPickupDate] = useState<Date | null>(initialPickupDate);
+  const [returnDate, setReturnDate] = useState<Date | null>(initialReturnDate);
+  const [splitLocation, setSplitLocation] = useState<boolean>(initialReturnLocation !== '');
+  const [returnLocation, setReturnLocation] = useState<string>(initialReturnLocation);
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -32,11 +43,13 @@ const CarSearchBar: React.FC = () => {
   }, []);
 
   const handleSubmit = () => {
-    console.log({
-      location,
-      returnLocation: splitLocation ? returnLocation : location,
-      pickupDate,
-      returnDate,
+    navigate('/bookingpage', {
+      state: {
+        location,
+        returnLocation: splitLocation ? returnLocation : location,
+        pickupDate,
+        returnDate,
+      }
     });
   };
 
@@ -53,7 +66,6 @@ const CarSearchBar: React.FC = () => {
               value={location}
               onChange={(e) => {
                 setLocationState(e.target.value);
-                setLocation(e.target.value);
               }}
               fullWidth
             >
@@ -126,8 +138,6 @@ const CarSearchBar: React.FC = () => {
           variant="contained"
           color="primary"
           fullWidth
-          component={RouterLink}
-          to="/bookingpage"
           onClick={handleSubmit}
           sx={{ marginTop: 2 }}
         >

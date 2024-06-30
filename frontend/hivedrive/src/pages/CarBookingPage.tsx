@@ -132,7 +132,7 @@ function Reservation() {
               <Grid item xs={12} md={6}>
                 <StyledTextField
                   fullWidth
-                  label="Autotyp"
+                  label="Fahrzeugtyp"
                   value={carType}
                   sx={{ backgroundColor: theme.palette.background.paper }}
                   disabled
@@ -141,7 +141,7 @@ function Reservation() {
               <Grid item xs={12} md={6}>
                 <StyledTextField
                   fullWidth
-                  label="Auto Bezeichnung"
+                  label="Fahrzeug Bezeichnung"
                   value={carName}
                   sx={{ backgroundColor: theme.palette.background.paper }}
                   disabled
@@ -150,7 +150,7 @@ function Reservation() {
               <Grid item xs={12} md={6}>
                 <StyledTextField
                   fullWidth
-                  label="Autoklasse"
+                  label="Fahrzeugklasse"
                   value={carClass}
                   sx={{ backgroundColor: theme.palette.background.paper }}
                   disabled
