@@ -72,6 +72,8 @@ function Reservation() {
 
   const inputStyle = { backgroundColor: '#ff9800' };
 
+
+  //Mehrere Daten MÜSSEN aus dem Account, der Buchungsseite vorher übernommen werden 
   return (
     <React.Fragment>
       <AppAppBar />
