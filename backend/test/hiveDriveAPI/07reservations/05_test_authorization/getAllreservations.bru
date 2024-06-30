@@ -1,0 +1,27 @@
+meta {
+  name: getAllreservations
+  type: http
+  seq: 1
+}
+
+get {
+  url: https://localhost:8080/api/reservations
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{access_token_employee}}
+}
+
+tests {
+  test("Status = 200", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("there are 2 reservations", function() {
+    const data = res.getBody();
+    expect (data.length).to.equal(2);
+  });
+}

@@ -1,0 +1,22 @@
+meta {
+  name: getReservationsInvalidToken
+  type: http
+  seq: 3
+}
+
+get {
+  url: https://localhost:8080/api/reservations
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer invalidToken
+}
+
+tests {
+  test("Status = 401", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(401);
+  });
+}

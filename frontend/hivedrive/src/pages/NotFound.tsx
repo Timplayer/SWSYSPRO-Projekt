@@ -1,3 +1,4 @@
+import withRoot from "../withRoot";
 
 function NotFound() {
   return (
@@ -8,4 +9,4 @@ function NotFound() {
   );
 }
 
-export default NotFound;
+export default withRoot(NotFound);
