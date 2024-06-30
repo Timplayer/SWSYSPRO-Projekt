@@ -110,6 +110,91 @@ func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
 	}
 }
 
+func putReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
+	request *http.Request,
+	introspectionResult introspection) {
+	return func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
+		body, err := io.ReadAll(request.Body)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf(errorReadingRequestBody, err)
+			return
+		}
+		var r reservation
+		err = json.Unmarshal(body, &r)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf(errorReadingRequestBody, err)
+			return
+		}
+
+		tx, err := dbpool.BeginTx(request.Context(), pgx.TxOptions{
+			IsoLevel:       pgx.Serializable,
+			AccessMode:     pgx.ReadWrite,
+			DeferrableMode: pgx.NotDeferrable})
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error starting Reservation transaction: %v", err)
+			return
+		}
+		defer tx.Rollback(request.Context())
+
+		result, err := tx.Exec(context.Background(),
+			`UPDATE reservations
+				 SET auto_klasse = $1,
+				     start_time = $2,
+				     start_pos = $3,
+				     end_time = $4,
+				     end_pos  = $5
+                 WHERE id = $6 AND user_id = $7;`,
+			r.AutoKlasse, r.StartZeit, r.StartStation, r.EndZeit, r.EndStation, r.Id, introspectionResult.UserId)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error editing Reservation: %v", err)
+			return
+		}
+		if result.RowsAffected() == 0 {
+			writer.WriteHeader(http.StatusNotFound)
+			log.Printf("Error editing Reservation: no rows affected")
+			return
+		}
+		if result.RowsAffected() > 1 {
+			log.Printf("Error editing Reservation: too many rows affected")
+		}
+
+		// check if car is available
+		var available int
+		err = tx.QueryRow(request.Context(), "SELECT MIN(available) AS a FROM availability").Scan(&available)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error testing availability: %v", err)
+			return
+		}
+		if available < 0 {
+			writer.WriteHeader(http.StatusConflict)
+			log.Printf("Error testing availability: no cars available, %v\n", r)
+			return
+		}
+		err = tx.Commit(request.Context())
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error transaction aborted: %v", err)
+			return
+		}
+
+		log.Printf("edited Reservation: %d", r.Id)
+		body, err = json.Marshal(r)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error serializing station: %v", err)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusAccepted)
+		writer.Write(body)
+	}
+}
+
 func getReservations(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
 	request *http.Request, introspectionResult introspection) {
 	return func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
