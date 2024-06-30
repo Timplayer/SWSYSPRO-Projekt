@@ -7,6 +7,7 @@ import withRoot from '../withRoot';
 import AppAppBar from '../views/AppAppBar';
 import AppFooter from '../views/AppFooter';
 import CarSearchBar from '../components/CarSearchBar';
+import keycloak from '../keycloak';
 
 interface Car {
   name: string;
@@ -59,6 +60,9 @@ const BookingPage: React.FC = () => {
   }, []);
 
   const handleBook = (car: Car) => {
+    if (!keycloak.authenticated) {
+      navigate('/login');
+  } else {
     navigate('/carbooking', {
       state: {
         car,
@@ -66,8 +70,8 @@ const BookingPage: React.FC = () => {
         returnLocation,
         pickupDate,
         returnDate,
-      },
-    });
+      }, });
+  }
   };
 
   return (
