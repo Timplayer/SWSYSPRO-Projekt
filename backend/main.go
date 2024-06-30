@@ -72,6 +72,10 @@ func main() {
 	router.HandleFunc(vehicleCategoriesAPIpath, getVehicleCategories(dbpool)).Methods("GET")
 	router.HandleFunc(vehicleCategoriesIdAPIpath, updateVehicleCategory(dbpool)).Methods("PUT")
 
+	router.HandleFunc(vehicleTypesAPIpath, postVehicleType(dbpool)).Methods("POST")
+	router.HandleFunc(vehicleTypesAPIpath, getVehicleTypes(dbpool)).Methods("GET")
+	router.HandleFunc(vehicleTypesIdAPIpath, updateVehicleType(dbpool)).Methods("PUT")
+
 	router.HandleFunc(vehiclesAPIpath, postVehicle(dbpool)).Methods("POST")
 	router.HandleFunc(vehiclesAPIpath, getVehicles(dbpool)).Methods("GET")
 	router.HandleFunc(vehiclesIdAPIpath, updateVehicle(dbpool)).Methods("PUT")
@@ -155,9 +159,11 @@ func initKeycloakConfig() {
 func initializeDatabase(dbpool *pgxpool.Pool) {
 	_, err := dbpool.Exec(context.Background(),
 		"CREATE TABLE IF NOT EXISTS test(id BIGSERIAL PRIMARY KEY, name TEXT)")
+
 	if err != nil {
 		log.Fatalf("Failed to create table: %v\n", err)
 	}
+
 	createImagesTable(dbpool)
 	createStationsTable(dbpool)
 	createVehicleCategoriesTable(dbpool)
@@ -169,6 +175,8 @@ func initializeDatabase(dbpool *pgxpool.Pool) {
 	createVehicleCategoryImageTable(dbpool)
 	createVehicleImageTable(dbpool)
 	createReservationsTable(dbpool)
+
+	createVehicleTypesTable(dbpool)
 }
 
 func validate(

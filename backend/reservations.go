@@ -338,7 +338,7 @@ CREATE TABLE IF NOT EXISTS reservations
     start_pos       BIGINT,
     end_time        timestamp,
     end_pos         BIGINT,
-    CONSTRAINT FK_auto_klasse FOREIGN KEY (auto_klasse) REFERENCES vehiclecategories (id),
+    CONSTRAINT FK_auto_klasse FOREIGN KEY (auto_klasse) REFERENCES vehicletypes (id),
     CONSTRAINT FK_start_pos FOREIGN KEY (start_pos) REFERENCES stations (id),
     CONSTRAINT FK_end_pos FOREIGN KEY (end_pos) REFERENCES stations (id)
 );
