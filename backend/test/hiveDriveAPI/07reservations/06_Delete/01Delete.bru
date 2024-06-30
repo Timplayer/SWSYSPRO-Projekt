@@ -1,0 +1,22 @@
+meta {
+  name: 01Delete
+  type: http
+  seq: 1
+}
+
+delete {
+  url: https://localhost:8080/api/reservations/id/2
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{access_token_employee}}
+}
+
+tests {
+  test("Status = 200", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(200);
+  });
+}

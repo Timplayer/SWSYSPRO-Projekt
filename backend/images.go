@@ -175,7 +175,7 @@ func getImagesGenericById(dbpool *pgxpool.Pool, selectSQL string) http.HandlerFu
 			log.Printf("Error executing get image by id: %v", err)
 		}
 
-		urls, err := pgx.CollectRows(rows, pgx.RowTo[url])
+		urls, err := pgx.CollectRows(rows, pgx.RowToStructByPos[url])
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf(errorGetGenericById, cImage, err)
