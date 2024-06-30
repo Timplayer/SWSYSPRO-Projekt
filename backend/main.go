@@ -56,9 +56,9 @@ func main() {
 	router.HandleFunc(imagesVehicleAPIpath, getVehicleImagesByVehicleId(dbpool)).Methods("GET")
 	router.HandleFunc(imagesVehicleAPIpath, deleteVehicleImage(dbpool)).Methods("DELETE")
 
-	router.HandleFunc(imagesVehicleCategoryAPIpath, postVehicleCategoryImage(dbpool)).Methods("POST")
-	router.HandleFunc(imagesVehicleCategoryAPIpath, getVehicleCategoryImagesByVehicleCategoryId(dbpool)).Methods("GET")
-	router.HandleFunc(imagesVehicleCategoryAPIpath, deleteVehicleCategoryImage(dbpool)).Methods("DELETE")
+	router.HandleFunc(imagesVehicleCategoryAPIpath, postVehicleTypesImage(dbpool)).Methods("POST")
+	router.HandleFunc(imagesVehicleCategoryAPIpath, getVehicleTypesImagesByVehicleTypeId(dbpool)).Methods("GET")
+	router.HandleFunc(imagesVehicleCategoryAPIpath, deleteVehicleTypesImage(dbpool)).Methods("DELETE")
 
 	router.HandleFunc(imagesDefectAPIpath, postDefectImage(dbpool)).Methods("POST")
 	router.HandleFunc(imagesDefectAPIpath, getDefectImagesByDefectId(dbpool)).Methods("GET")
@@ -75,6 +75,7 @@ func main() {
 	router.HandleFunc(vehicleTypesAPIpath, postVehicleType(dbpool)).Methods("POST")
 	router.HandleFunc(vehicleTypesAPIpath, getVehicleTypes(dbpool)).Methods("GET")
 	router.HandleFunc(vehicleTypesIdAPIpath, updateVehicleType(dbpool)).Methods("PUT")
+	router.HandleFunc(vehicleTypesIdAPIpath, getVehicleTypeById(dbpool)).Methods("GET")
 
 	router.HandleFunc(vehiclesAPIpath, postVehicle(dbpool)).Methods("POST")
 	router.HandleFunc(vehiclesAPIpath, getVehicles(dbpool)).Methods("GET")
@@ -164,19 +165,18 @@ func initializeDatabase(dbpool *pgxpool.Pool) {
 		log.Fatalf("Failed to create table: %v\n", err)
 	}
 
+	createVehicleTypesTable(dbpool)
 	createImagesTable(dbpool)
 	createStationsTable(dbpool)
 	createVehicleCategoriesTable(dbpool)
 	createProducersTable(dbpool)
 	createDefectsTable(dbpool)
 	createVehiclesTable(dbpool) // depends on Producers and VehicleCategories
-
 	createDefectImageTable(dbpool)
-	createVehicleCategoryImageTable(dbpool)
+	createVehicleTypesImageTable(dbpool)
 	createVehicleImageTable(dbpool)
 	createReservationsTable(dbpool)
 
-	createVehicleTypesTable(dbpool)
 }
 
 func validate(

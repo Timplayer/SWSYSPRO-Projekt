@@ -86,6 +86,49 @@ func postVehicleType(dbpool *pgxpool.Pool) http.HandlerFunc {
 	}
 }
 
+func getVehicleTypeById(dbpool *pgxpool.Pool) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		rows, err := dbpool.Query(context.Background(), "SELECT * FROM vehicletypes WHERE vehicletypes.id = $1",
+			mux.Vars(request)["id"])
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleType, err)
+		}
+		defer rows.Close()
+
+		if rows.Next() {
+			var vC vehicleType
+			err = rows.Scan(&vC.Id, &vC.Name, &vC.VehicleCategory, &vC.Transmission, &vC.MaxSeatCount, &vC.PricePerHour)
+
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleType, err)
+				return
+			}
+			str, err := json.Marshal(vC)
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleType, err)
+				return
+			}
+			writer.Header().Set(contentType, applicationJSON)
+			_, err = writer.Write(str)
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleType, err)
+				return
+			}
+			return
+		}
+
+		if !rows.Next() {
+			writer.WriteHeader(http.StatusNotFound)
+			log.Printf(errorGenericNotFound, cVehicleType, cVehicleType)
+			return
+		}
+	}
+}
+
 func getVehicleTypes(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		rows, err := dbpool.Query(context.Background(), "SELECT * FROM vehicleTypes;")
