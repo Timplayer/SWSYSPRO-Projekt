@@ -165,10 +165,10 @@ func initializeDatabase(dbpool *pgxpool.Pool) {
 		log.Fatalf("Failed to create table: %v\n", err)
 	}
 
-	createVehicleTypesTable(dbpool)
 	createImagesTable(dbpool)
 	createStationsTable(dbpool)
 	createVehicleCategoriesTable(dbpool)
+	createVehicleTypesTable(dbpool)
 	createProducersTable(dbpool)
 	createDefectsTable(dbpool)
 	createVehiclesTable(dbpool) // depends on Producers and VehicleCategories
