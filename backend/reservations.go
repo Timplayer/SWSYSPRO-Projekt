@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"io"
 	"log"
@@ -159,6 +160,66 @@ func getReservations(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
 			log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
 			return
 		}
+	}
+}
+
+func deleteReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
+	request *http.Request, introspectionResult introspection) {
+	return func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
+		tx, err := dbpool.BeginTx(request.Context(), pgx.TxOptions{
+			IsoLevel:       pgx.Serializable,
+			AccessMode:     pgx.ReadWrite,
+			DeferrableMode: pgx.NotDeferrable})
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error starting Reservation transaction: %v", err)
+			return
+		}
+
+		var result pgconn.CommandTag
+		if slices.Contains(introspectionResult.Access.Roles, "employee") {
+			result, err = dbpool.Exec(context.Background(),
+				`Delete from Reservations
+                     WHERE id = $1`, mux.Vars(request)["id"])
+		} else {
+			result, err = dbpool.Exec(context.Background(),
+				`Delete from Reservations
+                    WHERE user_id = $1 AND id = $2`, introspectionResult.UserId, mux.Vars(request)["id"])
+		}
+
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error geting Database Connection: %v\n", err)
+			return
+		}
+		if result.RowsAffected() == 0 {
+			writer.WriteHeader(http.StatusNotFound)
+			log.Printf("Error deleting Reservation: no reservations found")
+			return
+		}
+		if result.RowsAffected() > 1 {
+			log.Printf("Error deleting Reservation: too many rows affected")
+		}
+		// check if car is available
+		var available int
+		err = tx.QueryRow(request.Context(), "SELECT MIN(available) AS a FROM availability").Scan(&available)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error testing availability: %v", err)
+			return
+		}
+		if available < 0 {
+			writer.WriteHeader(http.StatusConflict)
+			log.Printf("Error testing availability: no cars available\n")
+			return
+		}
+		err = tx.Commit(request.Context())
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error transaction Deleting Reservation aborted: %v", err)
+			return
+		}
+		writer.WriteHeader(http.StatusOK)
 	}
 }
 
