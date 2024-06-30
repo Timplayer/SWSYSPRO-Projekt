@@ -142,32 +142,18 @@ func getVehicleTypes(dbpool *pgxpool.Pool) http.HandlerFunc {
 	}
 }
 
-func sendResponseVehicleType(writer http.ResponseWriter, rows pgx.Rows, err error, s *vehicleType, operationType string, structName string) bool {
+func sendResponseVehicleType(writer http.ResponseWriter, rows pgx.Rows, err error, s *vehicleType, operationType string, structName string) {
 	rows.Next()
 	var id int64
 	err = rows.Scan(&id)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
-		return false
+		return
 	}
 	log.Printf(genericSuccess, operationType, structName, id)
 	s.Id = id
-	body, err := json.Marshal(s)
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf(errorSerializingGeneric, err, structName)
-		return false
-	}
-	writer.Header().Set(contentType, applicationJSON)
-	writer.WriteHeader(http.StatusCreated)
-	_, err = writer.Write(body)
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
-		return false
-	}
-	return false
+	returnTAsJSON(writer, s, http.StatusCreated)
 }
 
 func createVehicleTypesTable(dbpool *pgxpool.Pool) {

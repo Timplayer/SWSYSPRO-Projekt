@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -116,18 +115,8 @@ func postImageGeneric(dbpool *pgxpool.Pool, insertSQL string) http.HandlerFunc {
 			defer rows.Close()
 		}
 
-		var body []byte
-		body, err = json.Marshal(p)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, insertOperation, cImage, err)
-			return
-		}
-
 		log.Printf("Image inserted: %d", p.Id)
-		writer.Header().Set(contentType, applicationJSON)
-		writer.WriteHeader(http.StatusCreated)
-		writer.Write(body)
+		returnTAsJSON(writer, p, http.StatusCreated)
 	}
 }
 
@@ -148,14 +137,7 @@ func getImageGenericById(dbpool *pgxpool.Pool, selectSQL string) http.HandlerFun
 				log.Printf(errorGetGenericById, cImage, err)
 				return
 			}
-			str, err := json.Marshal(u)
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf(errorGetGenericById, cImage, err)
-				return
-			}
-			writer.Header().Set(contentType, applicationJSON)
-			writer.Write(str)
+			returnTAsJSON(writer, u, http.StatusOK)
 			return
 		}
 
@@ -182,15 +164,7 @@ func getImagesGenericById(dbpool *pgxpool.Pool, selectSQL string) http.HandlerFu
 			return
 		}
 
-		str, err := json.Marshal(urls)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorGetGenericById, cImage, err)
-			return
-		}
-
-		writer.Header().Set(contentType, applicationJSON)
-		writer.Write(str)
+		returnTAsJSON(writer, urls, http.StatusOK)
 	}
 }
 
@@ -244,14 +218,7 @@ func getImages(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf(errorExecutingOperationGeneric, findingOperation, cImage, err)
 			return
 		}
-		str, err := json.Marshal(url)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cImage, err)
-			return
-		}
-		writer.Header().Set(contentType, applicationJSON)
-		writer.Write(str)
+		returnTAsJSON(writer, url, http.StatusOK)
 	}
 }
 
@@ -286,15 +253,7 @@ func deleteImageGeneric(dbpool *pgxpool.Pool, deleteConnectionSQL string) http.H
 				log.Printf(errorExecutingOperationGeneric, deleteOperation, cImage, err)
 				return
 			}
-			str, err := json.Marshal(p)
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf(errorExecutingOperationGeneric, deleteOperation, cImage, err)
-				return
-			}
-			writer.Header().Set(contentType, applicationJSON)
-			writer.WriteHeader(http.StatusOK)
-			writer.Write(str)
+			returnTAsJSON(writer, p, http.StatusOK)
 			return
 		}
 

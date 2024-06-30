@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -72,20 +71,7 @@ func getVehicleCategoryById(dbpool *pgxpool.Pool) http.HandlerFunc {
 				log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleCategory, err)
 				return
 			}
-			str, err := json.Marshal(vC)
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleCategory, err)
-				return
-			}
-			writer.Header().Set(contentType, applicationJSON)
-			_, err = writer.Write(str)
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleCategory, err)
-				return
-			}
-			return
+			returnTAsJSON(writer, vC, http.StatusOK)
 		}
 
 		if !rows.Next() {
@@ -116,19 +102,7 @@ func getVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleCategory, err)
 			return
 		}
-		str, err := json.Marshal(vehicleCategories)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleCategory, err)
-			return
-		}
-		writer.Header().Set(contentType, applicationJSON)
-		_, err = writer.Write(str)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleCategory, err)
-			return
-		}
+		returnTAsJSON(writer, vehicleCategories, http.StatusOK)
 	}
 }
 
@@ -143,20 +117,7 @@ func sendResponseVehicleCategories(writer http.ResponseWriter, rows pgx.Rows, er
 	}
 	log.Printf(genericSuccess, operationType, structName, id)
 	vC.Id = id
-	body, err := json.Marshal(vC)
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf(errorSerializingGeneric, err, structName)
-		return false
-	}
-	writer.Header().Set(contentType, applicationJSON)
-	writer.WriteHeader(http.StatusCreated)
-	_, err = writer.Write(body)
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
-		return false
-	}
+	returnTAsJSON(writer, vC, http.StatusCreated)
 	return false
 }
 

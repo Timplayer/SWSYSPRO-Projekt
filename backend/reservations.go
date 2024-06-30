@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -72,15 +71,7 @@ func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, requ
 		}
 
 		log.Printf("added Reservation: %d", r.Id)
-		body, err := json.Marshal(r)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error serializing station: %v", err)
-			return
-		}
-		writer.Header().Set("Content-Type", "application/json")
-		writer.WriteHeader(http.StatusCreated)
-		writer.Write(body)
+		returnTAsJSON(writer, r, http.StatusCreated)
 	}
 }
 
@@ -132,15 +123,7 @@ func putReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, reque
 		}
 
 		log.Printf("edited Reservation: %d", r.Id)
-		body, err := json.Marshal(r)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error serializing station: %v", err)
-			return
-		}
-		writer.Header().Set("Content-Type", "application/json")
-		writer.WriteHeader(http.StatusAccepted)
-		writer.Write(body)
+		returnTAsJSON(writer, r, http.StatusAccepted)
 	}
 }
 
@@ -180,19 +163,7 @@ func getReservations(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, requ
 			log.Printf("Error finding reservations: %v\n", err)
 			return
 		}
-		str, err := json.Marshal(reservations)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error marshaling reservations: %v\n", err)
-			return
-		}
-		writer.Header().Set(contentType, applicationJSON)
-		_, err = writer.Write(str)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
-			return
-		}
+		returnTAsJSON(writer, reservations, http.StatusOK)
 	}
 }
 
@@ -284,15 +255,7 @@ func addCarToStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		log.Printf("added Reservation: %d", r.Id)
-		body, err := json.Marshal(r)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error serializing station: %v", err)
-			return
-		}
-		writer.Header().Set(contentType, applicationJSON)
-		writer.WriteHeader(http.StatusCreated)
-		writer.Write(body)
+		returnTAsJSON(writer, r, http.StatusCreated)
 	}
 }
 
@@ -312,15 +275,7 @@ func getAvailabilityAtStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error collecting availability cars: %v", err)
 			return
 		}
-		body, err := json.Marshal(a)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error serializing availability: %v", err)
-			return
-		}
-		writer.Header().Set(contentType, applicationJSON)
-		writer.WriteHeader(http.StatusOK)
-		writer.Write(body)
+		returnTAsJSON(writer, a, http.StatusOK)
 	}
 }
 
