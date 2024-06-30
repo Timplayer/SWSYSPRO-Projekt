@@ -21,6 +21,7 @@ import { LocationProvider } from './Utils/LocationContext';
 import Bonusprogramm from './pages/Bonusprogramm';
 import OpenSourcethings from './pages/OpenSourcethings';
 import Reservation from './pages/CarBookingPage';
+import Admin from './pages/Admin';
 
 
 const routes: RouteObject[] = [
@@ -92,6 +93,10 @@ const routes: RouteObject[] = [
 		path: '/reservation',
 		element: <Reservation />,
 	},
+	{
+		path: '/admin',
+		element: <Admin/>
+	}
 ];
 
 const router = createBrowserRouter(routes);
