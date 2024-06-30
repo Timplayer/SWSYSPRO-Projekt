@@ -7,24 +7,9 @@ import VehicleList from './VehicleList';
 import AddVehicle from './AddVehicle';
 import VehicleCategories from './VehicleCategories';
 import Producers from './Producers';
-import { Vehicle, VehicleCategory, Producer } from './types';
+import { Vehicle, VehicleCategory, Producer } from './VehicleTypes';
+import keycloak from '../../../keycloak';
 
-const CustomTabs = styled(Tabs)({
-    color: 'white',
-    '& .MuiTab-root': {
-        color: 'white',
-    },
-    '& .Mui-selected': {
-        color: 'white',
-    },
-});
-
-const CustomTab = styled(Tab)({
-    color: 'white',
-    '&.Mui-selected': {
-        color: 'white',
-    },
-});
 
 const Vehicles: React.FC = () => {
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -33,6 +18,7 @@ const Vehicles: React.FC = () => {
     const [tabIndex, setTabIndex] = useState<number>(0);
 
     useEffect(() => {
+        
         axios.get('/api/vehicles')
             .then(response => setVehicles(response.data))
             .catch(error => console.error('Error fetching vehicles:', error));
@@ -47,12 +33,24 @@ const Vehicles: React.FC = () => {
     }, []);
 
     const handleAddVehicle = (newVehicle: Omit<Vehicle, 'id'>) => {
+        
         axios.post('/api/vehicles', newVehicle)
             .then(response => {
                 setVehicles([...vehicles, response.data]);
             })
             .catch(error => console.error('Error adding vehicle:', error));
     };
+
+    const handleUpdateVehicle = (updatedVehicle: Vehicle) => {
+        axios.put(`/api/vehicles/id/${updatedVehicle.id}`, updatedVehicle)
+            .then(response => {
+                setVehicles(vehicles.map(vehicle => 
+                    vehicle.id === updatedVehicle.id ? response.data : vehicle
+                ));
+            })
+            .catch(error => console.error('Error updating vehicle:', error));
+    };
+    
 
     const handleAddCategory = (name: string) => {
         const newCategory = { name };
@@ -62,6 +60,18 @@ const Vehicles: React.FC = () => {
                 setCategories([...categories, response.data]);
             })
             .catch(error => console.error('Error adding vehicle category:', error));
+    };
+
+    const handleUpdateCategory = (id: number, name: string) => {
+        const updatedCategory = { id, name };
+
+        axios.put(`/api/vehicleCategories/id/${id}`, updatedCategory)
+            .then(response => {
+                setCategories(categories.map(category =>
+                    category.id === id ? response.data : category
+                ));
+            })
+            .catch(error => console.error('Error updating vehicle category:', error));
     };
 
     const handleAddProducer = (name: string) => {
@@ -74,52 +84,52 @@ const Vehicles: React.FC = () => {
             .catch(error => console.error('Error adding producer:', error));
     };
 
-    const handleDeleteVehicle = (id: number) => {
-        axios.delete(`/api/vehicles/${id}`)
-            .then(() => {
-                setVehicles(vehicles.filter(vehicle => vehicle.id !== id));
+    const handleUpdateProducer = (id: number, name: string) => {
+        const updatedProducer = { name };
+    
+        axios.put(`/api/producers/id/${id}`, updatedProducer)
+            .then(response => {
+                setProducers(producers.map(producer =>
+                    producer.id === id ? { ...producer, name: response.data.name } : producer
+                ));
             })
-            .catch(error => console.error('Error deleting vehicle:', error));
+            .catch(error => console.error('Error updating producer:', error));
     };
-
-    const handleDeleteCategory = (id: number) => {
-        axios.delete(`/api/vehicleCategories/id/${id}`)
-            .then(() => {
-                setCategories(categories.filter(category => category.id !== id));
-            })
-            .catch(error => console.error('Error deleting vehicle category:', error));
-    };
-
-    const handleDeleteProducer = (id: number) => {
-        axios.delete(`/api/producers/id/${id}`)
-            .then(() => {
-                setProducers(producers.filter(producer => producer.id !== id));
-            })
-            .catch(error => console.error('Error deleting producer:', error));
-    };
-
+    
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setTabIndex(newValue);
     };
 
+    const handleFetchImages = async (vehicleId: number) => {
+        try {
+            const response = await axios.get(`/api/images/vehicles/id/${vehicleId}`);
+            var urls = new Array<string>();
+            urls.push(response.data.url);
+            return urls;
+        } catch (error) {
+            return new Array<string>();
+        }
+    };
+
     return (
-        <Box sx={{ p: 3 }}>
+        <Box sx={{ p: 3, color: "#ffffff" }}>
             <Typography variant="h4" gutterBottom>
                 Vehicles
             </Typography>
-            <CustomTabs value={tabIndex} onChange={handleTabChange}>
-                <CustomTab label="Vehicle List" />
-                <CustomTab label="Add Vehicle" />
-                <CustomTab label="Vehicle Categories" />
-                <CustomTab label="Producers" />
-            </CustomTabs>
+            <Tabs value={tabIndex} onChange={handleTabChange}>
+                <Tab label="Fahrzeugliste" />
+                <Tab label="Fahrzeug hinzufügen" />
+                <Tab label="Fahrzeugkategorien" />
+                <Tab label="Hersteller" />
+            </Tabs>
             <Divider sx={{ mb: 2 }} />
             {tabIndex === 0 && (
                 <VehicleList
                     vehicles={vehicles}
                     categories={categories}
                     producers={producers}
-                    handleDeleteVehicle={handleDeleteVehicle}
+                    handleFetchImage={handleFetchImages}
+                    handleUpdateVehicle={handleUpdateVehicle}
                 />
             )}
             {tabIndex === 1 && (
@@ -133,14 +143,14 @@ const Vehicles: React.FC = () => {
                 <VehicleCategories
                     categories={categories}
                     handleAddCategory={handleAddCategory}
-                    handleDeleteCategory={handleDeleteCategory}
+                    handleUpdateCategory={handleUpdateCategory}
                 />
             )}
             {tabIndex === 3 && (
                 <Producers
                     producers={producers}
                     handleAddProducer={handleAddProducer}
-                    handleDeleteProducer={handleDeleteProducer}
+                    handleUpdateProducer={handleUpdateProducer}
                 />
             )}
         </Box>

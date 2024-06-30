@@ -1,29 +1,12 @@
-// AddVehicle.tsx
 import React, { useState } from 'react';
 import { Box, Button, Chip, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import ImageIcon from '@mui/icons-material/Image';
-import { styled } from '@mui/material/styles';
 import { useDropzone } from 'react-dropzone';
 import dayjs from 'dayjs';
-import { VehicleCategory, Producer } from './VehicleTypes';
-
-const CustomTextField = styled(TextField)({
-    '& .MuiInputBase-input': {
-        color: 'white',
-    },
-    '& .MuiInputLabel-root': {
-        color: 'white',
-    },
-    '& .MuiOutlinedInput-notchedOutline': {
-        borderColor: 'white',
-    },
-    '&:hover .MuiOutlinedInput-notchedOutline': {
-        borderColor: 'white',
-    },
-    '& .MuiInputBase-input::placeholder': {
-        color: 'white',
-    },
-});
+import { Vehicle, VehicleCategory, Producer } from './VehicleTypes';
+import { LocalizationProvider, MobileDateTimePicker } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import axios from 'axios';
 
 interface AddVehicleProps {
     categories: VehicleCategory[];
@@ -36,8 +19,8 @@ const AddVehicle: React.FC<AddVehicleProps> = ({ categories, producers, handleAd
     const [vehicleCategory, setVehicleCategory] = useState<number>(0);
     const [producer, setProducer] = useState<number>(0);
     const [status, setStatus] = useState<string>('');
-    const [receptionDate, setReceptionDate] = useState<string>('');
-    const [completionDate, setCompletionDate] = useState<string>('');
+    const [receptionDate, setReceptionDate] = useState<Date | null>(new Date());
+    const [completionDate, setCompletionDate] = useState<Date | null>(new Date());
     const [images, setImages] = useState<File[]>([]);
 
     const onDrop = (acceptedFiles: File[]) => {
@@ -52,12 +35,25 @@ const AddVehicle: React.FC<AddVehicleProps> = ({ categories, producers, handleAd
     };
 
     const { getRootProps, getInputProps } = useDropzone({
-        onDrop,
-        accept: 'image/*'
+        onDrop
     });
 
-    const handleSubmit = () => {
-        if (name.trim() && vehicleCategory > 0 && producer > 0 && status.trim() && receptionDate.trim() && completionDate.trim()) {
+    const uploadImage = async (image: File, vehicleId: number): Promise<string> => {
+        const formData = new FormData();
+        formData.append('file', image);
+        formData.append('file_name', image.name);
+        formData.append('display_order', '0'); // Adjust the display order as needed
+
+        const response = await axios.post(`/api/images/vehicles/id/${vehicleId}`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+
+        return response.data.url;
+    };
+
+    const handleSubmit = async () => {
+        if (name.trim() && vehicleCategory > 0 && producer > 0 && status.trim()) {
             const newVehicle = {
                 name,
                 vehicleCategory,
@@ -65,22 +61,33 @@ const AddVehicle: React.FC<AddVehicleProps> = ({ categories, producers, handleAd
                 status,
                 receptionDate: dayjs(receptionDate).toISOString(),
                 completionDate: dayjs(completionDate).toISOString(),
-                images,
+                imageUrls: [] as string[], // Initialize as an empty array
             };
+
+            // Create the vehicle first
+            const response = await axios.post('/api/vehicles', newVehicle);
+            const vehicleId = response.data.id;
+
+            // Upload images and associate them with the vehicle
+            const uploadedImageUrls = await Promise.all(images.map(image => uploadImage(image, vehicleId)));
+            newVehicle.imageUrls = uploadedImageUrls;
+
             handleAddVehicle(newVehicle);
             setName('');
             setVehicleCategory(0);
             setProducer(0);
             setStatus('');
-            setReceptionDate('');
-            setCompletionDate('');
+            setReceptionDate(new Date());
+            setCompletionDate(new Date());
             setImages([]);
         }
     };
 
+    const now = new Date();
+
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <CustomTextField
+            <TextField
                 label="Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -115,29 +122,36 @@ const AddVehicle: React.FC<AddVehicleProps> = ({ categories, producers, handleAd
                     ))}
                 </Select>
             </FormControl>
-            <CustomTextField
+            <TextField
                 label="Status"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
                 variant="outlined"
                 sx={{ minWidth: '200px' }}
             />
-            <CustomTextField
-                label="Reception Date"
-                type="datetime-local"
-                value={receptionDate}
-                onChange={(e) => setReceptionDate(e.target.value)}
-                variant="outlined"
-                sx={{ minWidth: '200px' }}
-            />
-            <CustomTextField
-                label="Completion Date"
-                type="datetime-local"
-                value={completionDate}
-                onChange={(e) => setCompletionDate(e.target.value)}
-                variant="outlined"
-                sx={{ minWidth: '200px' }}
-            />
+
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <MobileDateTimePicker
+                    ampm={false}
+                    label="Reception Date"
+                    value={receptionDate}
+                    onChange={(date) => setReceptionDate(date)}
+                    minDate={now}
+                    minTime={now}
+                />
+            </LocalizationProvider>         
+
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <MobileDateTimePicker
+                    ampm={false}
+                    label="Completion Date"
+                    value={completionDate}
+                    onChange={(date) => setCompletionDate(date)}
+                    minDate={now}
+                    minTime={now}
+                />
+            </LocalizationProvider>   
+
             <Box {...getRootProps()} sx={{ border: '1px dashed gray', padding: 2, textAlign: 'center' }}>
                 <input {...getInputProps()} />
                 <Typography variant="body1" gutterBottom>

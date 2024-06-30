@@ -1,37 +1,21 @@
 // VehicleCategories.tsx
 import React, { useState } from 'react';
-import { Box, Button, List, ListItem, ListItemText, IconButton, Typography } from '@mui/material';
+import { Box, Button, List, ListItem, ListItemText, IconButton, Typography, TextField } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import CheckIcon from '@mui/icons-material/Check';
 import { VehicleCategory } from './VehicleTypes';
-import { styled } from '@mui/material/styles';
-import TextField from '@mui/material/TextField';
-
-const CustomTextField = styled(TextField)({
-    '& .MuiInputBase-input': {
-        color: 'white',
-    },
-    '& .MuiInputLabel-root': {
-        color: 'white',
-    },
-    '& .MuiOutlinedInput-notchedOutline': {
-        borderColor: 'white',
-    },
-    '&:hover .MuiOutlinedInput-notchedOutline': {
-        borderColor: 'white',
-    },
-    '& .MuiInputBase-input::placeholder': {
-        color: 'white',
-    },
-});
 
 interface VehicleCategoriesProps {
     categories: VehicleCategory[];
     handleAddCategory: (name: string) => void;
-    handleDeleteCategory: (id: number) => void;
+    handleUpdateCategory: (id: number, name: string) => void;
 }
 
-const VehicleCategories: React.FC<VehicleCategoriesProps> = ({ categories, handleAddCategory, handleDeleteCategory }) => {
+const VehicleCategories: React.FC<VehicleCategoriesProps> = ({ categories, handleAddCategory, handleUpdateCategory }) => {
     const [categoryName, setCategoryName] = useState<string>('');
+    const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
+    const [editingCategoryName, setEditingCategoryName] = useState<string>('');
 
     const handleSubmit = () => {
         if (categoryName.trim()) {
@@ -40,12 +24,20 @@ const VehicleCategories: React.FC<VehicleCategoriesProps> = ({ categories, handl
         }
     };
 
+    const handleEditSubmit = (id: number) => {
+        if (editingCategoryName.trim()) {
+            handleUpdateCategory(id, editingCategoryName);
+            setEditingCategoryId(null);
+            setEditingCategoryName('');
+        }
+    };
+
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Typography variant="h5" gutterBottom>
                 Vehicle Categories
             </Typography>
-            <CustomTextField
+            <TextField
                 label="Category Name"
                 value={categoryName}
                 onChange={(e) => setCategoryName(e.target.value)}
@@ -58,11 +50,32 @@ const VehicleCategories: React.FC<VehicleCategoriesProps> = ({ categories, handl
             <List>
                 {categories.map((category) => (
                     <ListItem key={category.id} secondaryAction={
-                        <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteCategory(category.id)}>
-                            <DeleteIcon />
-                        </IconButton>
+                        <>
+                            {editingCategoryId === category.id ? (
+                                <>
+                                    <IconButton edge="end" aria-label="confirm" onClick={() => handleEditSubmit(category.id)}>
+                                        <CheckIcon />
+                                    </IconButton>
+                                </>
+                            ) : (
+                                <>
+                                    <IconButton edge="end" aria-label="edit" onClick={() => { setEditingCategoryId(category.id); setEditingCategoryName(category.name); }}>
+                                        <EditIcon />
+                                    </IconButton>
+                                </>
+                            )}
+                        </>
                     }>
-                        <ListItemText primary={category.name} />
+                        {editingCategoryId === category.id ? (
+                            <TextField
+                                value={editingCategoryName}
+                                onChange={(e) => setEditingCategoryName(e.target.value)}
+                                variant="outlined"
+                                sx={{ minWidth: '200px' }}
+                            />
+                        ) : (
+                            <ListItemText primary={category.name} />
+                        )}
                     </ListItem>
                 ))}
             </List>

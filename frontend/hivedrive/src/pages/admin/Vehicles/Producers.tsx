@@ -1,37 +1,20 @@
-// Producers.tsx
 import React, { useState } from 'react';
-import { Box, Button, List, ListItem, ListItemText, IconButton, Typography } from '@mui/material';
+import { Box, Button, List, ListItem, ListItemText, IconButton, Typography, TextField } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import CheckIcon from '@mui/icons-material/Check';
 import { Producer } from './VehicleTypes';
-import { styled } from '@mui/material/styles';
-import TextField from '@mui/material/TextField';
-
-const CustomTextField = styled(TextField)({
-    '& .MuiInputBase-input': {
-        color: 'white',
-    },
-    '& .MuiInputLabel-root': {
-        color: 'white',
-    },
-    '& .MuiOutlinedInput-notchedOutline': {
-        borderColor: 'white',
-    },
-    '&:hover .MuiOutlinedInput-notchedOutline': {
-        borderColor: 'white',
-    },
-    '& .MuiInputBase-input::placeholder': {
-        color: 'white',
-    },
-});
 
 interface ProducersProps {
     producers: Producer[];
     handleAddProducer: (name: string) => void;
-    handleDeleteProducer: (id: number) => void;
+    handleUpdateProducer: (id: number, name: string) => void;
 }
 
-const Producers: React.FC<ProducersProps> = ({ producers, handleAddProducer, handleDeleteProducer }) => {
+const Producers: React.FC<ProducersProps> = ({ producers, handleAddProducer, handleUpdateProducer }) => {
     const [producerName, setProducerName] = useState<string>('');
+    const [editingProducerId, setEditingProducerId] = useState<number | null>(null);
+    const [editingProducerName, setEditingProducerName] = useState<string>('');
 
     const handleSubmit = () => {
         if (producerName.trim()) {
@@ -40,29 +23,58 @@ const Producers: React.FC<ProducersProps> = ({ producers, handleAddProducer, han
         }
     };
 
+    const handleEditSubmit = (id: number) => {
+        if (editingProducerName.trim()) {
+            handleUpdateProducer(id, editingProducerName);
+            setEditingProducerId(null);
+            setEditingProducerName('');
+        }
+    };
+
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Typography variant="h5" gutterBottom>
-                Producers
+                Hersteller
             </Typography>
-            <CustomTextField
-                label="Producer Name"
+            <TextField
+                label="Hersteller Name"
                 value={producerName}
                 onChange={(e) => setProducerName(e.target.value)}
                 variant="outlined"
                 sx={{ minWidth: '200px' }}
             />
             <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ alignSelf: 'center' }}>
-                Add Producer
+                Hersteller hinzufügen
             </Button>
             <List>
                 {producers.map((producer) => (
                     <ListItem key={producer.id} secondaryAction={
-                        <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteProducer(producer.id)}>
-                            <DeleteIcon />
-                        </IconButton>
+                        <>
+                            {editingProducerId === producer.id ? (
+                                <>
+                                    <IconButton edge="end" aria-label="confirm" onClick={() => handleEditSubmit(producer.id)}>
+                                        <CheckIcon />
+                                    </IconButton>
+                                </>
+                            ) : (
+                                <>
+                                    <IconButton edge="end" aria-label="edit" onClick={() => { setEditingProducerId(producer.id); setEditingProducerName(producer.name); }}>
+                                        <EditIcon />
+                                    </IconButton>
+                                </>
+                            )}
+                        </>
                     }>
-                        <ListItemText primary={producer.name} />
+                        {editingProducerId === producer.id ? (
+                            <TextField
+                                value={editingProducerName}
+                                onChange={(e) => setEditingProducerName(e.target.value)}
+                                variant="outlined"
+                                sx={{ minWidth: '200px' }}
+                            />
+                        ) : (
+                            <ListItemText primary={producer.name} />
+                        )}
                     </ListItem>
                 ))}
             </List>

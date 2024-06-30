@@ -7,7 +7,6 @@ export interface Vehicle {
     status: string;
     receptionDate: string;
     completionDate: string;
-    images: File[];
 }
 
 export interface VehicleCategory {
