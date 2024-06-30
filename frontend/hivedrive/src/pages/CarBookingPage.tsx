@@ -3,7 +3,8 @@ import withRoot from '../withRoot';
 import AppAppBar from '../views/AppAppBar';
 import AppFooter from '../views/AppFooter';
 import { Container, Box, Typography, TextField, MenuItem, Checkbox, FormControlLabel, Button, Grid, Radio, RadioGroup, FormControl, FormLabel, useTheme } from '@mui/material';
-import { useKeycloak } from '@react-keycloak/web';
+import keycloak from '../keycloak';
+
 
 const carOptions = [
   { value: 'economy', label: 'Economy' },
@@ -23,7 +24,6 @@ const locationOptions = [
 ];
 
 function Reservation() {
-  const { keycloak } = useKeycloak();
   const theme = useTheme();
 
   const [carType, setCarType] = useState('');
@@ -43,13 +43,12 @@ function Reservation() {
   const [additionalDriverAge, setAdditionalDriverAge] = useState('');
 
   useEffect(() => {
-    if (keycloak?.authenticated) {
-      const { given_name, family_name, email, phone_number } = keycloak.tokenParsed;
+      console.log(keycloak.tokenParsed);
+      const { given_name, family_name, email } = keycloak.tokenParsed;
       setCustomerName(`${given_name} ${family_name}`);
       setCustomerEmail(email);
-      setCustomerPhone(phone_number || '');
     }
-  }, [keycloak]);
+  , [keycloak]);
 
   const handleSubmit = (event) => {
     event.preventDefault();

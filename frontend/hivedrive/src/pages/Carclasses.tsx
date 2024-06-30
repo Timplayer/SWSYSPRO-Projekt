@@ -26,11 +26,6 @@ const autoKlassen = [
     image: 'https://example.com/cabriolet.jpg',
   },
   {
-    name: 'Familienauto',
-    description: 'Ein Familienauto bietet viel Platz und Komfort. Ideal für Familienausflüge und lange Reisen.',
-    image: 'https://example.com/familienauto.jpg',
-  },
-  {
     name: 'Kombi',
     description: 'Ein Kombi bietet zusätzlichen Stauraum. Perfekt für große Einkäufe und Familienreisen.',
     image: 'https://example.com/kombi.jpg',
@@ -43,6 +38,11 @@ const autoKlassen = [
   {
     name: 'Luxus Fahrzeug',
     description: 'Ein Luxus Fahrzeug bietet höchsten Komfort und modernste Technik. Ideal für anspruchsvolle Fahrer.',
+    image: 'https://example.com/luxus_fahrzeug.jpg',
+  },
+  {
+    name: 'Spezial Fahrzeuge',
+    description: 'sehr besonders und wild.',
     image: 'https://example.com/luxus_fahrzeug.jpg',
   },
 ];
