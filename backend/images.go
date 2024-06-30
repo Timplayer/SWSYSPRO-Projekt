@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"errors"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -80,22 +81,14 @@ func postImageGeneric(dbpool *pgxpool.Pool, insertSQL string) http.HandlerFunc {
 			return
 		}
 
+		err = dbpool.QueryRow(context.Background(),
+			"INSERT INTO images (fileName, file, displayOrder) VALUES ($1, $2, $3) RETURNING id;", header.Filename, buf.Bytes(), p.DisplayOrder).Scan(&p.Id)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf(errorExecutingOperationGeneric, insertOperation, cImage, err)
+			return
+		}
 		rows, err := dbpool.Query(context.Background(),
-			"INSERT INTO images (fileName, file, displayOrder) VALUES ($1, $2, $3) RETURNING id;", header.Filename, buf.Bytes(), p.DisplayOrder)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, insertOperation, cImage, err)
-			return
-		}
-		defer rows.Close()
-		rows.Next()
-		err = rows.Scan(&p.Id)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, insertOperation, cImage, err)
-			return
-		}
-		rows, err = dbpool.Query(context.Background(),
 			"UPDATE images SET url = $1 WHERE id = $2;", httpsPrefix+request.Host+fileAPIpath+strconv.FormatInt(p.Id, 10), p.Id)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
@@ -122,30 +115,19 @@ func postImageGeneric(dbpool *pgxpool.Pool, insertSQL string) http.HandlerFunc {
 
 func getImageGenericById(dbpool *pgxpool.Pool, selectSQL string) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), selectSQL, mux.Vars(request)["id"])
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error executing get image by id: %v", err)
-		}
-		defer rows.Close()
-
-		if rows.Next() {
-			var u url
-			err = rows.Scan(&u.URL)
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf(errorGetGenericById, cImage, err)
-				return
-			}
-			returnTAsJSON(writer, u, http.StatusOK)
-			return
-		}
-
-		if !rows.Next() {
+		var u url
+		err := dbpool.QueryRow(context.Background(), selectSQL, mux.Vars(request)["id"]).Scan(&u.URL)
+		if errors.Is(err, pgx.ErrNoRows) {
 			writer.WriteHeader(http.StatusNotFound)
 			log.Printf(errorGenericNotFound, cImage, cImage)
 			return
 		}
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf(errorGetGenericById, cImage, err)
+			return
+		}
+		returnTAsJSON(writer, u, http.StatusOK)
 	}
 }
 
@@ -170,31 +152,18 @@ func getImagesGenericById(dbpool *pgxpool.Pool, selectSQL string) http.HandlerFu
 
 func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT file FROM images WHERE id = $1;", mux.Vars(request)["id"])
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorGetGenericById, cImage, err)
-		}
-		defer rows.Close()
-
-		if rows.Next() {
-			var p picture
-			err = rows.Scan(&p.File)
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf(errorGetGenericById, cImage, err)
-				return
-			}
-			writer.Header().Set(contentType, octetStream)
-			writer.Write(p.File)
-			return
-		}
-
-		if !rows.Next() {
+		var p picture
+		err := dbpool.QueryRow(context.Background(), "SELECT file FROM images WHERE id = $1;", mux.Vars(request)["id"]).Scan(&p.File)
+		if errors.Is(err, pgx.ErrNoRows) {
 			writer.WriteHeader(http.StatusNotFound)
 			log.Printf(errorGenericNotFound, cImage, cImage)
 			return
+		} else if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf(errorGetGenericById, cImage, err)
 		}
+		writer.Header().Set(contentType, octetStream)
+		writer.Write(p.File)
 	}
 }
 
@@ -236,32 +205,20 @@ func deleteImageGeneric(dbpool *pgxpool.Pool, deleteConnectionSQL string) http.H
 			defer rows.Close()
 		}
 
-		rows, err := dbpool.Query(context.Background(),
-			"DELETE FROM images WHERE id = $1 RETURNING images.id;", mux.Vars(request)["id"])
+		var p picture
+		err := dbpool.QueryRow(context.Background(),
+			"DELETE FROM images WHERE id = $1 RETURNING images.id;", mux.Vars(request)["id"]).Scan(&p.Id)
+		if errors.Is(err, pgx.ErrNoRows) {
+			writer.WriteHeader(http.StatusNotFound)
+			log.Printf("Error deleting image: image not found \n")
+			return
+		}
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf(errorExecutingOperationGeneric, deleteOperation, cImage, err)
 			return
 		}
-		defer rows.Close()
-
-		if rows.Next() {
-			var p picture
-			err = rows.Scan(&p.Id)
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf(errorExecutingOperationGeneric, deleteOperation, cImage, err)
-				return
-			}
-			returnTAsJSON(writer, p, http.StatusOK)
-			return
-		}
-
-		if !rows.Next() {
-			writer.WriteHeader(http.StatusNotFound)
-			log.Printf("Error deleting image: image not found \n")
-			return
-		}
+		returnTAsJSON(writer, p, http.StatusOK)
 	}
 }
 

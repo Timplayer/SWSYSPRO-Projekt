@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -48,47 +49,36 @@ func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if fail {
 			return
 		}
-		rows, err := dbpool.Query(context.Background(),
+		err := dbpool.QueryRow(context.Background(),
 			"INSERT INTO stations (name, location, country, state, city, zip, street, houseNumber, capacity) VALUES ($1, point($2, $3), $4, $5, $6, $7, $8, $9, $10) RETURNING id",
-			s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber, s.Capacity)
+			s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber, s.Capacity).Scan(&s.Id)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf(errorExecutingOperationGeneric, insertOperation, cStation, err)
 			return
 		}
-		defer rows.Close()
-
-		sendResponseStations(writer, rows, err, s, insertOperation, cStation)
+		log.Printf(genericSuccess, insertOperation, cStation, s.Id)
+		returnTAsJSON(writer, s, http.StatusCreated)
 		return
 	}
 }
 
 func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT stations.id, stations.name, stations.location[0] as latitude, stations.location[1] as longitude, stations.country, stations.state, stations.city, stations.zip, stations.street, stations.houseNumber, stations.capacity FROM stations WHERE stations.id = $1",
-			mux.Vars(request)["id"])
+		var s station
+		err := dbpool.QueryRow(context.Background(), "SELECT stations.id, stations.name, stations.location[0] as latitude, stations.location[1] as longitude, stations.country, stations.state, stations.city, stations.zip, stations.street, stations.houseNumber, stations.capacity FROM stations WHERE stations.id = $1",
+			mux.Vars(request)["id"]).Scan(&s.Id, &s.Name, &s.Latitude, &s.Longitude, &s.Country, &s.State, &s.City, &s.Zip, &s.Street, &s.HouseNumber, &s.Capacity)
+		if errors.Is(err, pgx.ErrNoRows) {
+			writer.WriteHeader(http.StatusNotFound)
+			log.Printf(errorGenericNotFound, cStation, cStation)
+			return
+		}
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
 			return
 		}
-		defer rows.Close()
-		if rows.Next() {
-			var s station
-			err = rows.Scan(&s.Id, &s.Name, &s.Latitude, &s.Longitude, &s.Country, &s.State, &s.City, &s.Zip, &s.Street, &s.HouseNumber, &s.Capacity)
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
-				return
-			}
-			returnTAsJSON(writer, s, http.StatusOK)
-		}
-
-		if !rows.Next() {
-			writer.WriteHeader(http.StatusNotFound)
-			log.Printf(errorGenericNotFound, cStation, cStation)
-			return
-		}
+		returnTAsJSON(writer, s, http.StatusOK)
 	}
 
 }
