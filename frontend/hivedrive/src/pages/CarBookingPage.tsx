@@ -14,6 +14,10 @@ function Reservation() {
 
   const [carType, setCarType] = useState('');
   const [carName, setcarname] = useState('');
+  const [carClass, setcarClass] = useState('');
+  const [carTransmission, setcarTransmission] = useState('');
+  const [carDrive, setcarnamecarDrive] = useState('');
+  const [carSeatings, setcarnamecarSeatings] = useState('');
 
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
@@ -61,6 +65,10 @@ function Reservation() {
     console.log({
       carType,
       carName,
+      carClass,
+      carDrive,
+      carTransmission,
+      carSeatings,
       additionalDriver,
       pickupDate,
       returnDate,
@@ -140,6 +148,42 @@ function Reservation() {
                 />
               </Grid>
               <Grid item xs={12} md={6}>
+                <StyledTextField
+                  fullWidth
+                  label="Autoklasse"
+                  value={carClass}
+                  sx={{ backgroundColor: theme.palette.background.paper }}
+                  disabled
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <StyledTextField
+                  fullWidth
+                  label="Getriebe"
+                  value={carTransmission}
+                  sx={{ backgroundColor: theme.palette.background.paper }}
+                  disabled
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <StyledTextField
+                  fullWidth
+                  label="Antrieb"
+                  value={carDrive}
+                  sx={{ backgroundColor: theme.palette.background.paper }}
+                  disabled
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <StyledTextField
+                  fullWidth
+                  label="Anzahl der Sitzplätze"
+                  value={carSeatings}
+                  sx={{ backgroundColor: theme.palette.background.paper }}
+                  disabled
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
                 <TextField
                   select
                   required
@@ -190,7 +234,6 @@ function Reservation() {
               <Grid item xs={12} md={6}>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <MobileDateTimePicker
-                  required
                   ampm={false}
                   label="Abholdatum"
                   value={pickupDate}
@@ -208,7 +251,6 @@ function Reservation() {
               <Grid item xs={12} md={6}>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <MobileDateTimePicker
-                  required
                   ampm={false}
                   label="Rückgabedatum"
                   value={returnDate}
