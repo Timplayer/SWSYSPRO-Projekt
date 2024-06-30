@@ -3,23 +3,23 @@ import { Card, CardContent, Typography, CardMedia, IconButton, Button } from '@m
 import DriveEtaIcon from '@mui/icons-material/DriveEta';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import { Link as RouterLink } from 'react-router-dom';
 
 interface CarCardProps {
   name: string;
-  images: string[];  // An array of image URLs
+  images: string[]; // An array of image URLs
   price: string;
   transmission: string;
   passengers: number;
   luggage: number;
   kmIncluded: string;
+  onBook: () => void; // New prop for handling book button click
 }
 
-const CarCard: React.FC<CarCardProps> = ({ name, images, price, transmission, passengers, luggage, kmIncluded }) => {
+const CarCard: React.FC<CarCardProps> = ({ name, images, price, transmission, passengers, luggage, kmIncluded, onBook }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const handlePrevImage = () => {
-    setCurrentImageIndex((prevIndex) => (prevIndex - 1 + images.length) > images.length ? 0 : (prevIndex - 1 + images.length) % images.length);
+    setCurrentImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
   };
 
   const handleNextImage = () => {
@@ -61,7 +61,7 @@ const CarCard: React.FC<CarCardProps> = ({ name, images, price, transmission, pa
           <Typography variant="body2">{transmission}</Typography>
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
-          <Button variant="contained" color="primary" component={RouterLink} to="/carbooking">
+          <Button variant="contained" color="primary" onClick={onBook}>
             Buchen
           </Button>
         </div>

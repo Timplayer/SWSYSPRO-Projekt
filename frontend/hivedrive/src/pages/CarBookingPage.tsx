@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import withRoot from '../withRoot';
 import AppAppBar from '../views/AppAppBar';
 import AppFooter from '../views/AppFooter';
@@ -9,23 +10,27 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { MobileDateTimePicker } from '@mui/x-date-pickers';
 
-function Reservation() {
+
+const Reservation: React.FC = () => {
+  const location = useLocation();
+  const { car, searchLocation, returnLocation, pickupDate, returnDate } = location.state || {};
+
   const theme = useTheme();
 
   const [carType, setCarType] = useState('');
-  const [carName, setcarname] = useState('');
+  const [carName, setcarname] = useState(car.name);
   const [carClass, setcarClass] = useState('');
-  const [carTransmission, setcarTransmission] = useState('');
+  const [carTransmission, setcarTransmission] = useState(car.transmission);
   const [carDrive, setcarnamecarDrive] = useState('');
-  const [carSeatings, setcarnamecarSeatings] = useState('');
+  const [carSeatings, setcarnamecarSeatings] = useState(car.passengers);
 
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
 
-  const [pickupDate, setPickupDate] = useState<Date | null>(new Date());
-  const [returnDate, setReturnDate] = useState<Date | null>(new Date());
-  const [pickupLocation, setPickupLocation] = useState('');
-  const [returnLocation, setReturnLocation] = useState('');
+  const [pickupDatecopy, setPickupDate] = useState<Date | null>(pickupDate);
+  const [returnDatecopy, setReturnDate] = useState<Date | null>(returnDate);
+  const [pickupLocationcopy, setPickupLocation] = useState(searchLocation);
+  const [returnLocationcopy, setReturnLocation] = useState(returnLocation);
   const [differentReturnLocation, setDifferentReturnLocation] = useState(false);
 
   const [driverAge, setDriverAge] = useState('');
@@ -72,8 +77,8 @@ function Reservation() {
       additionalDriver,
       pickupDate,
       returnDate,
-      pickupLocation,
-      returnLocation: differentReturnLocation ? returnLocation : pickupLocation, //abfragen was vorher ausgewählt wurde
+      pickupLocationcopy,
+      returnLocation: differentReturnLocation ? returnLocation : pickupLocationcopy, //abfragen was vorher ausgewählt wurde
       customerName,
       customerEmail,
       driverAge,
@@ -189,7 +194,7 @@ function Reservation() {
                   required
                   fullWidth
                   label="Abholort"
-                  value={pickupLocation}
+                  value={pickupLocationcopy}
                   onChange={(e) => setPickupLocation(e.target.value)}
                   sx={{ backgroundColor: theme.palette.background.paper }}
                 >
@@ -207,7 +212,7 @@ function Reservation() {
                     select
                     fullWidth
                     label="Rückgabeort"
-                    value={returnLocation}
+                    value={returnLocationcopy}
                     onChange={(e) => setReturnLocation(e.target.value)}
                     sx={{ backgroundColor: theme.palette.background.paper }}
                   >
@@ -236,7 +241,7 @@ function Reservation() {
                 <MobileDateTimePicker
                   ampm={false}
                   label="Abholdatum"
-                  value={pickupDate}
+                  value={pickupDatecopy}
                   onChange={(date) => {
                     setPickupDate(date);
                     if (date && returnDate && date > returnDate) {
@@ -253,7 +258,7 @@ function Reservation() {
                 <MobileDateTimePicker
                   ampm={false}
                   label="Rückgabedatum"
-                  value={returnDate}
+                  value={returnDatecopy}
                   onChange={(date) => setReturnDate(date)}
                   minDate={pickupDate || now}
                   minTime={pickupDate || now}
