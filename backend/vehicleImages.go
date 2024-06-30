@@ -14,5 +14,5 @@ func deleteVehicleImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 }
 
 func getVehicleImagesByVehicleId(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return getImagesGenericById(dbpool, "SELECT images.url FROM vehicles JOIN vehicleImage ON vehicles.id = vehicleImage.vehicleId JOIN images ON vehicleImage.imageId = images.id WHERE vehicles.id = $1")
+	return getImagesGenericById(dbpool, "SELECT images.url FROM vehicles JOIN vehicleImage ON vehicles.id = vehicleImage.vehicleId JOIN images ON vehicleImage.imageId = images.id WHERE vehicles.id = $1 ORDER BY images.displayorder")
 }

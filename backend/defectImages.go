@@ -14,5 +14,5 @@ func deleteDefectImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 }
 
 func getDefectImagesByDefectId(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return getImagesGenericById(dbpool, "SELECT images.url FROM defects JOIN defectImage ON defects.id = defectImage.defectId JOIN images ON defectImage.imageId = images.id WHERE defect.id = $1")
+	return getImagesGenericById(dbpool, "SELECT images.url FROM defects JOIN defectImage ON defects.id = defectImage.defectId JOIN images ON defectImage.imageId = images.id WHERE defect.id = $1 ORDER BY images.displayorder")
 }
