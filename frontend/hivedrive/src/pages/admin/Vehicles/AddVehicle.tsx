@@ -11,7 +11,7 @@ import axios from 'axios';
 interface AddVehicleProps {
     categories: VehicleCategory[];
     producers: Producer[];
-    handleAddVehicle: (vehicle: Omit<Vehicle, 'id'>) => void;
+    handleAddVehicle: (vehicle: Omit<Vehicle, 'id'>) => Promise<number>;
 }
 
 const AddVehicle: React.FC<AddVehicleProps> = ({ categories, producers, handleAddVehicle }) => {
@@ -38,18 +38,15 @@ const AddVehicle: React.FC<AddVehicleProps> = ({ categories, producers, handleAd
         onDrop
     });
 
-    const uploadImage = async (image: File, vehicleId: number): Promise<string> => {
+    const uploadImage = async (image: File, vehicleId: number)  => {
         const formData = new FormData();
         formData.append('file', image);
         formData.append('file_name', image.name);
-        formData.append('display_order', '0'); // Adjust the display order as needed
+        formData.append('display_order', '0');
 
-        const response = await axios.post(`/api/images/vehicles/id/${vehicleId}`, formData, {
+        await axios.post(`/api/images/vehicles/id/${vehicleId}`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
-
-
-        return response.data.url;
     };
 
     const handleSubmit = async () => {
@@ -61,25 +58,19 @@ const AddVehicle: React.FC<AddVehicleProps> = ({ categories, producers, handleAd
                 status,
                 receptionDate: dayjs(receptionDate).toISOString(),
                 completionDate: dayjs(completionDate).toISOString(),
-                imageUrls: [] as string[], // Initialize as an empty array
             };
 
-            // Create the vehicle first
-            const response = await axios.post('/api/vehicles', newVehicle);
-            const vehicleId = response.data.id;
-
-            // Upload images and associate them with the vehicle
-            const uploadedImageUrls = await Promise.all(images.map(image => uploadImage(image, vehicleId)));
-            newVehicle.imageUrls = uploadedImageUrls;
-
-            handleAddVehicle(newVehicle);
-            setName('');
-            setVehicleCategory(0);
-            setProducer(0);
-            setStatus('');
-            setReceptionDate(new Date());
-            setCompletionDate(new Date());
-            setImages([]);
+            handleAddVehicle(newVehicle).then(vehicleId => {
+                Promise.all(images.map(image => uploadImage(image, vehicleId)));
+                
+                setName('');
+                setVehicleCategory(0);
+                setProducer(0);
+                setStatus('');
+                setReceptionDate(new Date());
+                setCompletionDate(new Date());
+                setImages([]);
+            });
         }
     };
 

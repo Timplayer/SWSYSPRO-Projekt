@@ -32,13 +32,15 @@ const Vehicles: React.FC = () => {
             .catch(error => console.error('Error fetching producers:', error));
     }, []);
 
-    const handleAddVehicle = (newVehicle: Omit<Vehicle, 'id'>) => {
+    const handleAddVehicle = (newVehicle: Omit<Vehicle, 'id'>) : Promise<number> => {
         
-        axios.post('/api/vehicles', newVehicle)
+        return axios.post('/api/vehicles', newVehicle)
             .then(response => {
                 setVehicles([...vehicles, response.data]);
+                return response.data.id;
             })
             .catch(error => console.error('Error adding vehicle:', error));
+
     };
 
     const handleUpdateVehicle = (updatedVehicle: Vehicle) => {
