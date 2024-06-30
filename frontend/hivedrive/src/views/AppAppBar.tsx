@@ -7,6 +7,17 @@ import logo from '../../images/HiveDriveLogo.png'; // Pfad zum Logo
 import keycloak from '../keycloak';
 import AccountManagement from '../components/Accountmanagement';
 import Button from '@mui/material/Button';
+import { Link as RouterLink } from 'react-router-dom';
+
+
+function checkAdminRole() {
+  if (keycloak.tokenParsed && keycloak.tokenParsed.realm_access){
+  if (keycloak.tokenParsed.realm_access?.roles.includes('admin') ) {
+    return true;
+  }
+}
+  return false;
+}
 
 const rightLink = {
   fontSize: 16,
@@ -73,7 +84,25 @@ function AppAppBar() {
             </Button>
           </Box>
            )}
+
+          {checkAdminRole() && (
+          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+            <Button
+              variant="text"
+              component={RouterLink}
+              to="/admin" //link ändern
+              sx={{ ...rightLink, color: 'secondary.main' }}
+            >
+              {'Adminpage'}
+            </Button>
+          </Box>
+           )}
+
+
+          {!checkAdminRole() && (
           <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}></Box>
+          )}   
+
         </Toolbar>
       </AppBar>
     </div>
