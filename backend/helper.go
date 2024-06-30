@@ -44,7 +44,7 @@ func returnTAsJSON[T any](writer http.ResponseWriter, t T, httpResponseCode int)
 	body, err := json.Marshal(t)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf("Error serializing availability: %v", err)
+		log.Printf("Error serializing: %v", err)
 		return
 	}
 	writer.Header().Set(contentType, applicationJSON)

@@ -47,7 +47,7 @@ func main() {
 
 	router.HandleFunc(stationsAPIpath, postStation(dbpool)).Methods("POST")
 	router.HandleFunc(stationsAPIpath, getStations(dbpool)).Methods("GET")
-	router.HandleFunc(stationsIdAPIpath, updateStation(dbpool)).Methods("PUT")
+	router.HandleFunc(stationsAPIpath, updateStation(dbpool)).Methods("PUT")
 
 	router.HandleFunc(imagesAPIpath, postImage(dbpool)).Methods("POST")
 
@@ -69,24 +69,24 @@ func main() {
 
 	router.HandleFunc(vehicleCategoriesAPIpath, postVehicleCategories(dbpool)).Methods("POST")
 	router.HandleFunc(vehicleCategoriesAPIpath, getVehicleCategories(dbpool)).Methods("GET")
-	router.HandleFunc(vehicleCategoriesIdAPIpath, updateVehicleCategory(dbpool)).Methods("PUT")
+	router.HandleFunc(vehicleCategoriesAPIpath, updateVehicleCategory(dbpool)).Methods("PUT")
 
 	router.HandleFunc(vehicleTypesAPIpath, postVehicleType(dbpool)).Methods("POST")
 	router.HandleFunc(vehicleTypesAPIpath, getVehicleTypes(dbpool)).Methods("GET")
-	router.HandleFunc(vehicleTypesIdAPIpath, updateVehicleType(dbpool)).Methods("PUT")
+	router.HandleFunc(vehicleTypesAPIpath, updateVehicleType(dbpool)).Methods("PUT")
 	router.HandleFunc(vehicleTypesIdAPIpath, getVehicleTypeById(dbpool)).Methods("GET")
 
 	router.HandleFunc(vehiclesAPIpath, postVehicle(dbpool)).Methods("POST")
 	router.HandleFunc(vehiclesAPIpath, getVehicles(dbpool)).Methods("GET")
-	router.HandleFunc(vehiclesIdAPIpath, updateVehicle(dbpool)).Methods("PUT")
+	router.HandleFunc(vehiclesAPIpath, updateVehicle(dbpool)).Methods("PUT")
 
 	router.HandleFunc(defectsAPIpath, postDefect(dbpool)).Methods("POST")
 	router.HandleFunc(defectsAPIpath, getDefects(dbpool)).Methods("GET")
-	router.HandleFunc(defectsIdAPIpath, updateDefect(dbpool)).Methods("PUT")
+	router.HandleFunc(defectsAPIpath, updateDefect(dbpool)).Methods("PUT")
 
 	router.HandleFunc(producersAPIpath, postProducers(dbpool)).Methods("POST")
 	router.HandleFunc(producersAPIpath, getProducers(dbpool)).Methods("GET")
-	router.HandleFunc(producersIdAPIpath, updateProducer(dbpool)).Methods("PUT")
+	router.HandleFunc(producersAPIpath, updateProducer(dbpool)).Methods("PUT")
 
 	router.HandleFunc(stationsIdAPIpath, getStationByID(dbpool)).Methods("GET")
 	router.HandleFunc(vehiclesIdAPIpath, getVehicleById(dbpool)).Methods("GET")

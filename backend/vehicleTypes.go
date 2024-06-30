@@ -28,18 +28,14 @@ func updateVehicleType(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 
-		rows, err := dbpool.Query(context.Background(), "UPDATE vehicleTypes SET name = $1, vehicleCategory = $2, transmission = $3, maxSeatCount = $4, pricePerHour = $5 WHERE id = $6 RETURNING id",
-			s.Name, s.VehicleCategory, s.Transmission, s.MaxSeatCount, s.PricePerHour, mux.Vars(request)["id"])
-
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error updating vehicleType: %s\n", err)
+		rows, err := dbpool.Exec(context.Background(), "UPDATE vehicleTypes SET name = $1, vehicleCategory = $2, transmission = $3, maxSeatCount = $4, pricePerHour = $5 WHERE id = $6",
+			s.Name, s.VehicleCategory, s.Transmission, s.MaxSeatCount, s.PricePerHour, s.Id)
+		fail = checkUpdateSingleRow(writer, err, rows, "update VehicleTypes")
+		if fail {
 			return
 		}
-		defer rows.Close()
-
-		sendResponseVehicleType(writer, rows, err, s, updateOperation, cVehicle)
-		return
+		log.Printf(genericSuccess, updateOperation, cVehicle, s.Id)
+		returnTAsJSON(writer, s, http.StatusCreated)
 	}
 }
 

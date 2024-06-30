@@ -21,16 +21,13 @@ func updateProducer(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if fail {
 			return
 		}
-		rows, err := dbpool.Query(context.Background(), "UPDATE producers SET name = $1 WHERE id = $2 RETURNING id", p.Name, mux.Vars(request)["id"])
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error updating producer: %p\n", err)
+		result, err := dbpool.Exec(context.Background(), "UPDATE producers SET name = $1 WHERE id = $2", p.Name, p.Id)
+		fail = checkUpdateSingleRow(writer, err, result, "updating producer")
+		if fail {
 			return
 		}
-		defer rows.Close()
-
-		sendResponseProducers(writer, rows, err, p, updateOperation, cProducer)
-		return
+		log.Printf(genericSuccess, updateOperation, cProducer, p.Id)
+		returnTAsJSON(writer, p, http.StatusCreated)
 	}
 }
 
@@ -92,21 +89,6 @@ func getProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		returnTAsJSON(writer, producers, http.StatusOK)
 	}
-}
-
-func sendResponseProducers(writer http.ResponseWriter, rows pgx.Rows, err error, p *producer, operationType string, structName string) bool {
-	rows.Next()
-	var id int64
-	err = rows.Scan(&id)
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
-		return false
-	}
-	log.Printf(genericSuccess, operationType, structName, id)
-	p.Id = id
-	returnTAsJSON(writer, p, http.StatusCreated)
-	return false
 }
 
 func createProducersTable(dbpool *pgxpool.Pool) {

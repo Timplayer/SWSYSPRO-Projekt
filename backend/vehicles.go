@@ -27,15 +27,13 @@ func updateVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if fail {
 			return
 		}
-		rows, err := dbpool.Query(context.Background(), "UPDATE vehicles SET name = $1, vehiclecategory = $2, producer = $3, status = $4, receptionDate = $5, completionDate = $6 WHERE id = $7 RETURNING id", v.Name, v.VehicleCategory, v.Producer, v.Status, v.ReceptionDate, v.CompletionDate, mux.Vars(request)["id"])
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error updating vehicle: %v\n", err)
+		result, err := dbpool.Exec(context.Background(), "UPDATE vehicles SET name = $1, vehiclecategory = $2, producer = $3, status = $4, receptionDate = $5, completionDate = $6 WHERE id = $7", v.Name, v.VehicleCategory, v.Producer, v.Status, v.ReceptionDate, v.CompletionDate, v.Id)
+		fail = checkUpdateSingleRow(writer, err, result, "update Vehicle")
+		if fail {
 			return
 		}
-		defer rows.Close()
-
-		sendResponseVehicles(writer, rows, err, v, updateOperation, cVehicle)
+		log.Printf(genericSuccess, updateOperation, cVehicle, v.Id)
+		returnTAsJSON(writer, v, http.StatusCreated)
 	}
 }
 
@@ -97,21 +95,6 @@ func getVehicles(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		returnTAsJSON(writer, vehicles, http.StatusOK)
 	}
-}
-
-func sendResponseVehicles(writer http.ResponseWriter, rows pgx.Rows, err error, v *vehicle, operationType string, structName string) bool {
-	rows.Next()
-	var id int64
-	err = rows.Scan(&id)
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
-		return false
-	}
-	log.Printf(genericSuccess, operationType, structName, id)
-	v.Id = id
-	returnTAsJSON(writer, v, http.StatusCreated)
-	return false
 }
 
 func createVehiclesTable(dbpool *pgxpool.Pool) {

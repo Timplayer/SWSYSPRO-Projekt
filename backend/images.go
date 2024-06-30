@@ -88,17 +88,15 @@ func postImageGeneric(dbpool *pgxpool.Pool, insertSQL string) http.HandlerFunc {
 			log.Printf(errorExecutingOperationGeneric, insertOperation, cImage, err)
 			return
 		}
-		rows, err := dbpool.Query(context.Background(),
+		result, err := dbpool.Exec(context.Background(),
 			"UPDATE images SET url = $1 WHERE id = $2;", httpsPrefix+request.Host+fileAPIpath+strconv.FormatInt(p.Id, 10), p.Id)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, insertOperation, cImage, err)
+		fail := checkUpdateSingleRow(writer, err, result, "post Image")
+		if fail {
 			return
 		}
-		defer rows.Close()
 
 		if (len(insertSQL) != 0) && (len(mux.Vars(request)[idKey]) != 0) {
-			rows, err = dbpool.Query(context.Background(),
+			rows, err := dbpool.Query(context.Background(),
 				insertSQL, mux.Vars(request)[idKey], p.Id)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)

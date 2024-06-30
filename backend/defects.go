@@ -25,15 +25,13 @@ func updateDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if fail {
 			return
 		}
-		rows, err := dbpool.Query(context.Background(), "UPDATE defects SET name = $1, date = $2, description = $3, status = $4 WHERE id = $5 RETURNING id", d.Name, d.Date, d.Description, d.Status, mux.Vars(request)["id"])
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, updateOperation, cDefect, err)
+		result, err := dbpool.Exec(context.Background(), "UPDATE defects SET name = $1, date = $2, description = $3, status = $4 WHERE id = $5", d.Name, d.Date, d.Description, d.Status, d.Id)
+		fail = checkUpdateSingleRow(writer, err, result, "update defect")
+		if fail {
 			return
 		}
-		defer rows.Close()
-		sendResponseDefects(writer, rows, err, d, updateOperation)
-		return
+		log.Printf(genericSuccess, updateOperation, cDefect, d.Id)
+		returnTAsJSON(writer, d, http.StatusCreated)
 	}
 }
 
@@ -96,20 +94,6 @@ func getDefects(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		returnTAsJSON(writer, defects, http.StatusOK)
 	}
-}
-
-func sendResponseDefects(writer http.ResponseWriter, rows pgx.Rows, err error, d *defect, operationType string) bool {
-	rows.Next()
-	var id int64
-	err = rows.Scan(&id)
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf(errorExecutingOperationGeneric, operationType, cDefect, err)
-		return false
-	}
-	log.Printf(genericSuccess, operationType, cDefect, id)
-	returnTAsJSON(writer, d, http.StatusCreated)
-	return false
 }
 
 func createDefectsTable(dbpool *pgxpool.Pool) {

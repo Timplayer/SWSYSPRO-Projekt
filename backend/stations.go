@@ -30,16 +30,13 @@ func updateStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if fail {
 			return
 		}
-		rows, err := dbpool.Query(context.Background(), "UPDATE stations SET name = $1, location = point($2, $3), country = $4, state = $5, city = $6, zip = $7, street = $8, houseNumber = $9, capacity = $10 WHERE id = $11 RETURNING id", s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber, s.Capacity, mux.Vars(request)["id"])
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error updating station: %s\n", err)
+		result, err := dbpool.Exec(context.Background(), "UPDATE stations SET name = $1, location = point($2, $3), country = $4, state = $5, city = $6, zip = $7, street = $8, houseNumber = $9, capacity = $10 WHERE id = $11", s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber, s.Capacity, s.Id)
+		fail = checkUpdateSingleRow(writer, err, result, "update station")
+		if fail {
 			return
 		}
-		defer rows.Close()
-
-		sendResponseStations(writer, rows, err, s, updateOperation, cStation)
-		return
+		log.Printf(genericSuccess, updateOperation, cStation, s.Id)
+		returnTAsJSON(writer, s, http.StatusCreated)
 	}
 }
 
@@ -105,21 +102,6 @@ func getStations(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		returnTAsJSON(writer, stations, http.StatusOK)
 	}
-}
-
-func sendResponseStations(writer http.ResponseWriter, rows pgx.Rows, err error, s *station, operationType string, structName string) bool {
-	rows.Next()
-	var id int64
-	err = rows.Scan(&id)
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
-		return false
-	}
-	log.Printf(genericSuccess, operationType, structName, id)
-	s.Id = id
-	returnTAsJSON(writer, s, http.StatusCreated)
-	return false
 }
 
 func createStationsTable(dbpool *pgxpool.Pool) {
