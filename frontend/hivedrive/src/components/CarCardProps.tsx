@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, Typography, CardMedia, IconButton, Button } from '@mui/material';
 import DriveEtaIcon from '@mui/icons-material/DriveEta';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { Link as RouterLink } from 'react-router-dom';
 
 interface CarCardProps {
   name: string;
-  image: string;
+  images: string[];  // An array of image URLs
   price: string;
   transmission: string;
   passengers: number;
@@ -13,15 +15,39 @@ interface CarCardProps {
   kmIncluded: string;
 }
 
-const CarCard: React.FC<CarCardProps> = ({ name, image, price, transmission, passengers, luggage, kmIncluded }) => {
+const CarCard: React.FC<CarCardProps> = ({ name, images, price, transmission, passengers, luggage, kmIncluded }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const handlePrevImage = () => {
+    setCurrentImageIndex((prevIndex) => (prevIndex - 1 + images.length) > images.length ? 0 : (prevIndex - 1 + images.length) % images.length);
+  };
+
+  const handleNextImage = () => {
+    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+  };
+
   return (
     <Card>
-      <CardMedia
-        component="img"
-        height="140"
-        image={image}
-        alt={name}
-      />
+      <div style={{ position: 'relative' }}>
+        <CardMedia
+          component="img"
+          height="140"
+          image={images[currentImageIndex]}
+          alt={name}
+        />
+        <IconButton
+          onClick={handlePrevImage}
+          style={{ position: 'absolute', top: '50%', left: '0', transform: 'translateY(-50%)' }}
+        >
+          <ArrowBackIosIcon />
+        </IconButton>
+        <IconButton
+          onClick={handleNextImage}
+          style={{ position: 'absolute', top: '50%', right: '0', transform: 'translateY(-50%)' }}
+        >
+          <ArrowForwardIosIcon />
+        </IconButton>
+      </div>
       <CardContent>
         <Typography variant="h6">{name}</Typography>
         <Typography variant="body2">{`Inkl. ${kmIncluded}`}</Typography>

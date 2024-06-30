@@ -8,15 +8,31 @@ import AppFooter from '../views/AppFooter';
 import CarSearchBar from '../components/CarSearchBar';
 import { useLocation } from 'react-router-dom';
 
-interface Car {
+interface CarCard {
   name: string;
-  image: string;
+  images: string[];  // An array of image URLs
   price: string;
   transmission: string;
   passengers: number;
   luggage: number;
   kmIncluded: string;
 }
+
+const carData = {
+  name: 'Tesla Model S',
+  images: [
+    'https://example.com/images/tesla_model_s_1.jpg',
+    'https://example.com/images/tesla_model_s_2.jpg',
+    'https://example.com/images/tesla_model_s_3.jpg',
+  ],
+  price: '100€',
+  transmission: 'Automatik',
+  passengers: 5,
+  luggage: 2,
+  kmIncluded: '200 km'
+};
+
+
 
 const Bookingpage: React.FC = () => {
   const location = useLocation();
@@ -47,14 +63,14 @@ const Bookingpage: React.FC = () => {
               </Typography>
             </Grid>
             <Grid item xs={12} sm={6} md={4}>
-              <CarCard {...car} />
+              <CarCard {...carData} />
             </Grid>
           </Grid>
         ) : (
           <Grid container spacing={3}>
             {cars.map((car, index) => (
               <Grid item xs={12} sm={6} md={4} key={index}>
-                <CarCard {...car} />
+                <CarCard {...carData} />
               </Grid>
             ))}
           </Grid>

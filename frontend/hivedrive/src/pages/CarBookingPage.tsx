@@ -1,20 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import withRoot from '../withRoot';
 import AppAppBar from '../views/AppAppBar';
 import AppFooter from '../views/AppFooter';
-import Container from '@mui/material/Container';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import FormControl from '@mui/material/FormControl';
-import FormLabel from '@mui/material/FormLabel';
+import { Container, Box, Typography, TextField, MenuItem, Checkbox, FormControlLabel, Button, Grid, Radio, RadioGroup, FormControl, FormLabel, useTheme } from '@mui/material';
+import { useKeycloak } from '@react-keycloak/web';
 
 const carOptions = [
   { value: 'economy', label: 'Economy' },
@@ -34,6 +23,9 @@ const locationOptions = [
 ];
 
 function Reservation() {
+  const { keycloak } = useKeycloak();
+  const theme = useTheme();
+
   const [carType, setCarType] = useState('');
   const [additionalDriver, setAdditionalDriver] = useState(false);
   const [pickupDate, setPickupDate] = useState('');
@@ -49,6 +41,15 @@ function Reservation() {
   const [discountCode, setDiscountCode] = useState('');
   const [additionalDriverName, setAdditionalDriverName] = useState('');
   const [additionalDriverAge, setAdditionalDriverAge] = useState('');
+
+  useEffect(() => {
+    if (keycloak?.authenticated) {
+      const { given_name, family_name, email, phone_number } = keycloak.tokenParsed;
+      setCustomerName(`${given_name} ${family_name}`);
+      setCustomerEmail(email);
+      setCustomerPhone(phone_number || '');
+    }
+  }, [keycloak]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -70,10 +71,6 @@ function Reservation() {
     });
   };
 
-  const inputStyle = { backgroundColor: '#ff9800' };
-
-
-  //Mehrere Daten MÜSSEN aus dem Account, der Buchungsseite vorher übernommen werden 
   return (
     <React.Fragment>
       <AppAppBar />
@@ -90,7 +87,7 @@ function Reservation() {
                   label="Name"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  sx={inputStyle}
+                  sx={{ backgroundColor: theme.palette.background.paper }}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -101,7 +98,7 @@ function Reservation() {
                   type="email"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
-                  sx={inputStyle}
+                  sx={{ backgroundColor: theme.palette.background.paper }}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -112,10 +109,10 @@ function Reservation() {
                   type="tel"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
-                  sx={inputStyle}
+                  sx={{ backgroundColor: theme.palette.background.paper }}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={12} md={6}>
                 <TextField
                   select
                   required
@@ -123,7 +120,7 @@ function Reservation() {
                   label="Autotyp"
                   value={carType}
                   onChange={(e) => setCarType(e.target.value)}
-                  sx={inputStyle}
+                  sx={{ backgroundColor: theme.palette.background.paper }}
                 >
                   {carOptions.map((option) => (
                     <MenuItem key={option.value} value={option.value}>
@@ -132,7 +129,7 @@ function Reservation() {
                   ))}
                 </TextField>
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={12} md={6}>
                 <TextField
                   select
                   required
@@ -140,7 +137,7 @@ function Reservation() {
                   label="Abholort"
                   value={pickupLocation}
                   onChange={(e) => setPickupLocation(e.target.value)}
-                  sx={inputStyle}
+                  sx={{ backgroundColor: theme.palette.background.paper }}
                 >
                   {locationOptions.map((option) => (
                     <MenuItem key={option.value} value={option.value}>
@@ -169,7 +166,7 @@ function Reservation() {
                     label="Rückgabeort"
                     value={returnLocation}
                     onChange={(e) => setReturnLocation(e.target.value)}
-                    sx={inputStyle}
+                    sx={{ backgroundColor: theme.palette.background.paper }}
                   >
                     {locationOptions.map((option) => (
                       <MenuItem key={option.value} value={option.value}>
@@ -179,7 +176,7 @@ function Reservation() {
                   </TextField>
                 </Grid>
               )}
-              <Grid item xs={12}>
+              <Grid item xs={12} md={6}>
                 <TextField
                   required
                   fullWidth
@@ -188,10 +185,10 @@ function Reservation() {
                   InputLabelProps={{ shrink: true }}
                   value={pickupDate}
                   onChange={(e) => setPickupDate(e.target.value)}
-                  sx={inputStyle}
+                  sx={{ backgroundColor: theme.palette.background.paper }}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={12} md={6}>
                 <TextField
                   required
                   fullWidth
@@ -200,11 +197,11 @@ function Reservation() {
                   InputLabelProps={{ shrink: true }}
                   value={returnDate}
                   onChange={(e) => setReturnDate(e.target.value)}
-                  sx={inputStyle}
+                  sx={{ backgroundColor: theme.palette.background.paper }}
                 />
               </Grid>
               <Grid item xs={12}>
-                <FormControl component="fieldset" sx={inputStyle}>
+                <FormControl component="fieldset" sx={{ backgroundColor: theme.palette.background.paper, p: 2, borderRadius: 1 }}>
                   <FormLabel component="legend">Alter des Fahrers</FormLabel>
                   <RadioGroup
                     row
@@ -226,11 +223,11 @@ function Reservation() {
                   label="Rabattcode"
                   value={discountCode}
                   onChange={(e) => setDiscountCode(e.target.value)}
-                  sx={inputStyle}
+                  sx={{ backgroundColor: theme.palette.background.paper }}
                 />
               </Grid>
               <Grid item xs={12}>
-                <FormControl component="fieldset" sx={inputStyle}>
+                <FormControl component="fieldset" sx={{ backgroundColor: theme.palette.background.paper, p: 2, borderRadius: 1 }}>
                   <FormLabel component="legend">Art der Anmietung</FormLabel>
                   <RadioGroup
                     row
@@ -265,11 +262,11 @@ function Reservation() {
                       label="Zusatzfahrer Name"
                       value={additionalDriverName}
                       onChange={(e) => setAdditionalDriverName(e.target.value)}
-                      sx={inputStyle}
+                      sx={{ backgroundColor: theme.palette.background.paper }}
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    <FormControl component="fieldset" sx={inputStyle}>
+                    <FormControl component="fieldset" sx={{ backgroundColor: theme.palette.background.paper, p: 2, borderRadius: 1 }}>
                       <FormLabel component="legend">Alter des Zusatzfahrers</FormLabel>
                       <RadioGroup
                         row
@@ -288,7 +285,7 @@ function Reservation() {
                 </>
               )}
               <Grid item xs={12}>
-                <Button type="submit" variant="contained" color="primary">
+                <Button type="submit" variant="contained" color="primary" fullWidth>
                   Reservation abschicken
                 </Button>
               </Grid>
