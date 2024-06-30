@@ -97,18 +97,8 @@ func putReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, reque
 				     end_pos  = $5
                  WHERE id = $6 AND user_id = $7;`,
 			r.AutoKlasse, r.StartZeit, r.StartStation, r.EndZeit, r.EndStation, r.Id, introspectionResult.UserId)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error editing Reservation: %v", err)
+		if checkUpdateSingleRow(writer, err, result, "editing Reservation") {
 			return
-		}
-		if result.RowsAffected() == 0 {
-			writer.WriteHeader(http.StatusNotFound)
-			log.Printf("Error editing Reservation: no rows affected")
-			return
-		}
-		if result.RowsAffected() > 1 {
-			log.Printf("Error editing Reservation: too many rows affected")
 		}
 
 		notAvailable := checkAvailability(writer, request, tx)
@@ -186,18 +176,8 @@ func deleteReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, re
                     WHERE user_id = $1 AND id = $2`, introspectionResult.UserId, mux.Vars(request)["id"])
 		}
 
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error geting Database Connection: %v\n", err)
+		if checkUpdateSingleRow(writer, err, result, "deleting Reservation") {
 			return
-		}
-		if result.RowsAffected() == 0 {
-			writer.WriteHeader(http.StatusNotFound)
-			log.Printf("Error deleting Reservation: no reservations found")
-			return
-		}
-		if result.RowsAffected() > 1 {
-			log.Printf("Error deleting Reservation: too many rows affected")
 		}
 
 		notAvailable := checkAvailability(writer, request, tx)

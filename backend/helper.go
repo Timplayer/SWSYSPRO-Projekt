@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"io"
 	"log"
@@ -49,4 +50,21 @@ func returnTAsJSON[T any](writer http.ResponseWriter, t T, httpResponseCode int)
 	writer.Header().Set(contentType, applicationJSON)
 	writer.WriteHeader(httpResponseCode)
 	writer.Write(body)
+}
+
+func checkUpdateSingleRow(writer http.ResponseWriter, err error, result pgconn.CommandTag, operation string) bool {
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf("Error geting Database Connection: %v\n", err)
+		return true
+	}
+	if result.RowsAffected() == 0 {
+		writer.WriteHeader(http.StatusNotFound)
+		log.Printf("Error %s: no reservations found", operation)
+		return true
+	}
+	if result.RowsAffected() > 1 {
+		log.Printf("Error %s: too many rows affected", operation)
+	}
+	return false
 }
