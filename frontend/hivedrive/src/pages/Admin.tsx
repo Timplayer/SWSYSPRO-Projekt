@@ -3,9 +3,10 @@ import { CssBaseline, Toolbar, Typography, Box, ThemeProvider, createTheme } fro
 import Sidebar from '../components/Sidebar';
 import Overview from "./admin/Overview.tsx";
 import Vehicles from "./admin/Vehicles/Vehicles.tsx";
-import Stations from "./admin/Stations.tsx";
+import Stations from "./admin/Stations/Stations.tsx";
 import Reservations from './admin/Reservations.tsx';
 import Users from './admin/Users.tsx';
+import withRoot from '../withRoot.tsx';
 
 const theme = createTheme({
     palette: {
@@ -20,12 +21,12 @@ const theme = createTheme({
             paper: '#1A202C',
         },
         text: {
-            primary: '#fff',
+            primary: '#fffffff',
         },
     },
 });
 
-const App: React.FC = () => {
+const Admin: React.FC = () => {
     const [selectedTab, setSelectedTab] = useState('Overview');
 
     const renderContent = () => {
@@ -61,4 +62,4 @@ const App: React.FC = () => {
     );
 };
 
-export default App;
+export default withRoot(Admin);
