@@ -60,17 +60,8 @@ func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, requ
 			return
 		}
 
-		// check if car is available
-		var available int
-		err = tx.QueryRow(request.Context(), "SELECT MIN(available) AS a FROM availability").Scan(&available)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error testing availability: %v", err)
-			return
-		}
-		if available < 0 {
-			writer.WriteHeader(http.StatusConflict)
-			log.Printf("Error testing availability: no cars available, %v\n", r)
+		notAvailable := checkAvailability(writer, request, tx)
+		if notAvailable {
 			return
 		}
 		err = tx.Commit(request.Context())
@@ -129,17 +120,8 @@ func putReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, reque
 			log.Printf("Error editing Reservation: too many rows affected")
 		}
 
-		// check if car is available
-		var available int
-		err = tx.QueryRow(request.Context(), "SELECT MIN(available) AS a FROM availability").Scan(&available)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error testing availability: %v", err)
-			return
-		}
-		if available < 0 {
-			writer.WriteHeader(http.StatusConflict)
-			log.Printf("Error testing availability: no cars available, %v\n", r)
+		notAvailable := checkAvailability(writer, request, tx)
+		if notAvailable {
 			return
 		}
 		err = tx.Commit(request.Context())
@@ -246,17 +228,9 @@ func deleteReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, re
 		if result.RowsAffected() > 1 {
 			log.Printf("Error deleting Reservation: too many rows affected")
 		}
-		// check if car is available
-		var available int
-		err = tx.QueryRow(request.Context(), "SELECT MIN(available) AS a FROM availability").Scan(&available)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error testing availability: %v", err)
-			return
-		}
-		if available < 0 {
-			writer.WriteHeader(http.StatusConflict)
-			log.Printf("Error testing availability: no cars available\n")
+
+		notAvailable := checkAvailability(writer, request, tx)
+		if notAvailable {
 			return
 		}
 		err = tx.Commit(request.Context())
@@ -298,17 +272,8 @@ func addCarToStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 
-		// check if car is available
-		var available int
-		err = tx.QueryRow(request.Context(), "SELECT MIN(available) AS a FROM availability").Scan(&available)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error testing availability: %v", err)
-			return
-		}
-		if available < 0 {
-			writer.WriteHeader(http.StatusConflict)
-			log.Printf("Error testing availability: no cars available, %v\n", r)
+		notAvailable := checkAvailability(writer, request, tx)
+		if notAvailable {
 			return
 		}
 		err = tx.Commit(request.Context())
@@ -357,6 +322,22 @@ func getAvailabilityAtStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		writer.WriteHeader(http.StatusOK)
 		writer.Write(body)
 	}
+}
+
+func checkAvailability(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) bool {
+	var available int
+	err := tx.QueryRow(request.Context(), "SELECT MIN(available) AS a FROM availability").Scan(&available)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf("Error testing availability: %v", err)
+		return true
+	}
+	if available < 0 {
+		writer.WriteHeader(http.StatusConflict)
+		log.Printf("Error testing availability: no cars available, %v\n")
+		return true
+	}
+	return false
 }
 
 func createReservationsTable(dbpool *pgxpool.Pool) {
