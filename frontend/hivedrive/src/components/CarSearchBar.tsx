@@ -34,9 +34,9 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
       const response = await axios.get('/api/stations');
       const locationsData = response.data.map((location: any) => ({
         label: location.name,
-        value: location.name
+        value: location.name,
       }));
-      setLocations(locationsData);
+      setLocations (locationsData);
     };
 
     fetchLocations();
@@ -49,7 +49,7 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
         returnLocation: splitLocation ? returnLocation : location,
         pickupDate,
         returnDate,
-      }
+      },
     });
   };
 
@@ -62,11 +62,9 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
           <Grid item xs={12} sm={4} justifyContent="left" alignItems="center">
             <TextField
               select
-              label={splitLocation ? "Abholung" : "Abholung und Rückgabe"}
+              label={splitLocation ? 'Abholung' : 'Abholung und Rückgabe'}
               value={location}
-              onChange={(e) => {
-                setLocationState(e.target.value);
-              }}
+              onChange={(e) => setLocationState(e.target.value)}
               fullWidth
             >
               {locations.map((option) => (
@@ -78,6 +76,7 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
           </Grid>
           {!splitLocation && (
             <Grid item xs={12} sm={4}>
+              {/* Empty Grid to keep alignment */}
             </Grid>
           )}
           {splitLocation && (

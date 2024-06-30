@@ -10,7 +10,7 @@ import { useLocation } from 'react-router-dom';
 
 interface CarCard {
   name: string;
-  images: string[];  // An array of image URLs
+  images: string[]; // An array of image URLs
   price: string;
   transmission: string;
   passengers: number;
@@ -29,7 +29,7 @@ const carData = {
   transmission: 'Automatik',
   passengers: 5,
   luggage: 2,
-  kmIncluded: '200 km'
+  kmIncluded: '200 km',
 };
 
 const Bookingpage: React.FC = () => {
