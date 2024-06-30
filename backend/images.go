@@ -167,6 +167,33 @@ func getImageGenericById(dbpool *pgxpool.Pool, selectSQL string) http.HandlerFun
 	}
 }
 
+func getImagesGenericById(dbpool *pgxpool.Pool, selectSQL string) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		rows, err := dbpool.Query(request.Context(), selectSQL, mux.Vars(request)["id"])
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error executing get image by id: %v", err)
+		}
+
+		urls, err := pgx.CollectRows(rows, pgx.RowTo[url])
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf(errorGetGenericById, cImage, err)
+			return
+		}
+
+		str, err := json.Marshal(urls)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf(errorGetGenericById, cImage, err)
+			return
+		}
+
+		writer.Header().Set(contentType, applicationJSON)
+		writer.Write(str)
+	}
+}
+
 func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		rows, err := dbpool.Query(context.Background(), "SELECT file FROM images WHERE id = $1;", mux.Vars(request)["id"])
