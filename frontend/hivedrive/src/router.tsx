@@ -20,7 +20,7 @@ import Carclasses from './pages/Carclasses';
 import { LocationProvider } from './Utils/LocationContext';
 import Bonusprogramm from './pages/Bonusprogramm';
 import OpenSourcethings from './pages/OpenSourcethings';
-import Reservation from './pages/CarBookingPage';
+import CarBookingPage from './pages/CarBookingPage';
 
 
 const routes: RouteObject[] = [
@@ -89,8 +89,8 @@ const routes: RouteObject[] = [
 		element: <OpenSourcethings />,
 	},
 	{
-		path: '/reservation',
-		element: <Reservation />,
+		path: '/carbooking',
+		element: <ProtectedRoute element={<CarBookingPage />} requiredRoles={['member', 'admin', 'employee']} />,
 	},
 ];
 

@@ -6,12 +6,12 @@ import {
 const FilterBar: React.FC = () => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [activeMenu, setActiveMenu] = React.useState<string | null>(null);
-  const [sortOption, setSortOption] = React.useState('');
-  const [vehicleCategory, setVehicleCategory] = React.useState('');
-  const [transmission, setTransmission] = React.useState('');
-  const [driveType, setDriveType] = React.useState('');
-  const [seatCount, setSeatCount] = React.useState<string[]>([]);
-  const [driverAge, setDriverAge] = React.useState<string[]>([]);
+  const [sortOption, setSortOption] = React.useState('lowestPrice'); // Default value
+  const [vehicleCategory, setVehicleCategory] = React.useState<string[]>([]);
+  const [transmission, setTransmission] = React.useState('automatic'); // Default value
+  const [driveType, setDriveType] = React.useState('frontWheel'); // Default value
+  const [seatCount, setSeatCount] = React.useState('7+'); // Default value
+  const [driverAge, setDriverAge] = React.useState('25+'); // Default value
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, menuType: string) => {
     setAnchorEl(event.currentTarget);
@@ -27,30 +27,29 @@ const FilterBar: React.FC = () => {
     setSortOption(event.target.value as string);
   };
 
-  const handleVehicleCategoryChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setVehicleCategory(event.target.value as string);
+  const handleVehicleCategoryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setVehicleCategory((prev) =>
+      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
+    );
   };
 
   const handleTransmissionChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setTransmission(event.target.value as string);
+    const value = event.target.value as string;
+    setTransmission(value);
   };
 
   const handleDriveTypeChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setDriveType(event.target.value as string);
+    const value = event.target.value as string;
+    setDriveType(value);
   };
 
-  const handleSeatCountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = (event.target as HTMLInputElement).value;
-    setSeatCount((prev) =>
-      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
-    );
+  const handleSeatCountChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setSeatCount(event.target.value as string);
   };
 
-  const handleDriverAgeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = (event.target as HTMLInputElement).value;
-    setDriverAge((prev) =>
-      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
-    );
+  const handleDriverAgeChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setDriverAge(event.target.value as string);
   };
 
   return (
@@ -118,10 +117,10 @@ const FilterBar: React.FC = () => {
               <FormControlLabel control={<Checkbox checked={vehicleCategory.includes("suv")} onChange={handleVehicleCategoryChange} value="suv" />} label="SUV" />
               <FormControlLabel control={<Checkbox checked={vehicleCategory.includes("coupe")} onChange={handleVehicleCategoryChange} value="coupe" />} label="Coupé" />
               <FormControlLabel control={<Checkbox checked={vehicleCategory.includes("cabriolet")} onChange={handleVehicleCategoryChange} value="cabriolet" />} label="Cabriolet" />
-              <FormControlLabel control={<Checkbox checked={vehicleCategory.includes("family")} onChange={handleVehicleCategoryChange} value="family" />} label="Familienauto" />
               <FormControlLabel control={<Checkbox checked={vehicleCategory.includes("kombi")} onChange={handleVehicleCategoryChange} value="kombi" />} label="Kombi" />
               <FormControlLabel control={<Checkbox checked={vehicleCategory.includes("electricVehicle")} onChange={handleVehicleCategoryChange} value="electricVehicle" />} label="Elektrisches Fahrzeug" />
               <FormControlLabel control={<Checkbox checked={vehicleCategory.includes("luxuryVehicle")} onChange={handleVehicleCategoryChange} value="luxuryVehicle" />} label="Luxus Fahrzeug" />
+              <FormControlLabel control={<Checkbox checked={vehicleCategory.includes("specialVehicle")} onChange={handleVehicleCategoryChange} value="specialVehicle" />} label="Spezial Fahrzeug" />
             </FormControl>
           </Box>
         )}
@@ -147,51 +146,23 @@ const FilterBar: React.FC = () => {
         {activeMenu === 'seatCount' && (
           <Box sx={{ width: '300px', padding: 2 }}>
             <Typography variant="h6">Anzahl Sitze</Typography>
-            <FormControl component="fieldset">
-              <FormControlLabel
-                control={<Checkbox checked={seatCount.includes("2+")} onChange={handleSeatCountChange} value="2+" />}
-                label="2+"
-              />
-              <FormControlLabel
-                control={<Checkbox checked={seatCount.includes("4+")} onChange={handleSeatCountChange} value="4+" />}
-                label="4+"
-              />
-              <FormControlLabel
-                control={<Checkbox checked={seatCount.includes("5+")} onChange={handleSeatCountChange} value="5+" />}
-                label="5+"
-              />
-              <FormControlLabel
-                control={<Checkbox checked={seatCount.includes("7+")} onChange={handleSeatCountChange} value="7+" />}
-                label="7+"
-              />
-            </FormControl>
+            <RadioGroup value={seatCount} onChange={handleSeatCountChange}>
+              <FormControlLabel value="2+" control={<Radio />} label="2+" />
+              <FormControlLabel value="4+" control={<Radio />} label="4+" />
+              <FormControlLabel value="5+" control={<Radio />} label="5+" />
+              <FormControlLabel value="7+" control={<Radio />} label="7+" />
+            </RadioGroup>
           </Box>
         )}
         {activeMenu === 'driverAge' && (
           <Box sx={{ width: '300px', padding: 2 }}>
             <Typography variant="h6">Alter des Fahrers</Typography>
-            <FormControl component="fieldset">
-              <FormControlLabel
-                control={<Checkbox checked={driverAge.includes("18+")} onChange={handleDriverAgeChange} value="18+" />}
-                label="18+"
-              />
-              <FormControlLabel
-                control={<Checkbox checked={driverAge.includes("21+")} onChange={handleDriverAgeChange} value="21+" />}
-                label="21+"
-              />
-              <FormControlLabel
-                control={<Checkbox checked={driverAge.includes("23+")} onChange={handleDriverAgeChange} value="23+" />}
-                label="23+"
-              />
-              <FormControlLabel
-                control={<Checkbox checked={driverAge.includes("25+")} onChange={handleDriverAgeChange} value="25+" />}
-                label="25+"
-              />
-              <FormControlLabel
-                control={<Checkbox checked={driverAge.includes("30+")} onChange={handleDriverAgeChange} value="30+" />}
-                label="30+"
-              />
-            </FormControl>
+            <RadioGroup value={driverAge} onChange={handleDriverAgeChange}>
+              <FormControlLabel value="18+" control={<Radio />} label="18+" />
+              <FormControlLabel value="21+" control={<Radio />} label="21+" />
+              <FormControlLabel value="23+" control={<Radio />} label="23+" />
+              <FormControlLabel value="25+" control={<Radio />} label="25+" />
+            </RadioGroup>
           </Box>
         )}
       </Menu>

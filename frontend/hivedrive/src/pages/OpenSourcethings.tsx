@@ -23,6 +23,16 @@ function OpenSourcethings() {
               </Typography>
               <Typography variant="body1">
                 {section.content}
+                {section.contentHeader}
+                <br/>
+                <br/>
+                {section.body}
+                <br/>
+                <br/>
+                {section.notice}
+                <br/>
+                <br/>
+                {section.conditions}
               </Typography>
             </Box>
           ))}
