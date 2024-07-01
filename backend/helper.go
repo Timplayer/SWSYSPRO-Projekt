@@ -11,19 +11,6 @@ import (
 	"net/http"
 )
 
-func startTransaction(writer http.ResponseWriter, request *http.Request, dbpool *pgxpool.Pool) (pgx.Tx, bool) {
-	tx, err := dbpool.BeginTx(request.Context(), pgx.TxOptions{
-		IsoLevel:       pgx.Serializable,
-		AccessMode:     pgx.ReadWrite,
-		DeferrableMode: pgx.NotDeferrable})
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf("Error starting transaction: %v", err)
-		return nil, true
-	}
-	return tx, false
-}
-
 func getRequestBody[T any](writer http.ResponseWriter, requestBody io.ReadCloser) (T, bool) {
 	var t T
 	body, err := io.ReadAll(requestBody)

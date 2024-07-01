@@ -1,5 +1,7 @@
 package main
 
+import "github.com/jackc/pgx/v5"
+
 const contentType = "Content-Type"
 const applicationJSON = "application/json"
 const octetStream = "octet-stream"
@@ -62,3 +64,8 @@ const imagesVehicleAPIpath = "/api/images/vehicles/id/{id}"
 const imagesDefectAPIpath = "/api/images/defects/id/{id}"
 const imagesVehicleCategoryAPIpath = "/api/images/vehicleCategories/id/{id}"
 const imagesFilesIDAPIpath = "/api/images/file/id/{id}"
+
+var transactionOptions = pgx.TxOptions{
+	IsoLevel:       pgx.Serializable,
+	AccessMode:     pgx.ReadWrite,
+	DeferrableMode: pgx.NotDeferrable}

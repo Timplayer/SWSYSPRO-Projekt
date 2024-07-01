@@ -46,8 +46,10 @@ func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, requ
 			return
 		}
 
-		tx, fail := startTransaction(writer, request, dbpool)
-		if fail {
+		tx, err := dbpool.BeginTx(request.Context(), transactionOptions)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error starting transaction: %v", err)
 			return
 		}
 		defer tx.Rollback(request.Context())
@@ -63,7 +65,7 @@ func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, requ
 		if notAvailable {
 			return
 		}
-		err := tx.Commit(request.Context())
+		err = tx.Commit(request.Context())
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf(errorTransactionAborted, err)
@@ -82,8 +84,10 @@ func putReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, reque
 			return
 		}
 
-		tx, done := startTransaction(writer, request, dbpool)
-		if done {
+		tx, err := dbpool.BeginTx(request.Context(), transactionOptions)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error starting transaction: %v", err)
 			return
 		}
 		defer tx.Rollback(request.Context())
@@ -139,12 +143,12 @@ func getReservations(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, requ
 
 func deleteReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
 	return func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
-		tx, fail := startTransaction(writer, request, dbpool)
-		if fail {
+		tx, err := dbpool.BeginTx(request.Context(), transactionOptions)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error starting transaction: %v", err)
 			return
 		}
-
-		var err error
 		var result pgconn.CommandTag
 		if slices.Contains(introspectionResult.Access.Roles, "employee") {
 			result, err = dbpool.Exec(context.Background(),
@@ -187,9 +191,10 @@ func addCarToStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if fail {
 			return
 		}
-
-		tx, fail := startTransaction(writer, request, dbpool)
-		if fail {
+		tx, err := dbpool.BeginTx(request.Context(), transactionOptions)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error starting transaction: %v", err)
 			return
 		}
 		defer tx.Rollback(request.Context())
@@ -205,7 +210,7 @@ func addCarToStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if notAvailable {
 			return
 		}
-		err := tx.Commit(request.Context())
+		err = tx.Commit(request.Context())
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf(errorTransactionAborted, err)
