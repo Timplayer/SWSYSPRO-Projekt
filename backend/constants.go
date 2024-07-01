@@ -22,6 +22,7 @@ const errorExecutingOperationGeneric = "Error executing %s %s: %v"
 const errorDatabaseConnection = "Error getting Database Connection: %v\n"
 const errorGenericNotFound = "Error finding %s: %s not found \n"
 const errorGetGenericById = "Error getting %s by id %v\n"
+const errorTransactionAborted = "Error transaction aborted: %v"
 
 const genericSuccess = "%sed %s: %d"
 const idKey = "id"
