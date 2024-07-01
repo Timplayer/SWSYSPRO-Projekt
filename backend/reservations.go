@@ -66,7 +66,7 @@ func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, requ
 		err = tx.Commit(request.Context())
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error transaction aborted: %v", err)
+			log.Printf(errorTransactionAborted, err)
 			return
 		}
 
@@ -108,7 +108,7 @@ func putReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, reque
 		err = tx.Commit(request.Context())
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error transaction aborted: %v", err)
+			log.Printf(errorTransactionAborted, err)
 			return
 		}
 
@@ -230,7 +230,7 @@ func addCarToStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		err = tx.Commit(request.Context())
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error transaction aborted: %v", err)
+			log.Printf(errorTransactionAborted, err)
 			return
 		}
 
