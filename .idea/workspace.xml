@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="7075ef56-f0fe-4253-891f-33ef44b5fa9b" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/hivedrive/src/assets/HiveDriveLogo.jpeg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/hivedrive/src/components/Sidebar.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/hivedrive/src/pages/Admin.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/hivedrive/src/pages/admin/Cars.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/hivedrive/src/pages/admin/Overview.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/hivedrive/src/pages/admin/Reservations.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/hivedrive/src/pages/admin/Stations.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/hivedrive/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/hivedrive/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/hivedrive/src/router.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/hivedrive/src/router.tsx" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="2hXh0O3sUNIECrbhq2XhpOjd7uI" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Docker.Run.executor&quot;: &quot;Run&quot;,
+    &quot;Docker.Unnamed.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;frontend-adminpage&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Tim/Documents/GitHub/SWSYSPRO-Projekt/infra/docker-compose.yaml&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\Tim\\Documents\\GitHub\\SWSYSPRO-Projekt\\frontend\\hivedrive\\node_modules\\typescript\\lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Tim\Documents\GitHub\SWSYSPRO-Projekt\frontend\hivedrive\src\pages\admin" />
+      <recent name="C:\Users\Tim\Documents\GitHub\SWSYSPRO-Projekt\frontend\hivedrive\src\assets" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="Run" type="docker-deploy" factoryName="docker-compose.yml" server-name="Docker">
+      <deployment type="docker-compose.yml">
+        <settings>
+          <option name="envFilePath" value="" />
+          <option name="commandLineOptions" value="--build" />
+          <option name="sourceFilePath" value="infra/docker-compose.yaml" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-WS-241.17011.90" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="7075ef56-f0fe-4253-891f-33ef44b5fa9b" name="Changes" comment="" />
+      <created>1717746105296</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1717746105296</updated>
+      <workItem from="1717746106320" duration="7852000" />
+      <workItem from="1717843814316" duration="3460000" />
+      <workItem from="1717940343307" duration="1395000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
