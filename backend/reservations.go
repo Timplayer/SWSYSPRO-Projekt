@@ -49,7 +49,7 @@ func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, requ
 		tx, err := dbpool.BeginTx(request.Context(), transactionOptions)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error starting transaction: %v", err)
+			log.Printf(errorStartingTransaction, err)
 			return
 		}
 		defer tx.Rollback(request.Context())
@@ -87,7 +87,7 @@ func putReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, reque
 		tx, err := dbpool.BeginTx(request.Context(), transactionOptions)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error starting transaction: %v", err)
+			log.Printf(errorStartingTransaction, err)
 			return
 		}
 		defer tx.Rollback(request.Context())
@@ -146,7 +146,7 @@ func deleteReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, re
 		tx, err := dbpool.BeginTx(request.Context(), transactionOptions)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error starting transaction: %v", err)
+			log.Printf(errorStartingTransaction, err)
 			return
 		}
 		var result pgconn.CommandTag
@@ -194,7 +194,7 @@ func addCarToStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		tx, err := dbpool.BeginTx(request.Context(), transactionOptions)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error starting transaction: %v", err)
+			log.Printf(errorStartingTransaction, err)
 			return
 		}
 		defer tx.Rollback(request.Context())
