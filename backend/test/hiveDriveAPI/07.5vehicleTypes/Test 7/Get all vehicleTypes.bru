@@ -15,4 +15,19 @@ tests {
     const data = res.getBody();
     expect(res.getStatus()).to.equal(200);
   });
+  
+  test("Three entries in List?", function() {
+    const data = res.getBody();
+    expect (data.length).to.equal(3);
+  });
+  
+  test("Different IDs?", function() {
+    const data = res.getBody();
+    expect (data[1].id).to.not.equal(data[2].id);
+  });
+  
+  test("Same name?", function() {
+    const data = res.getBody();
+    expect (data[1].name).to.equal(data[2].name);
+  });
 }
