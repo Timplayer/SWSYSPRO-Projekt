@@ -1,5 +1,5 @@
 meta {
-  name: Get stations
+  name: Get all stations
   type: http
   seq: 1
 }
@@ -16,7 +16,7 @@ tests {
     expect(res.getStatus()).to.equal(200);
   });
   
-  test("Two entries in List?", function() {
+  test("Three entries in List?", function() {
     const data = res.getBody();
     expect (data.length).to.equal(3);
   });
