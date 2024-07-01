@@ -24,21 +24,21 @@ func startTransaction(writer http.ResponseWriter, request *http.Request, dbpool 
 	return tx, false
 }
 
-func getRequestBody[T any](writer http.ResponseWriter, requestBody io.ReadCloser) (*T, bool) {
+func getRequestBody[T any](writer http.ResponseWriter, requestBody io.ReadCloser) (T, bool) {
+	var t T
 	body, err := io.ReadAll(requestBody)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		log.Printf(errorReadingRequestBody, err)
-		return nil, true
+		return t, true
 	}
-	var r *T
-	err = json.Unmarshal(body, &r)
+	err = json.Unmarshal(body, &t)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		log.Printf(errorReadingRequestBody, err)
-		return nil, true
+		return t, true
 	}
-	return r, false
+	return t, false
 }
 
 func returnTAsJSON[T any](writer http.ResponseWriter, t T, httpResponseCode int) {

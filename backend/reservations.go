@@ -39,8 +39,8 @@ type availability struct {
 	Cars       int64     `json:"availability" db:"available"`
 }
 
-func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
-	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
+	return func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
 		r, fail := getRequestBody[reservation](writer, request.Body)
 		if fail {
 			return
@@ -77,8 +77,8 @@ func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, requ
 	}
 }
 
-func putReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
-	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+func putReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
+	return func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
 		r, done := getRequestBody[reservation](writer, request.Body)
 		if done {
 			return
@@ -119,8 +119,8 @@ func putReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, reque
 	}
 }
 
-func getReservations(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
-	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+func getReservations(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
+	return func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
 		if slices.Contains(introspectionResult.Access.Roles, "employee") {
 			reservations, fail := getTs[reservationNullable](writer, request, dbpool, "reservation",
 				"Select * from reservations")
@@ -139,8 +139,8 @@ func getReservations(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, requ
 	}
 }
 
-func deleteReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
-	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+func deleteReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
+	return func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
 		tx, fail := startTransaction(writer, request, dbpool)
 		if fail {
 			return
@@ -242,7 +242,7 @@ func checkAvailability(writer http.ResponseWriter, request *http.Request, tx pgx
 	}
 	if available < 0 {
 		writer.WriteHeader(http.StatusConflict)
-		log.Printf("Error testing availability: no cars available, %v\n")
+		log.Printf("Error testing availability: no cars available\n")
 		return true
 	}
 	return false
