@@ -44,12 +44,22 @@ func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if fail {
 			return
 		}
-		err := dbpool.QueryRow(context.Background(),
-			"INSERT INTO stations (name, location, country, state, city, zip, street, houseNumber, capacity) VALUES ($1, point($2, $3), $4, $5, $6, $7, $8, $9, $10) RETURNING id",
-			s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber, s.Capacity).Scan(&s.Id)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, insertOperation, cStation, err)
+		s, fail = getT[station](writer, request, dbpool, "postStation",
+			`INSERT INTO stations (name, location, country, state, city, zip, street, houseNumber, capacity)
+                   VALUES ($1, point($2, $3), $4  , $5   , $6  , $7 , $8    , $9         , $10)
+        		RETURNING stations.id,
+        		          stations.name,
+        		          stations.location[0] as latitude,
+        		          stations.location[1] as longitude,
+        		          stations.country,
+        		          stations.state,
+        		          stations.city,
+        		          stations.zip,
+        		          stations.street,
+        		          stations.houseNumber,
+        		          stations.capacity`,
+			s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber, s.Capacity)
+		if fail {
 			return
 		}
 		log.Printf(genericSuccess, insertOperation, cStation, s.Id)

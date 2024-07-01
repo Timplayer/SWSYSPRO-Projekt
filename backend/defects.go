@@ -39,12 +39,10 @@ func postDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if fail {
 			return
 		}
-		err := dbpool.QueryRow(context.Background(),
-			"INSERT INTO defects (name, date, description, status) VALUES ($1, $2, $3, $4) RETURNING id",
-			d.Name, d.Date, d.Description, d.Status).Scan(&d.Id)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, insertOperation, cDefect, err)
+		d, fail = getT[defect](writer, request, dbpool, "postDefect",
+			"INSERT INTO defects (name, date, description, status) VALUES ($1, $2, $3, $4) RETURNING *",
+			d.Name, d.Date, d.Description, d.Status)
+		if fail {
 			return
 		}
 		returnTAsJSON(writer, d, http.StatusCreated)

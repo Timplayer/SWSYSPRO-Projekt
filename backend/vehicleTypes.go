@@ -37,20 +37,17 @@ func updateVehicleType(dbpool *pgxpool.Pool) http.HandlerFunc {
 }
 
 func postVehicleType(dbpool *pgxpool.Pool) http.HandlerFunc {
-
 	return func(writer http.ResponseWriter, request *http.Request) {
 		s, fail := getRequestBody[vehicleType](writer, request.Body)
 		if fail {
 			return
 		}
-
-		err := dbpool.QueryRow(context.Background(),
-			"INSERT INTO vehicleTypes (name, vehicleCategory, transmission, maxSeatCount, pricePerHour) VALUES ($1, $2, $3, $4, $5) RETURNING id",
-			s.Name, s.VehicleCategory, s.Transmission, s.MaxSeatCount, s.PricePerHour).Scan(&s.Id)
-
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, insertOperation, cVehicleType, err)
+		s, fail = getT[vehicleType](writer, request, dbpool, "postVehicleType",
+			`INSERT INTO vehicleTypes (name, vehicleCategory, transmission, maxSeatCount, pricePerHour)
+                               VALUES ($1  , $2             , $3          , $4          , $5)
+                    RETURNING *`,
+			s.Name, s.VehicleCategory, s.Transmission, s.MaxSeatCount, s.PricePerHour)
+		if fail {
 			return
 		}
 		log.Printf(genericSuccess, insertOperation, cVehicleType, s.Id)

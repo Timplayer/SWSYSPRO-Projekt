@@ -52,12 +52,10 @@ func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, requ
 		}
 		defer tx.Rollback(request.Context())
 
-		err := tx.QueryRow(context.Background(),
-			"INSERT INTO reservations (user_id, auto_klasse, start_time, start_pos, end_time, end_pos) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
-			introspectionResult.UserId, r.AutoKlasse, r.StartZeit, r.StartStation, r.EndZeit, r.EndStation).Scan(&r.Id)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error adding Reservation: %v", err)
+		r, fail = getT[reservation](writer, request, dbpool, "postReservation",
+			"INSERT INTO reservations (user_id, auto_klasse, start_time, start_pos, end_time, end_pos) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+			introspectionResult.UserId, r.AutoKlasse, r.StartZeit, r.StartStation, r.EndZeit, r.EndStation)
+		if fail {
 			return
 		}
 
@@ -65,7 +63,7 @@ func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, requ
 		if notAvailable {
 			return
 		}
-		err = tx.Commit(request.Context())
+		err := tx.Commit(request.Context())
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf(errorTransactionAborted, err)
@@ -196,12 +194,10 @@ func addCarToStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		defer tx.Rollback(request.Context())
 
-		err := tx.QueryRow(context.Background(),
-			"INSERT INTO reservations (auto_klasse, end_time, end_pos) VALUES ($1, $2, $3) RETURNING id",
-			r.AutoKlasse, r.Time, r.Station).Scan(&r.Id)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error adding Reservation: %v", err)
+		res, fail := getT[reservationNullable](writer, request, dbpool, "postNewCar",
+			"INSERT INTO reservations (auto_klasse, end_time, end_pos) VALUES ($1, $2, $3) RETURNING *",
+			r.AutoKlasse, r.Time, r.Station)
+		if fail {
 			return
 		}
 
@@ -209,7 +205,7 @@ func addCarToStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if notAvailable {
 			return
 		}
-		err = tx.Commit(request.Context())
+		err := tx.Commit(request.Context())
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf(errorTransactionAborted, err)
@@ -217,7 +213,7 @@ func addCarToStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		log.Printf("added Reservation: %d", r.Id)
-		returnTAsJSON(writer, r, http.StatusCreated)
+		returnTAsJSON(writer, res, http.StatusCreated)
 	}
 }
 

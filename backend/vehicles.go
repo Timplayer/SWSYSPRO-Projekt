@@ -41,11 +41,12 @@ func postVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if fail {
 			return
 		}
-		err := dbpool.QueryRow(context.Background(),
-			"INSERT INTO vehicles (name, vehicleCategory, producer, status, receptionDate, completionDate) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;", v.Name, v.VehicleCategory, v.Producer, v.Status, v.ReceptionDate, v.CompletionDate).Scan(&v.Id)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, insertOperation, cVehicle, err)
+		v, fail = getT[vehicle](writer, request, dbpool, "postVehicle",
+			`INSERT INTO vehicles (name, vehicleCategory, producer, status, receptionDate, completionDate)
+                               VALUES ($1  , $2             , $3      , $4    , $5           , $6)
+                               RETURNING *;`,
+			v.Name, v.VehicleCategory, v.Producer, v.Status, v.ReceptionDate, v.CompletionDate)
+		if fail {
 			return
 		}
 		log.Printf(genericSuccess, insertOperation, cVehicle, v.Id)

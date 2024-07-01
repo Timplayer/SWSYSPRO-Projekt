@@ -35,7 +35,7 @@ tests {
   
   test("Time is correct?", function() {
     const data = res.getBody();
-    expect (data.time).to.equal("2024-07-20T00:00:00Z");
+    expect (data.end_zeit).to.equal("2024-07-20T00:00:00Z");
   });
   
   test("auto_klasse is correct?", function() {
@@ -45,6 +45,6 @@ tests {
   
   test("station is correct?", function() {
     const data = res.getBody();
-    expect (data.station).to.equal(1);
+    expect (data.end_station).to.equal(1);
   });
 }

@@ -35,11 +35,9 @@ func postProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if fail {
 			return
 		}
-		err := dbpool.QueryRow(context.Background(),
-			"INSERT INTO producers (name) VALUES ($1) RETURNING id", p.Name).Scan(&p.Id)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, insertOperation, cProducer, err)
+		p, fail = getT[producer](writer, request, dbpool, "insertProducer",
+			"INSERT INTO producers (name) VALUES ($1) RETURNING *", p.Name)
+		if fail {
 			return
 		}
 		log.Printf(genericSuccess, insertOperation, cProducer, p.Id)
