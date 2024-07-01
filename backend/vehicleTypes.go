@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
@@ -13,12 +12,12 @@ import (
 )
 
 type vehicleType struct {
-	Id              int64           `json:"id"`
-	Name            string          `json:"name"`
-	VehicleCategory int64           `json:"vehicleCategory"`
-	Transmission    string          `json:"transmission"`
-	MaxSeatCount    int64           `json:"maxSeatCount"`
-	PricePerHour    decimal.Decimal `json:"pricePerHour"`
+	Id              int64           `json:"id" db:"id"`
+	Name            string          `json:"name" db:"name"`
+	VehicleCategory int64           `json:"vehicleCategory" db:"vehiclecategory"`
+	Transmission    string          `json:"transmission" db:"transmission"`
+	MaxSeatCount    int64           `json:"maxSeatCount" db:"maxseatcount"`
+	PricePerHour    decimal.Decimal `json:"pricePerHour" db:"priceperhour"`
 }
 
 func updateVehicleType(dbpool *pgxpool.Pool) http.HandlerFunc {
@@ -82,49 +81,12 @@ func getVehicleTypeById(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getVehicleTypes(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT * FROM vehicleTypes;")
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error geting Database Connection: %v\n", err)
+		vehicleTypes, fail := getTs[vehicleType](writer, request, dbpool, cVehicleType, "SELECT * FROM vehicletypes")
+		if fail {
 			return
 		}
-		defer rows.Close()
-
-		vehicleTypes, err := pgx.CollectRows(rows, pgx.RowToStructByPos[vehicleType])
-
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicle, err)
-			return
-		}
-		str, err := json.Marshal(vehicleTypes)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicle, err)
-			return
-		}
-		writer.Header().Set(contentType, applicationJSON)
-		_, err = writer.Write(str)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicle, err)
-			return
-		}
+		returnTAsJSON(writer, vehicleTypes, http.StatusOK)
 	}
-}
-
-func sendResponseVehicleType(writer http.ResponseWriter, rows pgx.Rows, err error, s *vehicleType, operationType string, structName string) {
-	rows.Next()
-	var id int64
-	err = rows.Scan(&id)
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
-		return
-	}
-	log.Printf(genericSuccess, operationType, structName, id)
-	s.Id = id
-	returnTAsJSON(writer, s, http.StatusCreated)
 }
 
 func createVehicleTypesTable(dbpool *pgxpool.Pool) {

@@ -11,8 +11,8 @@ import (
 )
 
 type producer struct {
-	Id   int64  `json:"id"`
-	Name string `json:"name"`
+	Id   int64  `json:"id" db:"id"`
+	Name string `json:"name" db:"name"`
 }
 
 func updateProducer(dbpool *pgxpool.Pool) http.HandlerFunc {
@@ -69,22 +69,8 @@ func getProducerById(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT * FROM producers")
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error geting Database Connection: %v\n", err)
-			return
-		}
-		defer rows.Close()
-		producers, err := pgx.CollectRows(rows,
-			func(row pgx.CollectableRow) (producer, error) {
-				var p producer
-				err := rows.Scan(&p.Id, &p.Name)
-				return p, err
-			})
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cProducer, err)
+		producers, fail := getTs[producer](writer, request, dbpool, cProducer, "SELECT * FROM producers")
+		if fail {
 			return
 		}
 		returnTAsJSON(writer, producers, http.StatusOK)

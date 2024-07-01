@@ -12,13 +12,13 @@ import (
 )
 
 type vehicle struct {
-	Id              int64     `json:"id"`
-	Name            string    `json:"name"`
-	VehicleCategory int64     `json:"vehicleCategory"`
-	Producer        int64     `json:"producer"`
-	Status          string    `json:"status"`
-	ReceptionDate   time.Time `json:"receptionDate"`
-	CompletionDate  time.Time `json:"completionDate"`
+	Id              int64     `json:"id" db:"id"`
+	Name            string    `json:"name" db:"name"`
+	VehicleCategory int64     `json:"vehicleCategory" db:"vehiclecategory"`
+	Producer        int64     `json:"producer" db:"producer"`
+	Status          string    `json:"status" db:"status"`
+	ReceptionDate   time.Time `json:"receptionDate" db:"receptiondate"`
+	CompletionDate  time.Time `json:"completionDate" db:"completiondate"`
 }
 
 func updateVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
@@ -75,22 +75,8 @@ func getVehicleById(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getVehicles(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT * FROM vehicles;")
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error geting Database Connection: %v\n", err)
-			return
-		}
-		defer rows.Close()
-		vehicles, err := pgx.CollectRows(rows,
-			func(row pgx.CollectableRow) (vehicle, error) {
-				var v vehicle
-				err := rows.Scan(&v.Id, &v.Name, &v.VehicleCategory, &v.Producer, &v.Status, &v.ReceptionDate, &v.CompletionDate)
-				return v, err
-			})
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicle, err)
+		vehicles, fail := getTs[vehicle](writer, request, dbpool, cVehicle, "SELECT * FROM vehicles")
+		if fail {
 			return
 		}
 		returnTAsJSON(writer, vehicles, http.StatusOK)

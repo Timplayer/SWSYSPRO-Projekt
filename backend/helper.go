@@ -68,3 +68,20 @@ func checkUpdateSingleRow(writer http.ResponseWriter, err error, result pgconn.C
 	}
 	return false
 }
+
+func getTs[T any](writer http.ResponseWriter, request *http.Request, dbpool *pgxpool.Pool, object string, sql string, args ...any) ([]T, bool) {
+	rows, err := dbpool.Query(request.Context(), sql, args...)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf(errorDatabaseConnection, err)
+		return nil, true
+	}
+	defer rows.Close()
+	t, err := pgx.CollectRows(rows, pgx.RowToStructByName[T])
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf(errorExecutingOperationGeneric, findingOperation, object, err)
+		return nil, true
+	}
+	return t, false
+}

@@ -11,8 +11,8 @@ import (
 )
 
 type vehicleCategory struct {
-	Id   int64  `json:"id"`
-	Name string `json:"name"`
+	Id   int64  `json:"id" db:"id"`
+	Name string `json:"name" db:"name"`
 }
 
 func updateVehicleCategory(dbpool *pgxpool.Pool) http.HandlerFunc {
@@ -69,22 +69,9 @@ func getVehicleCategoryById(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT vehicleCategories.id, vehicleCategories.name FROM vehicleCategories")
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error geting Database Connection: %v\n", err)
-			return
-		}
-		defer rows.Close()
-		vehicleCategories, err := pgx.CollectRows(rows,
-			func(row pgx.CollectableRow) (vehicleCategory, error) {
-				var vC vehicleCategory
-				err := rows.Scan(&vC.Id, &vC.Name)
-				return vC, err
-			})
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleCategory, err)
+		vehicleCategories, fail := getTs[vehicleCategory](writer, request, dbpool, cVehicleCategory,
+			"SELECT * FROM vehiclecategories")
+		if fail {
 			return
 		}
 		returnTAsJSON(writer, vehicleCategories, http.StatusOK)

@@ -13,28 +13,30 @@ import (
 )
 
 type reservation struct {
-	Id           int64     `json:"id"`
-	StartZeit    time.Time `json:"start_zeit"`
-	StartStation int64     `json:"start_station"`
-	EndZeit      time.Time `json:"end_zeit"`
-	EndStation   int64     `json:"end_station"`
-	AutoKlasse   int64     `json:"auto_klasse"`
+	Id           int64     `json:"id" db:"id"`
+	UserId       string    `json:"-" db:"user_id"`
+	StartZeit    time.Time `json:"start_zeit" db:"start_time"`
+	StartStation int64     `json:"start_station" db:"start_pos"`
+	EndZeit      time.Time `json:"end_zeit" db:"end_time"`
+	EndStation   int64     `json:"end_station" db:"end_pos"`
+	AutoKlasse   int64     `json:"auto_klasse" db:"auto_klasse"`
 }
 
-type reservationNullabl struct {
-	Id           int64      `json:"id"`
-	StartZeit    *time.Time `json:"start_zeit"`
-	StartStation *int64     `json:"start_station"`
-	EndZeit      *time.Time `json:"end_zeit"`
-	EndStation   *int64     `json:"end_station"`
-	AutoKlasse   int64      `json:"auto_klasse"`
+type reservationNullable struct {
+	Id           int64      `json:"id" db:"id"`
+	UserId       *string    `json:"-" db:"user_id"`
+	StartZeit    *time.Time `json:"start_zeit" db:"start_time"`
+	StartStation *int64     `json:"start_station" db:"start_pos"`
+	EndZeit      *time.Time `json:"end_zeit" db:"end_time"`
+	EndStation   *int64     `json:"end_station" db:"end_pos"`
+	AutoKlasse   int64      `json:"auto_klasse" db:"auto_klasse"`
 }
 
 type availability struct {
-	Time       time.Time `json:"time"`
-	Pos        int64     `json:"pos"`
-	AutoKlasse int64     `json:"auto_klasse"`
-	Cars       int64     `json:"availability"`
+	Time       time.Time `json:"time" db:"time"`
+	Pos        int64     `json:"pos" db:"station"`
+	AutoKlasse int64     `json:"auto_klasse" db:"auto_klasse"`
+	Cars       int64     `json:"availability" db:"available"`
 }
 
 func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
@@ -119,41 +121,21 @@ func putReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, reque
 
 func getReservations(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
-		var rows pgx.Rows
-		var err error
-
 		if slices.Contains(introspectionResult.Access.Roles, "employee") {
-			rows, err = dbpool.Query(context.Background(),
-				`Select id, auto_klasse as AutoKlasse,
-                                start_time as StartZeit, 
-                                start_pos as StartStation, 
-                                end_time as EndZeit, 
-                                end_pos as EndStation 
-                    from reservations`)
+			reservations, fail := getTs[reservationNullable](writer, request, dbpool, "reservation",
+				"Select * from reservations")
+			if fail {
+				return
+			}
+			returnTAsJSON(writer, reservations, http.StatusOK)
 		} else {
-			rows, err = dbpool.Query(context.Background(),
-				`Select id, auto_klasse as AutoKlasse,
-                                start_time as StartZeit, 
-                                start_pos as StartStation, 
-                                end_time as EndZeit, 
-                                end_pos as EndStation 
-                    from reservations
-                    WHERE user_id = $1`, introspectionResult.UserId)
+			reservations, fail := getTs[reservationNullable](writer, request, dbpool, "reservation",
+				"Select * from reservations WHERE user_id = $1", introspectionResult.UserId)
+			if fail {
+				return
+			}
+			returnTAsJSON(writer, reservations, http.StatusOK)
 		}
-
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error geting Database Connection: %v\n", err)
-			return
-		}
-		defer rows.Close()
-		reservations, err := pgx.CollectRows(rows, pgx.RowToStructByName[reservationNullabl])
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error finding reservations: %v\n", err)
-			return
-		}
-		returnTAsJSON(writer, reservations, http.StatusOK)
 	}
 }
 
@@ -241,21 +223,12 @@ func addCarToStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getAvailabilityAtStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(request.Context(),
-			"SELECT time, station, auto_klasse, available FROM availability WHERE station = $1",
+		availabilities, fail := getTs[availability](writer, request, dbpool, "availability", "SELECT * FROM availability WHERE station = $1",
 			mux.Vars(request)["id"])
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error querying availability cars: %v", err)
+		if fail {
 			return
 		}
-		a, err := pgx.CollectRows(rows, pgx.RowToAddrOfStructByPos[availability])
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error collecting availability cars: %v", err)
-			return
-		}
-		returnTAsJSON(writer, a, http.StatusOK)
+		returnTAsJSON(writer, availabilities, http.StatusOK)
 	}
 }
 
