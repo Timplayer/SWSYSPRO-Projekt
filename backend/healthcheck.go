@@ -28,10 +28,13 @@ func testDBpost(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func testDBget(db *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		name, fail := getT[string](writer, request, db, "healthcheck", "Select name from test ORDER BY id DESC LIMIT 1")
+		type name struct {
+			Name string
+		}
+		n, fail := getT[name](writer, request, db, "healthcheck", "Select name from test ORDER BY id DESC LIMIT 1")
 		if fail {
 			return
 		}
-		returnTAsJSON(writer, name, http.StatusOK)
+		returnTAsJSON(writer, n, http.StatusOK)
 	}
 }
