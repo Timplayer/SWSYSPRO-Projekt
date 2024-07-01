@@ -12,6 +12,7 @@ import (
 )
 
 type defect struct {
+	UserId      string    `json:"userId"`
 	Id          int64     `json:"id"`
 	Name        string    `json:"name"`
 	Date        time.Time `json:"date"`
@@ -57,8 +58,8 @@ func getDefectByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		var d defect
 		err := dbpool.QueryRow(context.Background(),
-			"SELECT id, name, date, description, status FROM defects WHERE defects.id = $1",
-			mux.Vars(request)["id"]).Scan(&d.Id, &d.Name, &d.Date, &d.Description, &d.Status)
+			"SELECT userId, id, name, date, description, status FROM defects WHERE defects.id = $1",
+			mux.Vars(request)["id"]).Scan(&d.UserId, &d.Id, &d.Name, &d.Date, &d.Description, &d.Status)
 		if errors.Is(err, pgx.ErrNoRows) {
 			writer.WriteHeader(http.StatusNotFound)
 			log.Printf(errorGenericNotFound, cDefect, cDefect)
@@ -84,7 +85,7 @@ func getDefects(dbpool *pgxpool.Pool) http.HandlerFunc {
 		defects, err := pgx.CollectRows(rows,
 			func(row pgx.CollectableRow) (defect, error) {
 				var d defect
-				err := rows.Scan(&d.Id, &d.Name, &d.Date, &d.Description, &d.Status)
+				err := rows.Scan(&d.UserId, &d.Id, &d.Name, &d.Date, &d.Description, &d.Status)
 				return d, err
 			})
 		if err != nil {
