@@ -80,7 +80,7 @@ func main() {
 	router.HandleFunc(vehiclesAPIpath, getVehicles(dbpool)).Methods("GET")
 	router.HandleFunc(vehiclesAPIpath, updateVehicle(dbpool)).Methods("PUT")
 
-	router.HandleFunc(defectsAPIpath, RestRequestWithTransaction(dbpool, http.StatusCreated, postDefect)).Methods("POST")
+	router.HandleFunc(defectsAPIpath, RestRequestWithTransaction(dbpool, http.StatusCreated, postDefect).Methods("POST")
 	router.HandleFunc(defectsAPIpath, getDefects(dbpool)).Methods("GET")
 	router.HandleFunc(defectsAPIpath, updateDefect(dbpool)).Methods("PUT")
 
