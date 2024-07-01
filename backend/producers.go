@@ -2,9 +2,7 @@ package main
 
 import (
 	"context"
-	"errors"
 	"github.com/gorilla/mux"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
 	"net/http"
@@ -51,17 +49,11 @@ func postProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getProducerById(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		var p producer
-		err := dbpool.QueryRow(context.Background(), "SELECT * FROM producers WHERE producers.id = $1",
-			mux.Vars(request)["id"]).Scan(&p.Id, &p.Name)
-		if errors.Is(err, pgx.ErrNoRows) {
-			writer.WriteHeader(http.StatusNotFound)
-			log.Printf(errorGenericNotFound, cProducer, cProducer)
+		p, fail := getT[producer](writer, request, dbpool, cDefect,
+			"SELECT * FROM producers WHERE producers.id = $1",
+			mux.Vars(request)["id"])
+		if fail {
 			return
-		}
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cProducer, err)
 		}
 		returnTAsJSON(writer, p, http.StatusOK)
 	}

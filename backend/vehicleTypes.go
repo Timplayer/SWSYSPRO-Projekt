@@ -2,9 +2,7 @@ package main
 
 import (
 	"context"
-	"errors"
 	"github.com/gorilla/mux"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/shopspring/decimal"
 	"log"
@@ -62,17 +60,10 @@ func postVehicleType(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getVehicleTypeById(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		var vC vehicleType
-		err := dbpool.QueryRow(context.Background(), "SELECT * FROM vehicletypes WHERE vehicletypes.id = $1",
-			mux.Vars(request)["id"]).Scan(&vC.Id, &vC.Name, &vC.VehicleCategory, &vC.Transmission, &vC.MaxSeatCount, &vC.PricePerHour)
-		if errors.Is(err, pgx.ErrNoRows) {
-			writer.WriteHeader(http.StatusNotFound)
-			log.Printf(errorGenericNotFound, cVehicleType, cVehicleType)
-			return
-		}
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleType, err)
+		vC, fail := getT[vehicleType](writer, request, dbpool, cDefect,
+			"SELECT * FROM vehicletypes WHERE vehicletypes.id = $1",
+			mux.Vars(request)["id"])
+		if fail {
 			return
 		}
 		returnTAsJSON(writer, vC, http.StatusOK)

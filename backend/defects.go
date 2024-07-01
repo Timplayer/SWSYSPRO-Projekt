@@ -2,9 +2,7 @@ package main
 
 import (
 	"context"
-	"errors"
 	"github.com/gorilla/mux"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
 	"net/http"
@@ -55,17 +53,10 @@ func postDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getDefectByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		var d defect
-		err := dbpool.QueryRow(context.Background(),
-			"SELECT id, name, date, description, status FROM defects WHERE defects.id = $1",
-			mux.Vars(request)["id"]).Scan(&d.Id, &d.Name, &d.Date, &d.Description, &d.Status)
-		if errors.Is(err, pgx.ErrNoRows) {
-			writer.WriteHeader(http.StatusNotFound)
-			log.Printf(errorGenericNotFound, cDefect, cDefect)
-			return
-		} else if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cDefect, err)
+		d, fail := getT[defect](writer, request, dbpool, cDefect,
+			"SELECT * FROM defects WHERE defects.id = $1",
+			mux.Vars(request)["id"])
+		if fail {
 			return
 		}
 		returnTAsJSON(writer, d, http.StatusOK)

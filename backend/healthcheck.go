@@ -28,19 +28,10 @@ func testDBpost(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func testDBget(db *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		var name string
-		err := db.QueryRow(context.TODO(), "Select name from test ORDER BY id DESC LIMIT 1").Scan(&name)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("failed to scan row: %v", err)
+		name, fail := getT[string](writer, request, db, "healthcheck", "Select name from test ORDER BY id DESC LIMIT 1")
+		if fail {
 			return
 		}
-
-		_, err = writer.Write([]byte(name))
-		if err != nil {
-			log.Printf("failed to write response: %v\n", err)
-			return
-		}
-
+		returnTAsJSON(writer, name, http.StatusOK)
 	}
 }

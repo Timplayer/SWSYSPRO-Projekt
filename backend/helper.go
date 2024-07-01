@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -82,6 +83,33 @@ func getTs[T any](writer http.ResponseWriter, request *http.Request, dbpool *pgx
 		writer.WriteHeader(http.StatusInternalServerError)
 		log.Printf(errorExecutingOperationGeneric, findingOperation, object, err)
 		return nil, true
+	}
+	return t, false
+}
+
+func getT[T any](writer http.ResponseWriter, request *http.Request, dbpool *pgxpool.Pool, object string, sql string, args ...any) (T, bool) {
+	var t T
+	rows, err := dbpool.Query(request.Context(), sql, args...)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf(errorDatabaseConnection, err)
+		return t, true
+	}
+	defer rows.Close()
+	t, err = pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[T])
+	if errors.Is(err, pgx.ErrNoRows) {
+		writer.WriteHeader(http.StatusNotFound)
+		log.Printf(errorExecutingOperationGeneric, findingOperation, object, err)
+		return t, true
+	}
+	if errors.Is(err, pgx.ErrTooManyRows) {
+		log.Printf(errorExecutingOperationGeneric, findingOperation, object, err)
+		return t, false
+	}
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf(errorExecutingOperationGeneric, findingOperation, object, err)
+		return t, true
 	}
 	return t, false
 }

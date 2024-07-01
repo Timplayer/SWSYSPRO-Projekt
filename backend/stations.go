@@ -2,9 +2,7 @@ package main
 
 import (
 	"context"
-	"errors"
 	"github.com/gorilla/mux"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
 	"net/http"
@@ -62,17 +60,21 @@ func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		var s station
-		err := dbpool.QueryRow(context.Background(), "SELECT stations.id, stations.name, stations.location[0] as latitude, stations.location[1] as longitude, stations.country, stations.state, stations.city, stations.zip, stations.street, stations.houseNumber, stations.capacity FROM stations WHERE stations.id = $1",
-			mux.Vars(request)["id"]).Scan(&s.Id, &s.Name, &s.Latitude, &s.Longitude, &s.Country, &s.State, &s.City, &s.Zip, &s.Street, &s.HouseNumber, &s.Capacity)
-		if errors.Is(err, pgx.ErrNoRows) {
-			writer.WriteHeader(http.StatusNotFound)
-			log.Printf(errorGenericNotFound, cStation, cStation)
-			return
-		}
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
+		s, fail := getT[station](writer, request, dbpool, "healthcheck",
+			`SELECT stations.id,
+                        stations.name,
+                        stations.location[0] as latitude,
+                        stations.location[1] as longitude,
+                        stations.country,
+                        stations.state,
+                        stations.city,
+                        stations.zip,
+                        stations.street,
+                        stations.houseNumber,
+                        stations.capacity 
+                  FROM stations WHERE stations.id = $1`,
+			mux.Vars(request)["id"])
+		if fail {
 			return
 		}
 		returnTAsJSON(writer, s, http.StatusOK)
