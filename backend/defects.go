@@ -2,9 +2,7 @@ package main
 
 import (
 	"context"
-	"errors"
 	"github.com/gorilla/mux"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
 	"net/http"
@@ -12,11 +10,11 @@ import (
 )
 
 type defect struct {
-	Id          int64     `json:"id"`
-	Name        string    `json:"name"`
-	Date        time.Time `json:"date"`
-	Description string    `json:"description"`
-	Status      string    `json:"status"`
+	Id          int64     `json:"id" db:"id"`
+	Name        string    `json:"name" db:"name"`
+	Date        time.Time `json:"date" db:"date"`
+	Description string    `json:"description" db:"description"`
+	Status      string    `json:"status" db:"status"`
 }
 
 func updateDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
@@ -41,12 +39,10 @@ func postDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if fail {
 			return
 		}
-		err := dbpool.QueryRow(context.Background(),
-			"INSERT INTO defects (name, date, description, status) VALUES ($1, $2, $3, $4) RETURNING id",
-			d.Name, d.Date, d.Description, d.Status).Scan(&d.Id)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, insertOperation, cDefect, err)
+		d, fail = getT[defect](writer, request, dbpool, "postDefect",
+			"INSERT INTO defects (name, date, description, status) VALUES ($1, $2, $3, $4) RETURNING *",
+			d.Name, d.Date, d.Description, d.Status)
+		if fail {
 			return
 		}
 		returnTAsJSON(writer, d, http.StatusCreated)
@@ -55,17 +51,10 @@ func postDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getDefectByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		var d defect
-		err := dbpool.QueryRow(context.Background(),
-			"SELECT id, name, date, description, status FROM defects WHERE defects.id = $1",
-			mux.Vars(request)["id"]).Scan(&d.Id, &d.Name, &d.Date, &d.Description, &d.Status)
-		if errors.Is(err, pgx.ErrNoRows) {
-			writer.WriteHeader(http.StatusNotFound)
-			log.Printf(errorGenericNotFound, cDefect, cDefect)
-			return
-		} else if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cDefect, err)
+		d, fail := getT[defect](writer, request, dbpool, cDefect,
+			"SELECT * FROM defects WHERE defects.id = $1",
+			mux.Vars(request)["id"])
+		if fail {
 			return
 		}
 		returnTAsJSON(writer, d, http.StatusOK)
@@ -74,22 +63,8 @@ func getDefectByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getDefects(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT * FROM defects")
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorDatabaseConnection, err)
-			return
-		}
-		defer rows.Close()
-		defects, err := pgx.CollectRows(rows,
-			func(row pgx.CollectableRow) (defect, error) {
-				var d defect
-				err := rows.Scan(&d.Id, &d.Name, &d.Date, &d.Description, &d.Status)
-				return d, err
-			})
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cDefect, err)
+		defects, fail := getTs[defect](writer, request, dbpool, cDefect, "SELECT * FROM defects")
+		if fail {
 			return
 		}
 		returnTAsJSON(writer, defects, http.StatusOK)

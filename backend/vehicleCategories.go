@@ -2,17 +2,15 @@ package main
 
 import (
 	"context"
-	"errors"
 	"github.com/gorilla/mux"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
 	"net/http"
 )
 
 type vehicleCategory struct {
-	Id   int64  `json:"id"`
-	Name string `json:"name"`
+	Id   int64  `json:"id" db:"id"`
+	Name string `json:"name" db:"name"`
 }
 
 func updateVehicleCategory(dbpool *pgxpool.Pool) http.HandlerFunc {
@@ -37,11 +35,10 @@ func postVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if fail {
 			return
 		}
-		err := dbpool.QueryRow(context.Background(),
-			"INSERT INTO vehicleCategories (name) VALUES ($1) RETURNING id", vC.Name).Scan(&vC.Id)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, insertOperation, cVehicleCategory, err)
+		vC, fail = getT[vehicleCategory](writer, request, dbpool, "postVehicleCategorie",
+			"INSERT INTO vehicleCategories (name) VALUES ($1) RETURNING *",
+			vC.Name)
+		if fail {
 			return
 		}
 		log.Printf(genericSuccess, insertOperation, cVehicleCategory, vC.Id)
@@ -51,17 +48,11 @@ func postVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getVehicleCategoryById(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		var vC vehicleCategory
-		err := dbpool.QueryRow(context.Background(), "SELECT id, name FROM vehicleCategories WHERE vehicleCategories.id = $1",
-			mux.Vars(request)["id"]).Scan(&vC.Id, &vC.Name)
-		if errors.Is(err, pgx.ErrNoRows) {
-			writer.WriteHeader(http.StatusNotFound)
-			log.Printf(errorGenericNotFound, cVehicleCategory, cVehicleCategory)
+		vC, fail := getT[vehicleCategory](writer, request, dbpool, cDefect,
+			"SELECT * FROM vehicleCategories WHERE vehicleCategories.id = $1",
+			mux.Vars(request)["id"])
+		if fail {
 			return
-		}
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleCategory, err)
 		}
 		returnTAsJSON(writer, vC, http.StatusOK)
 	}
@@ -69,22 +60,9 @@ func getVehicleCategoryById(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT vehicleCategories.id, vehicleCategories.name FROM vehicleCategories")
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error geting Database Connection: %v\n", err)
-			return
-		}
-		defer rows.Close()
-		vehicleCategories, err := pgx.CollectRows(rows,
-			func(row pgx.CollectableRow) (vehicleCategory, error) {
-				var vC vehicleCategory
-				err := rows.Scan(&vC.Id, &vC.Name)
-				return vC, err
-			})
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleCategory, err)
+		vehicleCategories, fail := getTs[vehicleCategory](writer, request, dbpool, cVehicleCategory,
+			"SELECT * FROM vehiclecategories")
+		if fail {
 			return
 		}
 		returnTAsJSON(writer, vehicleCategories, http.StatusOK)

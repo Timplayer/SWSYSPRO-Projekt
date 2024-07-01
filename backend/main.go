@@ -96,7 +96,7 @@ func main() {
 
 	router.HandleFunc("/api/healthcheck/hello", hello()).Methods("GET")
 	router.HandleFunc("/api/healthcheck/auth", validate(
-		func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+		func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
 			hello()(writer, request)
 		}))
 	router.HandleFunc("/api/healthcheck/sql", testDBget(dbpool)).Methods("GET")
@@ -181,7 +181,7 @@ func initializeDatabase(dbpool *pgxpool.Pool) {
 func validate(
 	handler func(writer http.ResponseWriter,
 		request *http.Request,
-		introspectionResult *introspection)) http.HandlerFunc {
+		introspectionResult introspection)) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		auth := request.Header.Get("Authorization")
 		if auth == "" {
