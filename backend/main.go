@@ -2,12 +2,10 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/zitadel/oidc/v3/pkg/oidc"
-	"io"
 	"log"
 	"net/http"
 	neturl "net/url"
@@ -39,9 +37,10 @@ func main() {
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/api/reservations", validate(getReservations(dbpool))).Methods("GET")
-	router.HandleFunc("/api/reservations", validate(postReservation(dbpool))).Methods("POST")
-	router.HandleFunc("/api/reservations/id/{id}", validate(deleteReservation(dbpool))).Methods("DELETE")
+	router.HandleFunc(reservationsAPIpath, validate(getReservations(dbpool))).Methods("GET")
+	router.HandleFunc(reservationsAPIpath, validate(postReservation(dbpool))).Methods("POST")
+	router.HandleFunc(reservationsIdIdAPIpath, validate(deleteReservation(dbpool))).Methods("DELETE")
+	router.HandleFunc(reservationsAPIpath, validate(putReservation(dbpool))).Methods("PUT")
 
 	router.HandleFunc("/api/stations/id/{id}/availability", getAvailabilityAtStation(dbpool)).Methods("GET")
 	router.HandleFunc("/api/stations/availability", addCarToStation(dbpool)).Methods("POST")
@@ -97,7 +96,7 @@ func main() {
 
 	router.HandleFunc("/api/healthcheck/hello", hello()).Methods("GET")
 	router.HandleFunc("/api/healthcheck/auth", validate(
-		func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
+		func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 			hello()(writer, request)
 		}))
 	router.HandleFunc("/api/healthcheck/sql", testDBget(dbpool)).Methods("GET")
@@ -182,7 +181,7 @@ func initializeDatabase(dbpool *pgxpool.Pool) {
 func validate(
 	handler func(writer http.ResponseWriter,
 		request *http.Request,
-		introspectionResult introspection)) http.HandlerFunc {
+		introspectionResult *introspection)) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		auth := request.Header.Get("Authorization")
 		if auth == "" {
@@ -203,15 +202,8 @@ func validate(
 
 		r, _ := http.PostForm("http://keycloak:8080/auth/realms/hivedrive/protocol/openid-connect/token/introspect", urlValues)
 
-		res, err := io.ReadAll(r.Body)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		var introspectionResult introspection
-		err = json.Unmarshal(res, &introspectionResult)
-		if err != nil {
-			http.Error(writer, "Internal Server Error", http.StatusInternalServerError)
+		introspectionResult, fail := getRequestBody[introspection](writer, r.Body)
+		if fail {
 			return
 		}
 		if !introspectionResult.Active {

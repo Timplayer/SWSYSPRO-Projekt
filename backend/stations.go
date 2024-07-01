@@ -2,11 +2,9 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"io"
 	"log"
 	"net/http"
 )
@@ -27,18 +25,8 @@ type station struct {
 
 func updateStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		body, err := io.ReadAll(request.Body)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Println(errorReadingRequestBody, err)
-			return
-		}
-
-		var s station
-		err = json.Unmarshal(body, &s)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error parsing request body: %s\n", err)
+		s, fail := getRequestBody[station](writer, request.Body)
+		if fail {
 			return
 		}
 		rows, err := dbpool.Query(context.Background(), "UPDATE stations SET name = $1, location = point($2, $3), country = $4, state = $5, city = $6, zip = $7, street = $8, houseNumber = $9, capacity = $10 WHERE id = $11 RETURNING id", s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber, s.Capacity, mux.Vars(request)["id"])
@@ -49,24 +37,15 @@ func updateStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		defer rows.Close()
 
-		sendResponseStations(writer, rows, err, s, body, updateOperation, cStation)
+		sendResponseStations(writer, rows, err, s, updateOperation, cStation)
 		return
 	}
 }
 
 func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		body, err := io.ReadAll(request.Body)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorReadingRequestBody, err)
-			return
-		}
-		var s station
-		err = json.Unmarshal(body, &s)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorReadingRequestBody, err)
+		s, fail := getRequestBody[station](writer, request.Body)
+		if fail {
 			return
 		}
 		rows, err := dbpool.Query(context.Background(),
@@ -79,7 +58,7 @@ func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		defer rows.Close()
 
-		sendResponseStations(writer, rows, err, s, body, insertOperation, cStation)
+		sendResponseStations(writer, rows, err, s, insertOperation, cStation)
 		return
 	}
 }
@@ -102,20 +81,7 @@ func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 				log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
 				return
 			}
-			str, err := json.Marshal(s)
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
-				return
-			}
-			writer.Header().Set(contentType, applicationJSON)
-			_, err = writer.Write(str)
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
-				return
-			}
-			return
+			returnTAsJSON(writer, s, http.StatusOK)
 		}
 
 		if !rows.Next() {
@@ -147,23 +113,11 @@ func getStations(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
 			return
 		}
-		str, err := json.Marshal(stations)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
-			return
-		}
-		writer.Header().Set(contentType, applicationJSON)
-		_, err = writer.Write(str)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
-			return
-		}
+		returnTAsJSON(writer, stations, http.StatusOK)
 	}
 }
 
-func sendResponseStations(writer http.ResponseWriter, rows pgx.Rows, err error, s station, body []byte, operationType string, structName string) bool {
+func sendResponseStations(writer http.ResponseWriter, rows pgx.Rows, err error, s *station, operationType string, structName string) bool {
 	rows.Next()
 	var id int64
 	err = rows.Scan(&id)
@@ -174,20 +128,7 @@ func sendResponseStations(writer http.ResponseWriter, rows pgx.Rows, err error, 
 	}
 	log.Printf(genericSuccess, operationType, structName, id)
 	s.Id = id
-	body, err = json.Marshal(s)
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf(errorSerializingGeneric, err, structName)
-		return false
-	}
-	writer.Header().Set(contentType, applicationJSON)
-	writer.WriteHeader(http.StatusCreated)
-	_, err = writer.Write(body)
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
-		return false
-	}
+	returnTAsJSON(writer, s, http.StatusCreated)
 	return false
 }
 

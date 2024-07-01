@@ -7,7 +7,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/shopspring/decimal"
-	"io"
 	"log"
 	"net/http"
 )
@@ -23,18 +22,8 @@ type vehicleType struct {
 
 func updateVehicleType(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		body, err := io.ReadAll(request.Body)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Println(errorReadingRequestBody, err)
-			return
-		}
-
-		var s vehicleType
-		err = json.Unmarshal(body, &s)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error parsing request body: %s\n", err)
+		s, fail := getRequestBody[vehicleType](writer, request.Body)
+		if fail {
 			return
 		}
 
@@ -48,7 +37,7 @@ func updateVehicleType(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		defer rows.Close()
 
-		sendResponseVehicleType(writer, rows, err, s, body, updateOperation, cVehicle)
+		sendResponseVehicleType(writer, rows, err, s, updateOperation, cVehicle)
 		return
 	}
 }
@@ -56,17 +45,8 @@ func updateVehicleType(dbpool *pgxpool.Pool) http.HandlerFunc {
 func postVehicleType(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 	return func(writer http.ResponseWriter, request *http.Request) {
-		body, err := io.ReadAll(request.Body)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorReadingRequestBody, err)
-			return
-		}
-		var s vehicleType
-		err = json.Unmarshal(body, &s)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorReadingRequestBody, err)
+		s, fail := getRequestBody[vehicleType](writer, request.Body)
+		if fail {
 			return
 		}
 
@@ -81,7 +61,7 @@ func postVehicleType(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		defer rows.Close()
 
-		sendResponseVehicleType(writer, rows, err, s, body, insertOperation, cVehicleType)
+		sendResponseVehicleType(writer, rows, err, s, insertOperation, cVehicleType)
 		return
 	}
 }
@@ -162,32 +142,18 @@ func getVehicleTypes(dbpool *pgxpool.Pool) http.HandlerFunc {
 	}
 }
 
-func sendResponseVehicleType(writer http.ResponseWriter, rows pgx.Rows, err error, s vehicleType, body []byte, operationType string, structName string) bool {
+func sendResponseVehicleType(writer http.ResponseWriter, rows pgx.Rows, err error, s *vehicleType, operationType string, structName string) {
 	rows.Next()
 	var id int64
 	err = rows.Scan(&id)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
-		return false
+		return
 	}
 	log.Printf(genericSuccess, operationType, structName, id)
 	s.Id = id
-	body, err = json.Marshal(s)
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf(errorSerializingGeneric, err, structName)
-		return false
-	}
-	writer.Header().Set(contentType, applicationJSON)
-	writer.WriteHeader(http.StatusCreated)
-	_, err = writer.Write(body)
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
-		return false
-	}
-	return false
+	returnTAsJSON(writer, s, http.StatusCreated)
 }
 
 func createVehicleTypesTable(dbpool *pgxpool.Pool) {

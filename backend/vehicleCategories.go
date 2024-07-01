@@ -2,11 +2,9 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"io"
 	"log"
 	"net/http"
 )
@@ -18,17 +16,8 @@ type vehicleCategory struct {
 
 func updateVehicleCategory(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		body, err := io.ReadAll(request.Body)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Println(errorReadingRequestBody, err)
-			return
-		}
-		var vC vehicleCategory
-		err = json.Unmarshal(body, &vC)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorParsingRequestBody, err)
+		vC, fail := getRequestBody[vehicleCategory](writer, request.Body)
+		if fail {
 			return
 		}
 		rows, err := dbpool.Query(context.Background(), "UPDATE vehicleCategories SET name = $1 WHERE id = $2 RETURNING id;", vC.Name, mux.Vars(request)["id"])
@@ -39,24 +28,15 @@ func updateVehicleCategory(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		defer rows.Close()
 
-		sendResponseVehicleCategories(writer, rows, err, vC, body, updateOperation, cVehicleCategory)
+		sendResponseVehicleCategories(writer, rows, err, vC, updateOperation, cVehicleCategory)
 		return
 	}
 }
 
 func postVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		body, err := io.ReadAll(request.Body)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorReadingRequestBody, err)
-			return
-		}
-		var vC vehicleCategory
-		err = json.Unmarshal(body, &vC)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorReadingRequestBody, err)
+		vC, fail := getRequestBody[vehicleCategory](writer, request.Body)
+		if fail {
 			return
 		}
 		rows, err := dbpool.Query(context.Background(),
@@ -68,7 +48,7 @@ func postVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		defer rows.Close()
 
-		sendResponseVehicleCategories(writer, rows, err, vC, body, insertOperation, cVehicleCategory)
+		sendResponseVehicleCategories(writer, rows, err, vC, insertOperation, cVehicleCategory)
 		return
 	}
 }
@@ -91,20 +71,7 @@ func getVehicleCategoryById(dbpool *pgxpool.Pool) http.HandlerFunc {
 				log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleCategory, err)
 				return
 			}
-			str, err := json.Marshal(vC)
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleCategory, err)
-				return
-			}
-			writer.Header().Set(contentType, applicationJSON)
-			_, err = writer.Write(str)
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleCategory, err)
-				return
-			}
-			return
+			returnTAsJSON(writer, vC, http.StatusOK)
 		}
 
 		if !rows.Next() {
@@ -135,23 +102,11 @@ func getVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleCategory, err)
 			return
 		}
-		str, err := json.Marshal(vehicleCategories)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleCategory, err)
-			return
-		}
-		writer.Header().Set(contentType, applicationJSON)
-		_, err = writer.Write(str)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleCategory, err)
-			return
-		}
+		returnTAsJSON(writer, vehicleCategories, http.StatusOK)
 	}
 }
 
-func sendResponseVehicleCategories(writer http.ResponseWriter, rows pgx.Rows, err error, vC vehicleCategory, body []byte, operationType string, structName string) bool {
+func sendResponseVehicleCategories(writer http.ResponseWriter, rows pgx.Rows, err error, vC *vehicleCategory, operationType string, structName string) bool {
 	rows.Next()
 	var id int64
 	err = rows.Scan(&id)
@@ -162,20 +117,7 @@ func sendResponseVehicleCategories(writer http.ResponseWriter, rows pgx.Rows, er
 	}
 	log.Printf(genericSuccess, operationType, structName, id)
 	vC.Id = id
-	body, err = json.Marshal(vC)
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf(errorSerializingGeneric, err, structName)
-		return false
-	}
-	writer.Header().Set(contentType, applicationJSON)
-	writer.WriteHeader(http.StatusCreated)
-	_, err = writer.Write(body)
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
-		return false
-	}
+	returnTAsJSON(writer, vC, http.StatusCreated)
 	return false
 }
 

@@ -2,12 +2,10 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"io"
 	"log"
 	"net/http"
 	"slices"
@@ -39,36 +37,20 @@ type availability struct {
 	Cars       int64     `json:"availability"`
 }
 
-func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
-	request *http.Request,
-	introspectionResult introspection) {
-	return func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
-		body, err := io.ReadAll(request.Body)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorReadingRequestBody, err)
-			return
-		}
-		var r reservation
-		err = json.Unmarshal(body, &r)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorReadingRequestBody, err)
+func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+		r, fail := getRequestBody[reservation](writer, request.Body)
+		if fail {
 			return
 		}
 
-		tx, err := dbpool.BeginTx(request.Context(), pgx.TxOptions{
-			IsoLevel:       pgx.Serializable,
-			AccessMode:     pgx.ReadWrite,
-			DeferrableMode: pgx.NotDeferrable})
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error starting Reservation transaction: %v", err)
+		tx, fail := startTransaction(writer, request, dbpool)
+		if fail {
 			return
 		}
 		defer tx.Rollback(request.Context())
 
-		err = tx.QueryRow(context.Background(),
+		err := tx.QueryRow(context.Background(),
 			"INSERT INTO reservations (user_id, auto_klasse, start_time, start_pos, end_time, end_pos) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
 			introspectionResult.UserId, r.AutoKlasse, r.StartZeit, r.StartStation, r.EndZeit, r.EndStation).Scan(&r.Id)
 		if err != nil {
@@ -77,42 +59,66 @@ func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
 			return
 		}
 
-		// check if car is available
-		var available int
-		err = tx.QueryRow(request.Context(), "SELECT MIN(available) AS a FROM availability").Scan(&available)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error testing availability: %v", err)
-			return
-		}
-		if available < 0 {
-			writer.WriteHeader(http.StatusConflict)
-			log.Printf("Error testing availability: no cars available, %v\n", r)
+		notAvailable := checkAvailability(writer, request, tx)
+		if notAvailable {
 			return
 		}
 		err = tx.Commit(request.Context())
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error transaction aborted: %v", err)
+			log.Printf(errorTransactionAborted, err)
 			return
 		}
 
 		log.Printf("added Reservation: %d", r.Id)
-		body, err = json.Marshal(r)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error serializing station: %v", err)
-			return
-		}
-		writer.Header().Set("Content-Type", "application/json")
-		writer.WriteHeader(http.StatusCreated)
-		writer.Write(body)
+		returnTAsJSON(writer, r, http.StatusCreated)
 	}
 }
 
-func getReservations(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
-	request *http.Request, introspectionResult introspection) {
-	return func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
+func putReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+		r, done := getRequestBody[reservation](writer, request.Body)
+		if done {
+			return
+		}
+
+		tx, done := startTransaction(writer, request, dbpool)
+		if done {
+			return
+		}
+		defer tx.Rollback(request.Context())
+
+		result, err := tx.Exec(context.Background(),
+			`UPDATE reservations
+				 SET auto_klasse = $1,
+				     start_time = $2,
+				     start_pos = $3,
+				     end_time = $4,
+				     end_pos  = $5
+                 WHERE id = $6 AND user_id = $7;`,
+			r.AutoKlasse, r.StartZeit, r.StartStation, r.EndZeit, r.EndStation, r.Id, introspectionResult.UserId)
+		if checkUpdateSingleRow(writer, err, result, "editing Reservation") {
+			return
+		}
+
+		notAvailable := checkAvailability(writer, request, tx)
+		if notAvailable {
+			return
+		}
+		err = tx.Commit(request.Context())
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf(errorTransactionAborted, err)
+			return
+		}
+
+		log.Printf("edited Reservation: %d", r.Id)
+		returnTAsJSON(writer, r, http.StatusAccepted)
+	}
+}
+
+func getReservations(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 		var rows pgx.Rows
 		var err error
 
@@ -147,35 +153,18 @@ func getReservations(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
 			log.Printf("Error finding reservations: %v\n", err)
 			return
 		}
-		str, err := json.Marshal(reservations)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error marshaling reservations: %v\n", err)
-			return
-		}
-		writer.Header().Set(contentType, applicationJSON)
-		_, err = writer.Write(str)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
-			return
-		}
+		returnTAsJSON(writer, reservations, http.StatusOK)
 	}
 }
 
-func deleteReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
-	request *http.Request, introspectionResult introspection) {
-	return func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
-		tx, err := dbpool.BeginTx(request.Context(), pgx.TxOptions{
-			IsoLevel:       pgx.Serializable,
-			AccessMode:     pgx.ReadWrite,
-			DeferrableMode: pgx.NotDeferrable})
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error starting Reservation transaction: %v", err)
+func deleteReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+		tx, fail := startTransaction(writer, request, dbpool)
+		if fail {
 			return
 		}
 
+		var err error
 		var result pgconn.CommandTag
 		if slices.Contains(introspectionResult.Access.Roles, "employee") {
 			result, err = dbpool.Exec(context.Background(),
@@ -187,30 +176,12 @@ func deleteReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter,
                     WHERE user_id = $1 AND id = $2`, introspectionResult.UserId, mux.Vars(request)["id"])
 		}
 
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error geting Database Connection: %v\n", err)
+		if checkUpdateSingleRow(writer, err, result, "deleting Reservation") {
 			return
 		}
-		if result.RowsAffected() == 0 {
-			writer.WriteHeader(http.StatusNotFound)
-			log.Printf("Error deleting Reservation: no reservations found")
-			return
-		}
-		if result.RowsAffected() > 1 {
-			log.Printf("Error deleting Reservation: too many rows affected")
-		}
-		// check if car is available
-		var available int
-		err = tx.QueryRow(request.Context(), "SELECT MIN(available) AS a FROM availability").Scan(&available)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error testing availability: %v", err)
-			return
-		}
-		if available < 0 {
-			writer.WriteHeader(http.StatusConflict)
-			log.Printf("Error testing availability: no cars available\n")
+
+		notAvailable := checkAvailability(writer, request, tx)
+		if notAvailable {
 			return
 		}
 		err = tx.Commit(request.Context())
@@ -232,32 +203,18 @@ type stationAndTime struct {
 
 func addCarToStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		body, err := io.ReadAll(request.Body)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorReadingRequestBody, err)
-			return
-		}
-		var r stationAndTime
-		err = json.Unmarshal(body, &r)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorReadingRequestBody, err)
+		r, fail := getRequestBody[stationAndTime](writer, request.Body)
+		if fail {
 			return
 		}
 
-		tx, err := dbpool.BeginTx(request.Context(), pgx.TxOptions{
-			IsoLevel:       pgx.Serializable,
-			AccessMode:     pgx.ReadWrite,
-			DeferrableMode: pgx.NotDeferrable})
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error starting Reservation transaction: %v", err)
+		tx, fail := startTransaction(writer, request, dbpool)
+		if fail {
 			return
 		}
 		defer tx.Rollback(request.Context())
 
-		err = tx.QueryRow(context.Background(),
+		err := tx.QueryRow(context.Background(),
 			"INSERT INTO reservations (auto_klasse, end_time, end_pos) VALUES ($1, $2, $3) RETURNING id",
 			r.AutoKlasse, r.Time, r.Station).Scan(&r.Id)
 		if err != nil {
@@ -266,36 +223,19 @@ func addCarToStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 
-		// check if car is available
-		var available int
-		err = tx.QueryRow(request.Context(), "SELECT MIN(available) AS a FROM availability").Scan(&available)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error testing availability: %v", err)
-			return
-		}
-		if available < 0 {
-			writer.WriteHeader(http.StatusConflict)
-			log.Printf("Error testing availability: no cars available, %v\n", r)
+		notAvailable := checkAvailability(writer, request, tx)
+		if notAvailable {
 			return
 		}
 		err = tx.Commit(request.Context())
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error transaction aborted: %v", err)
+			log.Printf(errorTransactionAborted, err)
 			return
 		}
 
 		log.Printf("added Reservation: %d", r.Id)
-		body, err = json.Marshal(r)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error serializing station: %v", err)
-			return
-		}
-		writer.Header().Set(contentType, applicationJSON)
-		writer.WriteHeader(http.StatusCreated)
-		writer.Write(body)
+		returnTAsJSON(writer, r, http.StatusCreated)
 	}
 }
 
@@ -315,16 +255,24 @@ func getAvailabilityAtStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error collecting availability cars: %v", err)
 			return
 		}
-		body, err := json.Marshal(a)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error serializing availability: %v", err)
-			return
-		}
-		writer.Header().Set(contentType, applicationJSON)
-		writer.WriteHeader(http.StatusOK)
-		writer.Write(body)
+		returnTAsJSON(writer, a, http.StatusOK)
 	}
+}
+
+func checkAvailability(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) bool {
+	var available int
+	err := tx.QueryRow(request.Context(), "SELECT MIN(available) AS a FROM availability").Scan(&available)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf("Error testing availability: %v", err)
+		return true
+	}
+	if available < 0 {
+		writer.WriteHeader(http.StatusConflict)
+		log.Printf("Error testing availability: no cars available, %v\n")
+		return true
+	}
+	return false
 }
 
 func createReservationsTable(dbpool *pgxpool.Pool) {
