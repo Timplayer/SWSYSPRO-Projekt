@@ -1,11 +1,11 @@
 meta {
-  name: Get object
+  name: Get all objects
   type: http
   seq: 1
 }
 
 get {
-  url: https://localhost:8080/api/defects
+  url: https://localhost:8080/api/producers
   body: none
   auth: none
 }
@@ -16,7 +16,7 @@ tests {
     expect(res.getStatus()).to.equal(200);
   });
   
-  test("Two entries in List?", function() {
+  test("Three entries in List?", function() {
     const data = res.getBody();
     expect (data.length).to.equal(3);
   });

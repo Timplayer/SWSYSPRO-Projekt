@@ -1,11 +1,11 @@
 meta {
-  name: Get vehicles
+  name: Get all vehicleCategories
   type: http
   seq: 1
 }
 
 get {
-  url: https://localhost:8080/api/vehicles
+  url: https://localhost:8080/api/vehicleCategories
   body: none
   auth: none
 }
@@ -16,7 +16,7 @@ tests {
     expect(res.getStatus()).to.equal(200);
   });
   
-  test("Two entries in List?", function() {
+  test("Three entries in List?", function() {
     const data = res.getBody();
     expect (data.length).to.equal(3);
   });

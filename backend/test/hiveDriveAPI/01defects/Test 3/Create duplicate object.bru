@@ -10,6 +10,10 @@ post {
   auth: none
 }
 
+headers {
+  Authorization: Bearer {{access_token_member}}
+}
+
 body:json {
   {
     "name": "Station 2",
