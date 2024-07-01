@@ -38,11 +38,16 @@ func updateVehicleType(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func postVehicleType(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
+		tx, err := dbpool.Begin(context.Background())
+		if err != nil {
+			return
+		}
+		defer tx.Rollback(request.Context())
 		s, fail := getRequestBody[vehicleType](writer, request.Body)
 		if fail {
 			return
 		}
-		s, fail = getT[vehicleType](writer, request, dbpool, "postVehicleType",
+		s, fail = getT[vehicleType](writer, request, tx, "postVehicleType",
 			`INSERT INTO vehicleTypes (name, vehicleCategory, transmission, maxSeatCount, pricePerHour)
                                VALUES ($1  , $2             , $3          , $4          , $5)
                     RETURNING *`,
@@ -50,6 +55,7 @@ func postVehicleType(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if fail {
 			return
 		}
+		tx.Commit(request.Context())
 		log.Printf(genericSuccess, insertOperation, cVehicleType, s.Id)
 		returnTAsJSON(writer, s, http.StatusCreated)
 	}
@@ -57,12 +63,18 @@ func postVehicleType(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getVehicleTypeById(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		vC, fail := getT[vehicleType](writer, request, dbpool, cDefect,
+		tx, err := dbpool.Begin(context.Background())
+		if err != nil {
+			return
+		}
+		defer tx.Rollback(request.Context())
+		vC, fail := getT[vehicleType](writer, request, tx, cDefect,
 			"SELECT * FROM vehicletypes WHERE vehicletypes.id = $1",
 			mux.Vars(request)["id"])
 		if fail {
 			return
 		}
+		tx.Commit(request.Context())
 		returnTAsJSON(writer, vC, http.StatusOK)
 	}
 }

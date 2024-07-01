@@ -66,7 +66,14 @@ const imagesDefectAPIpath = "/api/images/defects/id/{id}"
 const imagesVehicleCategoryAPIpath = "/api/images/vehicleCategories/id/{id}"
 const imagesFilesIDAPIpath = "/api/images/file/id/{id}"
 
-var transactionOptions = pgx.TxOptions{
+var transactionOptionsRW = pgx.TxOptions{
 	IsoLevel:       pgx.Serializable,
 	AccessMode:     pgx.ReadWrite,
 	DeferrableMode: pgx.NotDeferrable}
+
+var transactionOptionsReadOnly = pgx.TxOptions{
+	IsoLevel:       pgx.Serializable,
+	AccessMode:     pgx.ReadWrite,
+	DeferrableMode: pgx.NotDeferrable}
+
+var supportedFileTypes = []string{imageJPEG, imagePNG, imageGIF, imageWEBP, imageSVG}

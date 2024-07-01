@@ -31,15 +31,21 @@ func updateProducer(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func postProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
+		tx, err := dbpool.Begin(context.Background())
+		if err != nil {
+			return
+		}
+		defer tx.Rollback(request.Context())
 		p, fail := getRequestBody[producer](writer, request.Body)
 		if fail {
 			return
 		}
-		p, fail = getT[producer](writer, request, dbpool, "insertProducer",
+		p, fail = getT[producer](writer, request, tx, "insertProducer",
 			"INSERT INTO producers (name) VALUES ($1) RETURNING *", p.Name)
 		if fail {
 			return
 		}
+		tx.Commit(request.Context())
 		log.Printf(genericSuccess, insertOperation, cProducer, p.Id)
 		returnTAsJSON(writer, p, http.StatusCreated)
 	}
@@ -47,12 +53,18 @@ func postProducers(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getProducerById(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		p, fail := getT[producer](writer, request, dbpool, cDefect,
+		tx, err := dbpool.Begin(context.Background())
+		if err != nil {
+			return
+		}
+		defer tx.Rollback(request.Context())
+		p, fail := getT[producer](writer, request, tx, cDefect,
 			"SELECT * FROM producers WHERE producers.id = $1",
 			mux.Vars(request)["id"])
 		if fail {
 			return
 		}
+		tx.Commit(request.Context())
 		returnTAsJSON(writer, p, http.StatusOK)
 	}
 }

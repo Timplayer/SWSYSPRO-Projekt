@@ -74,9 +74,9 @@ func getTs[T any](writer http.ResponseWriter, request *http.Request, dbpool *pgx
 	return t, false
 }
 
-func getT[T any](writer http.ResponseWriter, request *http.Request, dbpool *pgxpool.Pool, object string, sql string, args ...any) (T, bool) {
+func getT[T any](writer http.ResponseWriter, request *http.Request, tx pgx.Tx, object string, sql string, args ...any) (T, bool) {
 	var t T
-	rows, err := dbpool.Query(request.Context(), sql, args...)
+	rows, err := tx.Query(request.Context(), sql, args...)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		log.Printf(errorDatabaseConnection, err)

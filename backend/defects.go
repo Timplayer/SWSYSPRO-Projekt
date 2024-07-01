@@ -35,28 +35,40 @@ func updateDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func postDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
+		tx, err := dbpool.Begin(request.Context())
+		if err != nil {
+			return
+		}
+		defer tx.Rollback(request.Context())
 		d, fail := getRequestBody[defect](writer, request.Body)
 		if fail {
 			return
 		}
-		d, fail = getT[defect](writer, request, dbpool, "postDefect",
+		d, fail = getT[defect](writer, request, tx, "postDefect",
 			"INSERT INTO defects (name, date, description, status) VALUES ($1, $2, $3, $4) RETURNING *",
 			d.Name, d.Date, d.Description, d.Status)
 		if fail {
 			return
 		}
+		tx.Commit(request.Context())
 		returnTAsJSON(writer, d, http.StatusCreated)
 	}
 }
 
 func getDefectByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		d, fail := getT[defect](writer, request, dbpool, cDefect,
+		tx, err := dbpool.Begin(request.Context())
+		if err != nil {
+			return
+		}
+		defer tx.Rollback(request.Context())
+		d, fail := getT[defect](writer, request, tx, cDefect,
 			"SELECT * FROM defects WHERE defects.id = $1",
 			mux.Vars(request)["id"])
 		if fail {
 			return
 		}
+		tx.Commit(request.Context())
 		returnTAsJSON(writer, d, http.StatusOK)
 	}
 }

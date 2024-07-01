@@ -40,11 +40,16 @@ func updateStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
+		tx, err := dbpool.Begin(context.Background())
+		if err != nil {
+			return
+		}
+		defer tx.Rollback(request.Context())
 		s, fail := getRequestBody[station](writer, request.Body)
 		if fail {
 			return
 		}
-		s, fail = getT[station](writer, request, dbpool, "postStation",
+		s, fail = getT[station](writer, request, tx, "postStation",
 			`INSERT INTO stations (name, location, country, state, city, zip, street, houseNumber, capacity)
                    VALUES ($1, point($2, $3), $4  , $5   , $6  , $7 , $8    , $9         , $10)
         		RETURNING stations.id,
@@ -62,6 +67,7 @@ func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if fail {
 			return
 		}
+		tx.Commit(request.Context())
 		log.Printf(genericSuccess, insertOperation, cStation, s.Id)
 		returnTAsJSON(writer, s, http.StatusCreated)
 		return
@@ -70,7 +76,12 @@ func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		s, fail := getT[station](writer, request, dbpool, "healthcheck",
+		tx, err := dbpool.Begin(context.Background())
+		if err != nil {
+			return
+		}
+		defer tx.Rollback(request.Context())
+		s, fail := getT[station](writer, request, tx, "healthcheck",
 			`SELECT stations.id,
                         stations.name,
                         stations.location[0] as latitude,
@@ -87,6 +98,7 @@ func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if fail {
 			return
 		}
+		tx.Commit(request.Context())
 		returnTAsJSON(writer, s, http.StatusOK)
 	}
 
