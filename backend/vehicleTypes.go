@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -27,18 +28,14 @@ func updateVehicleType(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 
-		rows, err := dbpool.Query(context.Background(), "UPDATE vehicleTypes SET name = $1, vehicleCategory = $2, transmission = $3, maxSeatCount = $4, pricePerHour = $5 WHERE id = $6 RETURNING id",
-			s.Name, s.VehicleCategory, s.Transmission, s.MaxSeatCount, s.PricePerHour, mux.Vars(request)["id"])
-
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error updating vehicleType: %s\n", err)
+		rows, err := dbpool.Exec(context.Background(), "UPDATE vehicleTypes SET name = $1, vehicleCategory = $2, transmission = $3, maxSeatCount = $4, pricePerHour = $5 WHERE id = $6",
+			s.Name, s.VehicleCategory, s.Transmission, s.MaxSeatCount, s.PricePerHour, s.Id)
+		fail = checkUpdateSingleRow(writer, err, rows, "update VehicleTypes")
+		if fail {
 			return
 		}
-		defer rows.Close()
-
-		sendResponseVehicleType(writer, rows, err, s, updateOperation, cVehicle)
-		return
+		log.Printf(genericSuccess, updateOperation, cVehicle, s.Id)
+		returnTAsJSON(writer, s, http.StatusCreated)
 	}
 }
 
@@ -50,62 +47,36 @@ func postVehicleType(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 
-		rows, err := dbpool.Query(context.Background(),
+		err := dbpool.QueryRow(context.Background(),
 			"INSERT INTO vehicleTypes (name, vehicleCategory, transmission, maxSeatCount, pricePerHour) VALUES ($1, $2, $3, $4, $5) RETURNING id",
-			s.Name, s.VehicleCategory, s.Transmission, s.MaxSeatCount, s.PricePerHour)
+			s.Name, s.VehicleCategory, s.Transmission, s.MaxSeatCount, s.PricePerHour).Scan(&s.Id)
 
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf(errorExecutingOperationGeneric, insertOperation, cVehicleType, err)
 			return
 		}
-		defer rows.Close()
-
-		sendResponseVehicleType(writer, rows, err, s, insertOperation, cVehicleType)
-		return
+		log.Printf(genericSuccess, insertOperation, cVehicleType, s.Id)
+		returnTAsJSON(writer, s, http.StatusCreated)
 	}
 }
 
 func getVehicleTypeById(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT * FROM vehicletypes WHERE vehicletypes.id = $1",
-			mux.Vars(request)["id"])
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleType, err)
-		}
-		defer rows.Close()
-
-		if rows.Next() {
-			var vC vehicleType
-			err = rows.Scan(&vC.Id, &vC.Name, &vC.VehicleCategory, &vC.Transmission, &vC.MaxSeatCount, &vC.PricePerHour)
-
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleType, err)
-				return
-			}
-			str, err := json.Marshal(vC)
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleType, err)
-				return
-			}
-			writer.Header().Set(contentType, applicationJSON)
-			_, err = writer.Write(str)
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleType, err)
-				return
-			}
-			return
-		}
-
-		if !rows.Next() {
+		var vC vehicleType
+		err := dbpool.QueryRow(context.Background(), "SELECT * FROM vehicletypes WHERE vehicletypes.id = $1",
+			mux.Vars(request)["id"]).Scan(&vC.Id, &vC.Name, &vC.VehicleCategory, &vC.Transmission, &vC.MaxSeatCount, &vC.PricePerHour)
+		if errors.Is(err, pgx.ErrNoRows) {
 			writer.WriteHeader(http.StatusNotFound)
 			log.Printf(errorGenericNotFound, cVehicleType, cVehicleType)
 			return
 		}
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicleType, err)
+			return
+		}
+		returnTAsJSON(writer, vC, http.StatusOK)
 	}
 }
 

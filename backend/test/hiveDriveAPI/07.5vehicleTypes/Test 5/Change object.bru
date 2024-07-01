@@ -5,13 +5,14 @@ meta {
 }
 
 put {
-  url: https://localhost:8080/api/vehicleTypes/id/3
+  url: https://localhost:8080/api/vehicleTypes
   body: json
   auth: none
 }
 
 body:json {
   {
+    "id": 3,
     "name": "VW Polo",
     "vehicleCategory" : 1,
     "transmission" : "Automatic",

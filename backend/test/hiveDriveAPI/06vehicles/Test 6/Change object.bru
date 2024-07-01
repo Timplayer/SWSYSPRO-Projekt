@@ -5,13 +5,14 @@ meta {
 }
 
 put {
-  url: https://localhost:8080/api/vehicles/id/3
+  url: https://localhost:8080/api/vehicles
   body: json
   auth: none
 }
 
 body:json {
   {
+    "id": 3,
     "name": "Station 2",
     "vehicleCategory": 1,
     "producer": 1,

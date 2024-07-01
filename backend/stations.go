@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -29,16 +30,13 @@ func updateStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if fail {
 			return
 		}
-		rows, err := dbpool.Query(context.Background(), "UPDATE stations SET name = $1, location = point($2, $3), country = $4, state = $5, city = $6, zip = $7, street = $8, houseNumber = $9, capacity = $10 WHERE id = $11 RETURNING id", s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber, s.Capacity, mux.Vars(request)["id"])
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error updating station: %s\n", err)
+		result, err := dbpool.Exec(context.Background(), "UPDATE stations SET name = $1, location = point($2, $3), country = $4, state = $5, city = $6, zip = $7, street = $8, houseNumber = $9, capacity = $10 WHERE id = $11", s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber, s.Capacity, s.Id)
+		fail = checkUpdateSingleRow(writer, err, result, "update station")
+		if fail {
 			return
 		}
-		defer rows.Close()
-
-		sendResponseStations(writer, rows, err, s, updateOperation, cStation)
-		return
+		log.Printf(genericSuccess, updateOperation, cStation, s.Id)
+		returnTAsJSON(writer, s, http.StatusCreated)
 	}
 }
 
@@ -48,47 +46,36 @@ func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if fail {
 			return
 		}
-		rows, err := dbpool.Query(context.Background(),
+		err := dbpool.QueryRow(context.Background(),
 			"INSERT INTO stations (name, location, country, state, city, zip, street, houseNumber, capacity) VALUES ($1, point($2, $3), $4, $5, $6, $7, $8, $9, $10) RETURNING id",
-			s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber, s.Capacity)
+			s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber, s.Capacity).Scan(&s.Id)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf(errorExecutingOperationGeneric, insertOperation, cStation, err)
 			return
 		}
-		defer rows.Close()
-
-		sendResponseStations(writer, rows, err, s, insertOperation, cStation)
+		log.Printf(genericSuccess, insertOperation, cStation, s.Id)
+		returnTAsJSON(writer, s, http.StatusCreated)
 		return
 	}
 }
 
 func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT stations.id, stations.name, stations.location[0] as latitude, stations.location[1] as longitude, stations.country, stations.state, stations.city, stations.zip, stations.street, stations.houseNumber, stations.capacity FROM stations WHERE stations.id = $1",
-			mux.Vars(request)["id"])
+		var s station
+		err := dbpool.QueryRow(context.Background(), "SELECT stations.id, stations.name, stations.location[0] as latitude, stations.location[1] as longitude, stations.country, stations.state, stations.city, stations.zip, stations.street, stations.houseNumber, stations.capacity FROM stations WHERE stations.id = $1",
+			mux.Vars(request)["id"]).Scan(&s.Id, &s.Name, &s.Latitude, &s.Longitude, &s.Country, &s.State, &s.City, &s.Zip, &s.Street, &s.HouseNumber, &s.Capacity)
+		if errors.Is(err, pgx.ErrNoRows) {
+			writer.WriteHeader(http.StatusNotFound)
+			log.Printf(errorGenericNotFound, cStation, cStation)
+			return
+		}
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
 			return
 		}
-		defer rows.Close()
-		if rows.Next() {
-			var s station
-			err = rows.Scan(&s.Id, &s.Name, &s.Latitude, &s.Longitude, &s.Country, &s.State, &s.City, &s.Zip, &s.Street, &s.HouseNumber, &s.Capacity)
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
-				return
-			}
-			returnTAsJSON(writer, s, http.StatusOK)
-		}
-
-		if !rows.Next() {
-			writer.WriteHeader(http.StatusNotFound)
-			log.Printf(errorGenericNotFound, cStation, cStation)
-			return
-		}
+		returnTAsJSON(writer, s, http.StatusOK)
 	}
 
 }
@@ -115,21 +102,6 @@ func getStations(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		returnTAsJSON(writer, stations, http.StatusOK)
 	}
-}
-
-func sendResponseStations(writer http.ResponseWriter, rows pgx.Rows, err error, s *station, operationType string, structName string) bool {
-	rows.Next()
-	var id int64
-	err = rows.Scan(&id)
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		log.Printf(errorExecutingOperationGeneric, operationType, structName, err)
-		return false
-	}
-	log.Printf(genericSuccess, operationType, structName, id)
-	s.Id = id
-	returnTAsJSON(writer, s, http.StatusCreated)
-	return false
 }
 
 func createStationsTable(dbpool *pgxpool.Pool) {
