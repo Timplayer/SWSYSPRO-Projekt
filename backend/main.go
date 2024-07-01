@@ -37,10 +37,10 @@ func main() {
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/api/reservations", validate(getReservations(dbpool))).Methods("GET")
-	router.HandleFunc("/api/reservations", validate(postReservation(dbpool))).Methods("POST")
-	router.HandleFunc("/api/reservations/id/{id}", validate(deleteReservation(dbpool))).Methods("DELETE")
-	router.HandleFunc("/api/reservations", validate(putReservation(dbpool))).Methods("PUT")
+	router.HandleFunc(reservationsAPIpath, validate(getReservations(dbpool))).Methods("GET")
+	router.HandleFunc(reservationsAPIpath, validate(postReservation(dbpool))).Methods("POST")
+	router.HandleFunc(reservationsIdIdAPIpath, validate(deleteReservation(dbpool))).Methods("DELETE")
+	router.HandleFunc(reservationsAPIpath, validate(putReservation(dbpool))).Methods("PUT")
 
 	router.HandleFunc("/api/stations/id/{id}/availability", getAvailabilityAtStation(dbpool)).Methods("GET")
 	router.HandleFunc("/api/stations/availability", addCarToStation(dbpool)).Methods("POST")
