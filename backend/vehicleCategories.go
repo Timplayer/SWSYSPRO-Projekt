@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
 	"net/http"
@@ -29,45 +30,28 @@ func updateVehicleCategory(dbpool *pgxpool.Pool) http.HandlerFunc {
 	}
 }
 
-func postVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		tx, err := dbpool.Begin(context.Background())
-		if err != nil {
-			return
-		}
-		defer tx.Rollback(request.Context())
-		vC, fail := getRequestBody[vehicleCategory](writer, request.Body)
-		if fail {
-			return
-		}
-		vC, fail = getT[vehicleCategory](writer, request, tx, "postVehicleCategorie",
-			"INSERT INTO vehicleCategories (name) VALUES ($1) RETURNING *",
-			vC.Name)
-		if fail {
-			return
-		}
-		tx.Commit(request.Context())
-		log.Printf(genericSuccess, insertOperation, cVehicleCategory, vC.Id)
-		returnTAsJSON(writer, vC, http.StatusCreated)
+func postVehicleCategories(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (vehicleCategory, bool) {
+	vC, fail := getRequestBody[vehicleCategory](writer, request.Body)
+	if fail {
+		return vehicleCategory{}, true
 	}
+	vC, fail = getT[vehicleCategory](writer, request, tx, "postVehicleCategorie",
+		"INSERT INTO vehicleCategories (name) VALUES ($1) RETURNING *",
+		vC.Name)
+	if fail {
+		return vehicleCategory{}, true
+	}
+	return vC, false
 }
 
-func getVehicleCategoryById(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		tx, err := dbpool.Begin(context.Background())
-		if err != nil {
-			return
-		}
-		defer tx.Rollback(request.Context())
-		vC, fail := getT[vehicleCategory](writer, request, tx, cDefect,
-			"SELECT * FROM vehicleCategories WHERE vehicleCategories.id = $1",
-			mux.Vars(request)["id"])
-		if fail {
-			return
-		}
-		tx.Commit(request.Context())
-		returnTAsJSON(writer, vC, http.StatusOK)
+func getVehicleCategoryById(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (vehicleCategory, bool) {
+	vC, fail := getT[vehicleCategory](writer, request, tx, cDefect,
+		"SELECT * FROM vehicleCategories WHERE vehicleCategories.id = $1",
+		mux.Vars(request)["id"])
+	if fail {
+		return vehicleCategory{}, true
 	}
+	return vC, false
 }
 
 func getVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {

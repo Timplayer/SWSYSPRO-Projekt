@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/shopspring/decimal"
 	"log"
@@ -36,47 +37,30 @@ func updateVehicleType(dbpool *pgxpool.Pool) http.HandlerFunc {
 	}
 }
 
-func postVehicleType(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		tx, err := dbpool.Begin(context.Background())
-		if err != nil {
-			return
-		}
-		defer tx.Rollback(request.Context())
-		s, fail := getRequestBody[vehicleType](writer, request.Body)
-		if fail {
-			return
-		}
-		s, fail = getT[vehicleType](writer, request, tx, "postVehicleType",
-			`INSERT INTO vehicleTypes (name, vehicleCategory, transmission, maxSeatCount, pricePerHour)
+func postVehicleType(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (vehicleType, bool) {
+	s, fail := getRequestBody[vehicleType](writer, request.Body)
+	if fail {
+		return vehicleType{}, true
+	}
+	s, fail = getT[vehicleType](writer, request, tx, "postVehicleType",
+		`INSERT INTO vehicleTypes (name, vehicleCategory, transmission, maxSeatCount, pricePerHour)
                                VALUES ($1  , $2             , $3          , $4          , $5)
                     RETURNING *`,
-			s.Name, s.VehicleCategory, s.Transmission, s.MaxSeatCount, s.PricePerHour)
-		if fail {
-			return
-		}
-		tx.Commit(request.Context())
-		log.Printf(genericSuccess, insertOperation, cVehicleType, s.Id)
-		returnTAsJSON(writer, s, http.StatusCreated)
+		s.Name, s.VehicleCategory, s.Transmission, s.MaxSeatCount, s.PricePerHour)
+	if fail {
+		return vehicleType{}, true
 	}
+	return s, false
 }
 
-func getVehicleTypeById(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		tx, err := dbpool.Begin(context.Background())
-		if err != nil {
-			return
-		}
-		defer tx.Rollback(request.Context())
-		vC, fail := getT[vehicleType](writer, request, tx, cDefect,
-			"SELECT * FROM vehicletypes WHERE vehicletypes.id = $1",
-			mux.Vars(request)["id"])
-		if fail {
-			return
-		}
-		tx.Commit(request.Context())
-		returnTAsJSON(writer, vC, http.StatusOK)
+func getVehicleTypeById(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (vehicleType, bool) {
+	vC, fail := getT[vehicleType](writer, request, tx, cDefect,
+		"SELECT * FROM vehicletypes WHERE vehicletypes.id = $1",
+		mux.Vars(request)["id"])
+	if fail {
+		return vehicleType{}, true
 	}
+	return vC, false
 }
 
 func getVehicleTypes(dbpool *pgxpool.Pool) http.HandlerFunc {

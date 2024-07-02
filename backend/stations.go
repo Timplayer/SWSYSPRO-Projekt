@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
 	"net/http"
@@ -38,19 +39,13 @@ func updateStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 	}
 }
 
-func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		tx, err := dbpool.Begin(context.Background())
-		if err != nil {
-			return
-		}
-		defer tx.Rollback(request.Context())
-		s, fail := getRequestBody[station](writer, request.Body)
-		if fail {
-			return
-		}
-		s, fail = getT[station](writer, request, tx, "postStation",
-			`INSERT INTO stations (name, location, country, state, city, zip, street, houseNumber, capacity)
+func postStation(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (station, bool) {
+	s, fail := getRequestBody[station](writer, request.Body)
+	if fail {
+		return station{}, true
+	}
+	s, fail = getT[station](writer, request, tx, "postStation",
+		`INSERT INTO stations (name, location, country, state, city, zip, street, houseNumber, capacity)
                    VALUES ($1, point($2, $3), $4  , $5   , $6  , $7 , $8    , $9         , $10)
         		RETURNING stations.id,
         		          stations.name,
@@ -63,26 +58,16 @@ func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
         		          stations.street,
         		          stations.houseNumber,
         		          stations.capacity`,
-			s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber, s.Capacity)
-		if fail {
-			return
-		}
-		tx.Commit(request.Context())
-		log.Printf(genericSuccess, insertOperation, cStation, s.Id)
-		returnTAsJSON(writer, s, http.StatusCreated)
-		return
+		s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber, s.Capacity)
+	if fail {
+		return station{}, true
 	}
+	return s, false
 }
 
-func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		tx, err := dbpool.Begin(context.Background())
-		if err != nil {
-			return
-		}
-		defer tx.Rollback(request.Context())
-		s, fail := getT[station](writer, request, tx, "healthcheck",
-			`SELECT stations.id,
+func getStationByID(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (station, bool) {
+	s, fail := getT[station](writer, request, tx, "healthcheck",
+		`SELECT stations.id,
                         stations.name,
                         stations.location[0] as latitude,
                         stations.location[1] as longitude,
@@ -94,14 +79,11 @@ func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
                         stations.houseNumber,
                         stations.capacity 
                   FROM stations WHERE stations.id = $1`,
-			mux.Vars(request)["id"])
-		if fail {
-			return
-		}
-		tx.Commit(request.Context())
-		returnTAsJSON(writer, s, http.StatusOK)
+		mux.Vars(request)["id"])
+	if fail {
+		return station{}, true
 	}
-
+	return s, false
 }
 
 func getStations(dbpool *pgxpool.Pool) http.HandlerFunc {

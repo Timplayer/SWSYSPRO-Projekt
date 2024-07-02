@@ -25,43 +25,23 @@ type url struct {
 	URL string `json:"url"`
 }
 
-func postImage(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		tx, err := dbpool.BeginTx(request.Context(), transactionOptionsRW)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorStartingTransaction, err)
-			return
-		}
-		defer tx.Rollback(request.Context())
-
-		p, fail := addImageToDB(writer, request, tx)
-		if fail {
-			return
-		}
-		tx.Commit(request.Context())
-		log.Printf("Image inserted: %d", p.Id)
-		returnTAsJSON(writer, p, http.StatusCreated)
+func postImage(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (picture, bool) {
+	p, fail := addImageToDB(writer, request, tx)
+	if fail {
+		return picture{}, true
 	}
+	return p, false
 }
 
-func getImageById(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		tx, err := dbpool.BeginTx(request.Context(), transactionOptionsReadOnly)
-		if err != nil {
-			return
-		}
-		defer tx.Rollback(request.Context())
-		p, fail := getT[picture](writer, request, tx, "getImageByID",
-			"SELECT * FROM images WHERE id = $1", mux.Vars(request)["id"])
-		if fail {
-			return
-		}
-		var u = httpsPrefix + request.Host + fileAPIpath + strconv.FormatInt(p.Id, 10)
-		p.URL = &u
-		tx.Commit(request.Context())
-		returnTAsJSON(writer, p, http.StatusOK)
+func getImageById(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (picture, bool) {
+	p, fail := getT[picture](writer, request, tx, "getImageByID",
+		"SELECT * FROM images WHERE id = $1", mux.Vars(request)["id"])
+	if fail {
+		return picture{}, true
 	}
+	var u = httpsPrefix + request.Host + fileAPIpath + strconv.FormatInt(p.Id, 10)
+	p.URL = &u
+	return p, false
 }
 
 func addImageToDB(writer http.ResponseWriter, request *http.Request, dbpool pgx.Tx) (picture, bool) {

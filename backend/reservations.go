@@ -185,41 +185,24 @@ type stationAndTime struct {
 	AutoKlasse int64     `json:"auto_klasse"`
 }
 
-func addCarToStation(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		r, fail := getRequestBody[stationAndTime](writer, request.Body)
-		if fail {
-			return
-		}
-		tx, err := dbpool.BeginTx(request.Context(), transactionOptionsRW)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorStartingTransaction, err)
-			return
-		}
-		defer tx.Rollback(request.Context())
-
-		res, fail := getT[reservationNullable](writer, request, tx, "postNewCar",
-			"INSERT INTO reservations (auto_klasse, end_time, end_pos) VALUES ($1, $2, $3) RETURNING *",
-			r.AutoKlasse, r.Time, r.Station)
-		if fail {
-			return
-		}
-
-		notAvailable := checkAvailability(writer, request, tx)
-		if notAvailable {
-			return
-		}
-		err = tx.Commit(request.Context())
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorTransactionAborted, err)
-			return
-		}
-
-		log.Printf("added Reservation: %d", r.Id)
-		returnTAsJSON(writer, res, http.StatusCreated)
+func addCarToStation(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (reservationNullable, bool) {
+	r, fail := getRequestBody[stationAndTime](writer, request.Body)
+	if fail {
+		return reservationNullable{}, true
 	}
+
+	res, fail := getT[reservationNullable](writer, request, tx, "postNewCar",
+		"INSERT INTO reservations (auto_klasse, end_time, end_pos) VALUES ($1, $2, $3) RETURNING *",
+		r.AutoKlasse, r.Time, r.Station)
+	if fail {
+		return reservationNullable{}, true
+	}
+
+	notAvailable := checkAvailability(writer, request, tx)
+	if notAvailable {
+		return reservationNullable{}, true
+	}
+	return res, false
 }
 
 func getAvailabilityAtStation(dbpool *pgxpool.Pool) http.HandlerFunc {
