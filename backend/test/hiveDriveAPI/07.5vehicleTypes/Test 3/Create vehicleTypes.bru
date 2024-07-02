@@ -1,19 +1,22 @@
 meta {
-  name: Change object
+  name: Create vehicleTypes
   type: http
-  seq: 2
+  seq: 1
 }
 
-put {
-  url: https://localhost:8080/api/producers
+post {
+  url: https://localhost:8080/api/vehicleTypes
   body: json
   auth: none
 }
 
 body:json {
   {
-    "id": 3,
-    "name": "Station 2"
+    "name": "Opel Mokka",
+    "vehicleCategory" : 1,
+    "transmission" : "Automatic",
+    "MaxSeatCount" : 3,
+    "PricePerHour" : 0.1
   }
 }
 
@@ -30,6 +33,6 @@ tests {
   
   test("Name is correct?", function() {
     const data = res.getBody();
-    expect (data.name).to.equal("Station 2");
+    expect (data.name).to.equal("Opel Mokka");
   });
 }

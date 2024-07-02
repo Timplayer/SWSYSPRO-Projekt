@@ -5,13 +5,14 @@ meta {
 }
 
 put {
-  url: https://localhost:8080/api/stations/id/3
+  url: https://localhost:8080/api/stations
   body: json
   auth: none
 }
 
 body:json {
   {
+    "id": 3,
     "name": "Station 2",
     "latitude": 1.11,
     "longitude": 2.22,
