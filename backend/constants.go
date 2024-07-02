@@ -63,7 +63,7 @@ const reservationsIdIdAPIpath = "/api/reservations/id/{id}"
 
 const imagesVehicleAPIpath = "/api/images/vehicles/id/{id}"
 const imagesDefectAPIpath = "/api/images/defects/id/{id}"
-const imagesVehicleCategoryAPIpath = "/api/images/vehicleCategories/id/{id}"
+const imagesVehicleTypeAPIpath = "/api/images/vehicleTypes/id/{id}"
 const imagesFilesIDAPIpath = "/api/images/file/id/{id}"
 
 var transactionOptionsRW = pgx.TxOptions{
