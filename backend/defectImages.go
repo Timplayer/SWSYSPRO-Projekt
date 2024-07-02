@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
@@ -32,7 +33,21 @@ func postDefectImage(dbpool *pgxpool.Pool) http.HandlerFunc {
 }
 
 func deleteDefectImage(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return deleteImageGeneric(dbpool, "DELETE FROM defectImage WHERE imageId = $1;")
+	return func(writer http.ResponseWriter, request *http.Request) {
+		tx, err := dbpool.BeginTx(request.Context(), transactionOptionsReadOnly)
+		if err != nil {
+			return
+		}
+		defer tx.Rollback(request.Context())
+
+		result, err := tx.Exec(context.Background(),
+			"DELETE FROM defectImage WHERE imageId = $1;", mux.Vars(request)["id"])
+		checkUpdateSingleRow(writer, err, result, "deleteDefectImage")
+		image := deleteImage(writer, request, tx)
+
+		tx.Commit(request.Context())
+		returnTAsJSON(writer, image, http.StatusOK)
+	}
 }
 
 func getDefectImagesByDefectId(dbpool *pgxpool.Pool) http.HandlerFunc {

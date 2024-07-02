@@ -61,7 +61,7 @@ func main() {
 
 	router.HandleFunc(imagesDefectAPIpath, postDefectImage(dbpool)).Methods("POST")
 	router.HandleFunc(imagesDefectAPIpath, getDefectImagesByDefectId(dbpool)).Methods("GET")
-	router.HandleFunc(imagesDefectAPIpath, deleteImageGeneric(dbpool, "DELETE FROM defectImage WHERE imageId = $1;")).Methods("DELETE")
+	router.HandleFunc(imagesDefectAPIpath, deleteDefectImage(dbpool)).Methods("DELETE")
 
 	router.HandleFunc(imagesAPIpath, getImages(dbpool)).Methods("GET")                 // List of URLs
 	router.HandleFunc(imagesIdAPIpath, getImageById(dbpool)).Methods("GET")            // URL
