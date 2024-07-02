@@ -3,16 +3,31 @@ import {
   AppBar, Toolbar, Button, Menu, FormControl, FormControlLabel, Radio, RadioGroup, Checkbox, Box, Typography
 } from '@mui/material';
 
-const FilterBar: React.FC = () => {
+interface FilterContextType {
+  sortOption: string;
+  vehicleCategory: string[];
+  transmission: string;
+  driveType: string;
+  seatCount: string;
+  driverAge: string;
+  setSortOption: (value: string) => void;
+  setVehicleCategory: React.Dispatch<React.SetStateAction<string[]>>;
+  setTransmission: (value: string) => void;
+  setDriveType: (value: string) => void;
+  setSeatCount: (value: string) => void;
+  setDriverAge: (value: string) => void;
+}
+
+const FilterBar: React.FC<FilterContextType> = ({ sortOption, setSortOption,
+    vehicleCategory, setVehicleCategory,
+    transmission, setTransmission,
+    driveType, setDriveType,
+    seatCount, setSeatCount,
+    driverAge, setDriverAge
+  }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [activeMenu, setActiveMenu] = React.useState<string | null>(null);
-  const [sortOption, setSortOption] = React.useState('lowestPrice'); // Default value
-  const [vehicleCategory, setVehicleCategory] = React.useState<string[]>([]);
-  const [transmission, setTransmission] = React.useState('automatic'); // Default value
-  const [driveType, setDriveType] = React.useState('frontWheel'); // Default value
-  const [seatCount, setSeatCount] = React.useState('7+'); // Default value
-  const [driverAge, setDriverAge] = React.useState('25+'); // Default value
-
+  
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, menuType: string) => {
     setAnchorEl(event.currentTarget);
     setActiveMenu(menuType);
@@ -129,7 +144,7 @@ const FilterBar: React.FC = () => {
             <Typography variant="h6">Getriebe</Typography>
             <RadioGroup value={transmission} onChange={handleTransmissionChange}>
               <FormControlLabel value="automatic" control={<Radio />} label="Automatik" />
-              <FormControlLabel value="manual" control={<Radio />} label="Manuell" />
+              <FormControlLabel value="Manuell" control={<Radio />} label="Manuell" />
             </RadioGroup>
           </Box>
         )}

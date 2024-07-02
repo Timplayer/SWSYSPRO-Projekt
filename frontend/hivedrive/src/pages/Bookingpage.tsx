@@ -44,8 +44,21 @@ const BookingPage: React.FC = () => {
   const location = useLocation();
   const { location: searchLocation, returnLocation, pickupDate, returnDate } = location.state || {};
   const [cars, setCars] = useState<Car[]>([]);
+  const [vehicleCategories, setVehicleCategories] = useState<{id: number, name: string}[]>([]);
+
+  const [sortOption, setSortOption] = React.useState('lowestPrice'); // Default value
+  const [vehicleCategory, setVehicleCategory] = React.useState<string[]>([]);
+  const [transmission, setTransmission] = React.useState('automatic'); // Default value
+  const [driveType, setDriveType] = React.useState('frontWheel'); // Default value
+  const [seatCount, setSeatCount] = React.useState('7+'); // Default value
+  const [driverAge, setDriverAge] = React.useState('25+'); // Default value
 
   useEffect(() => {
+    const fetchVehicleCategories = async () => {
+      const response = await axios.get('/api/vehicleCategories');
+      setVehicleCategories(response.data);
+    };
+
     const fetchLocations = async () => {
       const response = await axios.get('/api/vehicleTypes');
       const carData = response.data;
@@ -65,6 +78,7 @@ const BookingPage: React.FC = () => {
       setCars(carsWithImages);
     };
    
+    fetchVehicleCategories();
     fetchLocations();
   }, []);
 
@@ -83,6 +97,22 @@ const BookingPage: React.FC = () => {
   }
   };
 
+  const filterCars = (cars: Car[]) => {
+    return cars.filter(car => {
+      const selectedCategoryIds = vehicleCategories
+      .filter(category => vehicleCategory.includes(category.name))
+      .map(category => category.id);
+
+      //const matchesVehicleCategory = vehicleCategory.length === 0 || selectedCategoryIds.includes(car.vehicleCategory);
+      const matchesTransmission = !transmission || car.transmission === transmission;
+      const matchesSeatCount = !seatCount || car.maxSeatCount >= parseInt(seatCount, 10);
+      console.log(car.transmission, transmission, matchesTransmission);
+      return  matchesTransmission && matchesSeatCount;
+    });
+  };
+
+  const filteredCars = filterCars(cars);
+
   return (
     <React.Fragment>
       <AppAppBar />
@@ -92,14 +122,27 @@ const BookingPage: React.FC = () => {
         initialPickupDate={pickupDate}
         initialReturnDate={returnDate}
       />
-      <FilterBar />
+     <FilterBar
+        sortOption={sortOption}
+        setSortOption={setSortOption}
+        vehicleCategory={vehicleCategory}
+        setVehicleCategory={setVehicleCategory}
+        transmission={transmission}
+        setTransmission={setTransmission}
+        driveType={driveType}
+        setDriveType={setDriveType}
+        seatCount={seatCount}
+        setSeatCount={setSeatCount}
+        driverAge={driverAge}
+        setDriverAge={setDriverAge}
+      />
       <Container sx={{ 
           marginTop: 7, 
           marginBottom: 7, 
         }}>
-        {cars.length > 0 ? (
+        {filteredCars.length > 0 ? (
           <Grid container spacing={3}>
-            {cars.map((car, index) => (
+            {filteredCars.map((car, index) => (
               <Grid item xs={12} sm={6} md={4} key={index}>
                 <CarCard
                   car={car}
