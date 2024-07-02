@@ -1,5 +1,7 @@
 package main
 
+import "github.com/jackc/pgx/v5"
+
 const contentType = "Content-Type"
 const applicationJSON = "application/json"
 const octetStream = "octet-stream"
@@ -23,6 +25,7 @@ const errorDatabaseConnection = "Error getting Database Connection: %v\n"
 const errorGenericNotFound = "Error finding %s: %s not found \n"
 const errorGetGenericById = "Error getting %s by id %v\n"
 const errorTransactionAborted = "Error transaction aborted: %v"
+const errorStartingTransaction = "Error starting transaction: %v"
 
 const genericSuccess = "%sed %s: %d"
 const idKey = "id"
@@ -60,5 +63,17 @@ const reservationsIdIdAPIpath = "/api/reservations/id/{id}"
 
 const imagesVehicleAPIpath = "/api/images/vehicles/id/{id}"
 const imagesDefectAPIpath = "/api/images/defects/id/{id}"
-const imagesVehicleCategoryAPIpath = "/api/images/vehicleCategories/id/{id}"
+const imagesVehicleTypeAPIpath = "/api/images/vehicleTypes/id/{id}"
 const imagesFilesIDAPIpath = "/api/images/file/id/{id}"
+
+var transactionOptionsRW = pgx.TxOptions{
+	IsoLevel:       pgx.Serializable,
+	AccessMode:     pgx.ReadWrite,
+	DeferrableMode: pgx.NotDeferrable}
+
+var transactionOptionsReadOnly = pgx.TxOptions{
+	IsoLevel:       pgx.Serializable,
+	AccessMode:     pgx.ReadWrite,
+	DeferrableMode: pgx.NotDeferrable}
+
+var supportedFileTypes = []string{imageJPEG, imagePNG, imageGIF, imageWEBP, imageSVG}
