@@ -2,12 +2,10 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/zitadel/oidc/v3/pkg/oidc"
-	"io"
 	"log"
 	"net/http"
 	neturl "net/url"
@@ -39,15 +37,17 @@ func main() {
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/api/reservations", validate(getReservations(dbpool))).Methods("GET")
-	router.HandleFunc("/api/reservations", validate(postReservation(dbpool))).Methods("POST")
+	router.HandleFunc(reservationsAPIpath, validate(getReservations(dbpool))).Methods("GET")
+	router.HandleFunc(reservationsAPIpath, validate(postReservation(dbpool))).Methods("POST")
+	router.HandleFunc(reservationsIdIdAPIpath, validate(deleteReservation(dbpool))).Methods("DELETE")
+	router.HandleFunc(reservationsAPIpath, validate(putReservation(dbpool))).Methods("PUT")
 
 	router.HandleFunc("/api/stations/id/{id}/availability", getAvailabilityAtStation(dbpool)).Methods("GET")
 	router.HandleFunc("/api/stations/availability", addCarToStation(dbpool)).Methods("POST")
 
 	router.HandleFunc(stationsAPIpath, postStation(dbpool)).Methods("POST")
 	router.HandleFunc(stationsAPIpath, getStations(dbpool)).Methods("GET")
-	router.HandleFunc(stationsIdAPIpath, updateStation(dbpool)).Methods("PUT")
+	router.HandleFunc(stationsAPIpath, updateStation(dbpool)).Methods("PUT")
 
 	router.HandleFunc(imagesAPIpath, postImage(dbpool)).Methods("POST")
 
@@ -55,9 +55,9 @@ func main() {
 	router.HandleFunc(imagesVehicleAPIpath, getVehicleImagesByVehicleId(dbpool)).Methods("GET")
 	router.HandleFunc(imagesVehicleAPIpath, deleteVehicleImage(dbpool)).Methods("DELETE")
 
-	router.HandleFunc(imagesVehicleCategoryAPIpath, postVehicleCategoryImage(dbpool)).Methods("POST")
-	router.HandleFunc(imagesVehicleCategoryAPIpath, getVehicleCategoryImagesByVehicleCategoryId(dbpool)).Methods("GET")
-	router.HandleFunc(imagesVehicleCategoryAPIpath, deleteVehicleCategoryImage(dbpool)).Methods("DELETE")
+	router.HandleFunc(imagesVehicleCategoryAPIpath, postVehicleTypesImage(dbpool)).Methods("POST")
+	router.HandleFunc(imagesVehicleCategoryAPIpath, getVehicleTypesImagesByVehicleTypeId(dbpool)).Methods("GET")
+	router.HandleFunc(imagesVehicleCategoryAPIpath, deleteVehicleTypesImage(dbpool)).Methods("DELETE")
 
 	router.HandleFunc(imagesDefectAPIpath, postDefectImage(dbpool)).Methods("POST")
 	router.HandleFunc(imagesDefectAPIpath, getDefectImagesByDefectId(dbpool)).Methods("GET")
@@ -69,19 +69,24 @@ func main() {
 
 	router.HandleFunc(vehicleCategoriesAPIpath, postVehicleCategories(dbpool)).Methods("POST")
 	router.HandleFunc(vehicleCategoriesAPIpath, getVehicleCategories(dbpool)).Methods("GET")
-	router.HandleFunc(vehicleCategoriesIdAPIpath, updateVehicleCategory(dbpool)).Methods("PUT")
+	router.HandleFunc(vehicleCategoriesAPIpath, updateVehicleCategory(dbpool)).Methods("PUT")
+
+	router.HandleFunc(vehicleTypesAPIpath, postVehicleType(dbpool)).Methods("POST")
+	router.HandleFunc(vehicleTypesAPIpath, getVehicleTypes(dbpool)).Methods("GET")
+	router.HandleFunc(vehicleTypesAPIpath, updateVehicleType(dbpool)).Methods("PUT")
+	router.HandleFunc(vehicleTypesIdAPIpath, getVehicleTypeById(dbpool)).Methods("GET")
 
 	router.HandleFunc(vehiclesAPIpath, postVehicle(dbpool)).Methods("POST")
 	router.HandleFunc(vehiclesAPIpath, getVehicles(dbpool)).Methods("GET")
-	router.HandleFunc(vehiclesIdAPIpath, updateVehicle(dbpool)).Methods("PUT")
+	router.HandleFunc(vehiclesAPIpath, updateVehicle(dbpool)).Methods("PUT")
 
 	router.HandleFunc(defectsAPIpath, postDefect(dbpool)).Methods("POST")
 	router.HandleFunc(defectsAPIpath, getDefects(dbpool)).Methods("GET")
-	router.HandleFunc(defectsIdAPIpath, updateDefect(dbpool)).Methods("PUT")
+	router.HandleFunc(defectsAPIpath, updateDefect(dbpool)).Methods("PUT")
 
 	router.HandleFunc(producersAPIpath, postProducers(dbpool)).Methods("POST")
 	router.HandleFunc(producersAPIpath, getProducers(dbpool)).Methods("GET")
-	router.HandleFunc(producersIdAPIpath, updateProducer(dbpool)).Methods("PUT")
+	router.HandleFunc(producersAPIpath, updateProducer(dbpool)).Methods("PUT")
 
 	router.HandleFunc(stationsIdAPIpath, getStationByID(dbpool)).Methods("GET")
 	router.HandleFunc(vehiclesIdAPIpath, getVehicleById(dbpool)).Methods("GET")
@@ -91,7 +96,7 @@ func main() {
 
 	router.HandleFunc("/api/healthcheck/hello", hello()).Methods("GET")
 	router.HandleFunc("/api/healthcheck/auth", validate(
-		func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
+		func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 			hello()(writer, request)
 		}))
 	router.HandleFunc("/api/healthcheck/sql", testDBget(dbpool)).Methods("GET")
@@ -154,26 +159,29 @@ func initKeycloakConfig() {
 func initializeDatabase(dbpool *pgxpool.Pool) {
 	_, err := dbpool.Exec(context.Background(),
 		"CREATE TABLE IF NOT EXISTS test(id BIGSERIAL PRIMARY KEY, name TEXT)")
+
 	if err != nil {
 		log.Fatalf("Failed to create table: %v\n", err)
 	}
+
 	createImagesTable(dbpool)
 	createStationsTable(dbpool)
 	createVehicleCategoriesTable(dbpool)
+	createVehicleTypesTable(dbpool)
 	createProducersTable(dbpool)
 	createDefectsTable(dbpool)
 	createVehiclesTable(dbpool) // depends on Producers and VehicleCategories
-
 	createDefectImageTable(dbpool)
-	createVehicleCategoryImageTable(dbpool)
+	createVehicleTypesImageTable(dbpool)
 	createVehicleImageTable(dbpool)
 	createReservationsTable(dbpool)
+
 }
 
 func validate(
 	handler func(writer http.ResponseWriter,
 		request *http.Request,
-		introspectionResult introspection)) http.HandlerFunc {
+		introspectionResult *introspection)) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		auth := request.Header.Get("Authorization")
 		if auth == "" {
@@ -194,15 +202,8 @@ func validate(
 
 		r, _ := http.PostForm("http://keycloak:8080/auth/realms/hivedrive/protocol/openid-connect/token/introspect", urlValues)
 
-		res, err := io.ReadAll(r.Body)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		var introspectionResult introspection
-		err = json.Unmarshal(res, &introspectionResult)
-		if err != nil {
-			http.Error(writer, "Internal Server Error", http.StatusInternalServerError)
+		introspectionResult, fail := getRequestBody[introspection](writer, r.Body)
+		if fail {
 			return
 		}
 		if !introspectionResult.Active {

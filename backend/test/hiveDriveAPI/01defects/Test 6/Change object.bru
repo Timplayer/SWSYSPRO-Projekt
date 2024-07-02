@@ -5,13 +5,14 @@ meta {
 }
 
 put {
-  url: https://localhost:8080/api/defects/id/3
+  url: https://localhost:8080/api/defects
   body: json
   auth: none
 }
 
 body:json {
   {
+    "id": 3,
     "name": "Station 2",
     "date": "2021-08-15T14:30:45Z",
     "description": "Small sratch on the front bumper",

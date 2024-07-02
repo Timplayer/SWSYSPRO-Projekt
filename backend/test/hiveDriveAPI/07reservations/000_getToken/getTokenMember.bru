@@ -1,7 +1,7 @@
 meta {
-  name: getTokenEmployee
+  name: getTokenMember
   type: http
-  seq: 2
+  seq: 1
 }
 
 post {
@@ -12,11 +12,19 @@ post {
 
 body:form-urlencoded {
   client_id: admin-cli
-  username: employee_test
+  username: member_test@example.com
   password: test
   grant_type: password
 }
 
 vars:post-response {
-  access_token_employee: res.body.access_token
+  access_token_member: res.body.access_token
+}
+
+tests {
+  test("Status = 200", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(200);
+  });
+  
 }
