@@ -2,9 +2,9 @@
 
 ## Minimum acceptance criteria
 
-- [ ] Create member account
-- [ ] Change member account data
-- [ ] Login/Logout
+- [x] Create member account
+- [x] Change member account data
+- [x] Login/Logout
 - [ ] Create new reservation
 - [ ] Check out reservations
 - [ ] Delete reservations
