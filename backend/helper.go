@@ -100,3 +100,23 @@ func getT[T any](writer http.ResponseWriter, request *http.Request, tx pgx.Tx, o
 	}
 	return t, false
 }
+
+func RestRequestWithTransaction[T any](dbpool *pgxpool.Pool, success int, fn func(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (T, bool)) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		tx, err := dbpool.BeginTx(request.Context(), transactionOptionsRW)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf(errorStartingTransaction, err)
+			return
+		}
+		defer tx.Rollback(request.Context())
+
+		t, done := fn(writer, request, tx)
+		if done {
+			return
+		}
+
+		tx.Commit(request.Context())
+		returnTAsJSON(writer, t, success)
+	}
+}
