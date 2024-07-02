@@ -84,7 +84,10 @@ const BookingPage: React.FC = () => {
         initialReturnDate={returnDate}
       />
       <FilterBar />
-      <Container>
+      <Container sx={{ 
+          marginTop: 7, 
+          marginBottom: 7, 
+        }}>
         {cars.length > 0 ? (
           <Grid container spacing={3}>
             {cars.map((car, index) => (

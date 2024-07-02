@@ -90,7 +90,7 @@ function AppAppBar() {
             <Button
               variant="text"
               component={RouterLink}
-              to="/admin" //link ändern
+              to="/admin" 
               sx={{ ...rightLink, color: 'secondary.main' }}
             >
               {'Adminpage'}
