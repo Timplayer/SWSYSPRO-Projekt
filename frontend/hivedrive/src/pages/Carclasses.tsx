@@ -3,22 +3,25 @@ import { Typography, Container, Grid, Card, CardMedia, CardContent } from '@mui/
 import withRoot from '../withRoot';
 import AppFooter from '../views/AppFooter';
 import AppAppBar from '../views/AppAppBar';
+import limousine from '../../images/limousine.png';
+import coupe from '../../images/coupe.png';
+import suv from '../../images/suv.png';
 
 const autoKlassen = [
   {
     name: 'Limousine',
     description: 'Eine Limousine bietet Komfort und Stil. Sie ist ideal für lange Fahrten und Geschäftsreisen.',
-    image: 'https://example.com/limousine.jpg',
+    image: limousine,
   },
   {
     name: 'SUV',
     description: 'Ein SUV ist vielseitig und geländetauglich. Perfekt für Abenteuer und Familienausflüge.',
-    image: 'https://example.com/suv.jpg',
+    image: suv,
   },
   {
     name: 'Coupé',
     description: 'Ein Coupé ist sportlich und elegant. Ideal für Fahrer, die ein dynamisches Fahrerlebnis suchen.',
-    image: 'https://example.com/coupe.jpg',
+    image: coupe,
   },
   {
     name: 'Cabriolet',
@@ -42,7 +45,7 @@ const autoKlassen = [
   },
   {
     name: 'Spezial Fahrzeuge',
-    description: 'sehr besonders und wild.',
+    description: 'Besondere Fahrzeuge, die spezielle Eigenschaften oder Besonderheiten aufweisen oder sehr selten sind',
     image: 'https://example.com/luxus_fahrzeug.jpg',
   },
 ];
@@ -52,13 +55,13 @@ const Carclasses: React.FC = () => {
     <React.Fragment>
     <AppAppBar/>
       <Container>
-        <Grid container spacing={3} style={{ marginTop: '20px' }}>
+        <Grid container spacing={3} style={{ marginTop: '16px', marginBottom: '40px' }}>
           {autoKlassen.map((klasse) => (
             <Grid item xs={12} sm={6} md={4} key={klasse.name}>
               <Card>
                 <CardMedia
                   component="img"
-                  height="140"
+                  height="160"
                   image={klasse.image}
                   alt={klasse.name}
                 />

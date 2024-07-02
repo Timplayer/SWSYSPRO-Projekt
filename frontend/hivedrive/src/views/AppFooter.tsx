@@ -10,11 +10,10 @@ import { Link as RouterLink } from 'react-router-dom';
 function Copyright() {
   return (
     <React.Fragment>
-      {'© '}
       <CustomRouterLink to="/">
-        HiveDrive
-      </CustomRouterLink>{' '}
+      {'© '}  HiveDrive
       {new Date().getFullYear()}
+      </CustomRouterLink>{' '}
     </React.Fragment>
   );
 }
@@ -32,10 +31,6 @@ const LANGUAGES = [
   {
     code: 'de-DE',
     name: 'Deutsch',
-  },
-  {
-    code: 'en-US',
-    name: 'English',
   },
 ];
 
@@ -62,7 +57,7 @@ export default function AppFooter() {
           </Grid>
           <Grid item xs={6} sm={4} md={2}>
             <Typography variant="h6" marked="left" gutterBottom>
-              Legal
+            Rechtliches
             </Typography>
             <Box component="ul" sx={{ m: 0, listStyle: 'none', p: 0 }}>
               <Box component="li" sx={{ py: 0.5 }}>
@@ -81,7 +76,7 @@ export default function AppFooter() {
           </Grid>
           <Grid item xs={6} sm={4} md={2}>
             <Typography variant="h6" marked="left" gutterBottom>
-              Language
+              Sprache
             </Typography>
             <TextField
               select

@@ -43,10 +43,11 @@ export default function TemporaryDrawer() {
           <IconButton aria-label="close" onClick={toggleDrawer(false)}>
             <CloseIcon sx={{ fontSize: 24, color: '#FFFFFF' }} />
           </IconButton>
-          <img src={logo} alt="Logo" style={{ height: 40, marginRight: 8 }} />
           <CustomRouterLink
             to="/"
+            sx={{ display: 'flex', alignItems: 'center', fontSize: 24 }}
           >
+             <img src={logo} alt="Logo" style={{ height: 40, marginRight: 8 }} />
             {'HiveDrive'}
           </CustomRouterLink>
         </Box>

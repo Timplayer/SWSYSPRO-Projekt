@@ -63,8 +63,8 @@ const Bookings: React.FC = () => {
     <React.Fragment>
       <AppAppBar />
       <Box p={3}>
-        <Typography variant="h4" gutterBottom>Meine Buchungen</Typography>
-        <Button variant="outlined" color="primary" sx={{ mb: 2 }}>+ Buchung hinzufügen</Button>
+        <Typography variant="h4" gutterBottom sx={{color:'#f57c00'}}>Meine Buchungen</Typography>
+        <Button variant="outlined" color="primary" sx={{ mb: 2, color:'#ffffff' }}>+ Buchung hinzufügen</Button>
         <Card variant="outlined">
           <CardContent>
             <Grid container spacing={2}>
@@ -88,8 +88,8 @@ const Bookings: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>Vergangene Buchungen (0)</Typography>
-        <Typography variant="body1">Keine weiteren Buchungen gefunden</Typography>
+        <Typography variant="h5" gutterBottom sx={{ mt: 4, color:'#ffffff' }}>Vergangene Buchungen (0)</Typography>
+        <Typography variant="body1" sx={{ color:'#ffffff' }}>Keine weiteren Buchungen gefunden</Typography>
 
         <Dialog open={openInfo} onClose={handleCloseInfo}>
           <DialogTitle>Fahrzeuginformationen</DialogTitle>

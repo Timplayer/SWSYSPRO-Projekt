@@ -40,14 +40,14 @@ function AppAppBar() {
             <TemporaryDrawer />
           </Box>
           <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <img src={logo} alt="Logo" style={{ height: 40, marginRight: 8 }} />
             <Link
               variant="h6"
               underline="none"
               color="inherit"
               href="/"
-              sx={{ fontSize: 24 }}
+              sx={{ display: 'flex', alignItems: 'center', fontSize: 24 }}
             >
+              <img src={logo} alt="Logo" style={{ height: 40, marginRight: 8 }} />
               {'HiveDrive'}
             </Link>
           </Box>
