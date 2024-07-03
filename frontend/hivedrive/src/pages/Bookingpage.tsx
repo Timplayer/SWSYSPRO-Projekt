@@ -11,34 +11,6 @@ import keycloak from '../keycloak';
 import axios from 'axios';
 import { Car } from './Types.ts';
 
-//const carData = [
-//  {
-//    name: 'VW Polo',
-//    images: [
-//      'https://example.com/images/vw_polo_1.jpg',
-//      'https://example.com/images/vw_polo_2.jpg',
-//    ],
-//    price: '84,74 €',
-//    transmission: 'Manuell',
-//    passengers: 5,
-//    luggage: 1,
-//    kmIncluded: '1.200 km',
-//  },
-//  {
-//    name: 'Opel Mokka',
-//    images: [
-//      'https://example.com/images/opel_mokka_1.jpg',
-//      'https://example.com/images/opel_mokka_2.jpg',
-//    ],
-//    price: '96,25 €',
-//    transmission: 'Manuell',
-//    passengers: 5,
-//    luggage: 1,
-//    kmIncluded: '1.200 km',
-//  },
-//  
-//];
-
 const BookingPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -46,12 +18,12 @@ const BookingPage: React.FC = () => {
   const [cars, setCars] = useState<Car[]>([]);
   const [vehicleCategories, setVehicleCategories] = useState<{id: number, name: string}[]>([]);
 
-  const [sortOption, setSortOption] = React.useState('lowestPrice'); // Default value
+  const [sortOption, setSortOption] = React.useState('lowestPrice');
   const [vehicleCategory, setVehicleCategory] = React.useState<string[]>([]);
-  const [transmission, setTransmission] = React.useState('automatic'); // Default value
-  const [driveType, setDriveType] = React.useState('frontWheel'); // Default value
-  const [seatCount, setSeatCount] = React.useState('7+'); // Default value
-  const [driverAge, setDriverAge] = React.useState('25+'); // Default value
+  const [transmission, setTransmission] = React.useState(''); 
+  const [driveType, setDriveType] = React.useState(''); 
+  const [seatCount, setSeatCount] = React.useState('2+'); 
+  const [driverAge, setDriverAge] = React.useState('25+'); 
 
   useEffect(() => {
     const fetchVehicleCategories = async () => {

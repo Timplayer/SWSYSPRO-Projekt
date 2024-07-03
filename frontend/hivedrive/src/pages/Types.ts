@@ -1,4 +1,3 @@
-
 export interface Car {
   id : number;
   name: string;
@@ -7,4 +6,4 @@ export interface Car {
   maxSeatCount: number;
   pricePerHour: number; // in cent
   images: string[];
-};
+}

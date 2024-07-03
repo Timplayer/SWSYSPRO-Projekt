@@ -62,9 +62,6 @@ const Reservation: React.FC = () => {
     fetchLocations();
   }, []);
 
-
-    // Daten von vorher laden
-
   const handleSubmit = (event: { preventDefault: () => void; }) => {
     event.preventDefault();
     console.log({
@@ -78,7 +75,7 @@ const Reservation: React.FC = () => {
       pickupDate,
       returnDate,
       pickupLocationcopy,
-      returnLocation: differentReturnLocation ? returnLocation : pickupLocationcopy, //abfragen was vorher ausgewählt wurde
+      returnLocation: differentReturnLocation ? returnLocation : pickupLocationcopy, 
       customerName,
       customerEmail,
       driverAge,
@@ -89,9 +86,9 @@ const Reservation: React.FC = () => {
 
   const StyledTextField = styled(TextField)({
     '& .Mui-disabled': {
-      color: 'rgba(0, 0, 0, 0.87)', // Adjust text color
-      '-webkit-text-fill-color': 'rgba(0, 0, 0, 0.87)', // Adjust text fill color for Webkit browsers
-      backgroundColor: theme.palette.background.paper, // Maintain the background color
+      color: 'rgba(0, 0, 0, 0.87)', 
+      '-webkit-text-fill-color': 'rgba(0, 0, 0, 0.87)', 
+      backgroundColor: theme.palette.background.paper, 
     },
   });
 
