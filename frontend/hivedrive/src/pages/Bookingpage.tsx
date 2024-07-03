@@ -85,6 +85,7 @@ const BookingPage: React.FC = () => {
 
   const filteredCars = filterCars(cars);
 
+
   return (
     <React.Fragment>
       <AppAppBar />

@@ -12,8 +12,8 @@ interface FilterContextType {
   driverAge: string;
   setSortOption: (value: string) => void;
   setVehicleCategory: React.Dispatch<React.SetStateAction<string[]>>;
-  setTransmission: (value: string) => void;
-  setDriveType: (value: string) => void;
+  setTransmission: React.Dispatch<React.SetStateAction<string[]>>;
+  setDriveType: React.Dispatch<React.SetStateAction<string[]>>;
   setSeatCount: (value: string) => void;
   setDriverAge: (value: string) => void;
 }
@@ -49,14 +49,18 @@ const FilterBar: React.FC<FilterContextType> = ({ sortOption, setSortOption,
     );
   };
 
-  const handleTransmissionChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    const value = event.target.value as string;
-    setTransmission(value);
+  const handleTransmissionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setTransmission((prev) =>
+      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
+    );
   };
 
-  const handleDriveTypeChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    const value = event.target.value as string;
-    setDriveType(value);
+  const handleDriveTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setDriveType((prev) =>
+      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
+    );
   };
 
   const handleSeatCountChange = (event: React.ChangeEvent<{ value: unknown }>) => {
@@ -65,6 +69,15 @@ const FilterBar: React.FC<FilterContextType> = ({ sortOption, setSortOption,
 
   const handleDriverAgeChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setDriverAge(event.target.value as string);
+  };
+
+  const resetFilters = () => {
+    setSortOption('lowestPrice');
+    setVehicleCategory([]);
+    setTransmission([]);
+    setDriveType([]);
+    setSeatCount('2+');
+    setDriverAge('25+');
   };
 
   return (
@@ -112,6 +125,9 @@ const FilterBar: React.FC<FilterContextType> = ({ sortOption, setSortOption,
         >
           Alter des Fahrers
         </Button>
+        <Button variant="contained" size='small' color="secondary" onClick={resetFilters}>
+          Alle Filter zurücksetzen
+        </Button>
       </Toolbar>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
         {activeMenu === 'sort' && (
@@ -139,23 +155,23 @@ const FilterBar: React.FC<FilterContextType> = ({ sortOption, setSortOption,
             </FormControl>
           </Box>
         )}
-        {activeMenu === 'transmission' && (
+       {activeMenu === 'transmission' && (
           <Box sx={{ width: '300px', padding: 2 }}>
             <Typography variant="h6">Getriebe</Typography>
-            <RadioGroup value={transmission} onChange={handleTransmissionChange}>
-              <FormControlLabel value="automatic" control={<Radio />} label="Automatik" />
-              <FormControlLabel value="Manuell" control={<Radio />} label="Manuell" />
-            </RadioGroup>
+            <FormControl component="fieldset">
+              <FormControlLabel control={<Checkbox checked={transmission.includes("automatic")} onChange={handleTransmissionChange} value="automatic" />} label="Automatik" />
+              <FormControlLabel control={<Checkbox checked={transmission.includes("manual")} onChange={handleTransmissionChange} value="manual" />} label="Manuell" />
+            </FormControl>
           </Box>
         )}
         {activeMenu === 'driveType' && (
           <Box sx={{ width: '300px', padding: 2 }}>
             <Typography variant="h6">Antrieb</Typography>
-            <RadioGroup value={driveType} onChange={handleDriveTypeChange}>
-              <FormControlLabel value="frontWheel" control={<Radio />} label="Frontantrieb" />
-              <FormControlLabel value="rearWheel" control={<Radio />} label="Heckantrieb" />
-              <FormControlLabel value="allWheel" control={<Radio />} label="Allradantrieb" />
-            </RadioGroup>
+            <FormControl component="fieldset">
+              <FormControlLabel control={<Checkbox checked={driveType.includes("frontWheel")} onChange={handleDriveTypeChange} value="frontWheel" />} label="Frontantrieb" />
+              <FormControlLabel control={<Checkbox checked={driveType.includes("rearWheel")} onChange={handleDriveTypeChange} value="rearWheel" />} label="Heckantrieb" />
+              <FormControlLabel control={<Checkbox checked={driveType.includes("allWheel")} onChange={handleDriveTypeChange} value="allWheel" />} label="Allradantrieb" />
+            </FormControl>
           </Box>
         )}
         {activeMenu === 'seatCount' && (
