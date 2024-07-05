@@ -27,8 +27,12 @@ const Reservation: React.FC = () => {
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
 
-  const [pickupDatecopy, setPickupDate] = useState<Date | null>(pickupDate);
-  const [returnDatecopy, setReturnDate] = useState<Date | null>(returnDate);
+  const [pickupDatecopy, setPickupDate] = useState<Date | null>(
+    pickupDate ? pickupDate : new Date() 
+  );
+  const [returnDatecopy, setReturnDate] = useState<Date | null>(
+    returnDate ? returnDate : new Date() 
+  );
   const [pickupLocationcopy, setPickupLocation] = useState(searchLocation);
   const [returnLocationcopy, setReturnLocation] = useState(returnLocation);
   const [differentReturnLocation, setDifferentReturnLocation] = useState(false);
@@ -40,7 +44,7 @@ const Reservation: React.FC = () => {
   const [additionalDriverAge, setAdditionalDriverAge] = useState('25');
 
   useEffect(() => {
-      console.log(keycloak.tokenParsed);
+     // console.log(keycloak.tokenParsed);
       const { given_name, family_name, email } = keycloak.tokenParsed;
       setCustomerName(`${given_name} ${family_name}`);
       setCustomerEmail(email);
@@ -246,7 +250,7 @@ const Reservation: React.FC = () => {
                     }
                   }}
                   minDate={now}
-                  minTime={now}
+                  minTime={new Date(now.getTime() - 1 * 60 * 1000)}
                 />
               </LocalizationProvider>
               </Grid>
