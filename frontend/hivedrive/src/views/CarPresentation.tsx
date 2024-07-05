@@ -31,6 +31,56 @@ const CarPresentation: React.FC = () => {
 
   const displayedCars = cars.slice(0, 10).length > 0 ? [cars[currentIndex], cars[(currentIndex + 1) % Math.min(cars.length, 10)]] : [];
 
+  const generateTestCars = (): Car[] => {
+    return [
+      {
+        id: 1,
+        name: 'Auto 1',
+        vehicleCategory: 1,
+        transmission: 'Automatik',
+        maxSeatCount: 5,
+        pricePerHour: 2000, // 20€/Stunde in Cent
+        images: ['https://via.placeholder.com/200']
+      },
+      {
+        id: 2,
+        name: 'Auto 2',
+        vehicleCategory: 2,
+        transmission: 'Manuell',
+        maxSeatCount: 4,
+        pricePerHour: 1500, // 15€/Stunde in Cent
+        images: ['https://via.placeholder.com/200']
+      },
+      {
+        id: 3,
+        name: 'Auto 3',
+        vehicleCategory: 3,
+        transmission: 'Automatik',
+        maxSeatCount: 5,
+        pricePerHour: 2500, // 25€/Stunde in Cent
+        images: ['https://via.placeholder.com/200']
+      },
+      {
+        id: 4,
+        name: 'Auto 4',
+        vehicleCategory: 4,
+        transmission: 'Automatik',
+        maxSeatCount: 2,
+        pricePerHour: 3000, // 30€/Stunde in Cent
+        images: ['https://via.placeholder.com/200']
+      },
+      {
+        id: 5,
+        name: 'Auto 5',
+        vehicleCategory: 5,
+        transmission: 'Manuell',
+        maxSeatCount: 7,
+        pricePerHour: 2200, // 22€/Stunde in Cent
+        images: ['https://via.placeholder.com/200']
+      }
+    ];
+  };
+
   useEffect(() => {
     const fetchLocations = async () => {
       try {
@@ -48,10 +98,12 @@ const CarPresentation: React.FC = () => {
             return { ...car, images };
           })
         );
-
-        setCars(carsWithImages);
+        setCars(generateTestCars());
+        //setCars(carsWithImages);
       } catch (error) {
         console.error("Error fetching cars: ", error);
+        // Use generated test cars in case of error
+        setCars(generateTestCars());
       }
     };
 

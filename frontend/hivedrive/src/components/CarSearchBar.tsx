@@ -107,14 +107,14 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
                 ampm={false}
                 label="Abholdatum"
                 value={pickupDate}
-                onChange={(date) => {
+                onAccept={(date) => {
                   setPickupDate(date);
                   if (date && returnDate && date > returnDate) {
                     setReturnDate(date);
                   }
                 }}
                 minDate={now}
-                minTime={now}
+                minTime={new Date(now.getTime() - 1 * 60 * 1000)}
               />
             </LocalizationProvider>
           </Grid>
@@ -124,7 +124,7 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
                 ampm={false}
                 label="Rückgabedatum"
                 value={returnDate}
-                onChange={(date) => setReturnDate(date)}
+                onAccept={(date) => setReturnDate(date)}
                 minDate={pickupDate || now}
                 minTime={pickupDate || now}
               />

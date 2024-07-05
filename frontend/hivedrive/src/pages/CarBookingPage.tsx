@@ -241,7 +241,7 @@ const Reservation: React.FC = () => {
                   value={pickupDatecopy}
                   onChange={(date) => {
                     setPickupDate(date);
-                    if (date && returnDate && date > returnDate) {
+                    if (date && returnDatecopy && date > returnDatecopy) {
                       setReturnDate(date);
                     }
                   }}
@@ -257,8 +257,8 @@ const Reservation: React.FC = () => {
                   label="Rückgabedatum"
                   value={returnDatecopy}
                   onChange={(date) => setReturnDate(date)}
-                  minDate={pickupDate || now}
-                  minTime={pickupDate || now}
+                  minDate={pickupDatecopy || now}
+                  minTime={pickupDatecopy || now}
                 />
               </LocalizationProvider>
               </Grid>
