@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import withRoot from '../withRoot';
 import AppAppBar from '../views/AppAppBar';
 import AppFooter from '../views/AppFooter';
@@ -11,6 +11,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { MobileDateTimePicker } from '@mui/x-date-pickers';
 
 const Reservation: React.FC = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const { car, searchLocation, returnLocation, pickupDate, returnDate } = location.state || {};
 
@@ -83,7 +84,13 @@ const Reservation: React.FC = () => {
       additionalDriverName,
       additionalDriverAge,
     });
-  };
+
+
+
+
+
+    navigate('/mybookings');
+  };  
 
   const StyledTextField = styled(TextField)({
     '& .Mui-disabled': {

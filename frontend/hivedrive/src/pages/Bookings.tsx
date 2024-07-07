@@ -10,7 +10,8 @@ import {
   DialogTitle,
   Card,
   CardContent,
-  Grid
+  Grid,
+  TextField,
 } from '@mui/material';
 import AppAppBar from '../views/AppAppBar';
 import AppFooter from '../views/AppFooter';
@@ -21,6 +22,8 @@ const Bookings: React.FC = () => {
   const [openReturnDetails, setOpenReturnDetails] = useState(false);
   const [openMoreInfo, setOpenMoreInfo] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [currentEditBooking, setCurrentEditBooking] = useState(null);
 
   const currentDate = new Date();
   const bookings = [
@@ -94,6 +97,26 @@ const Bookings: React.FC = () => {
     console.log(`Download invoice for booking ${bookingId}`);
   };
 
+  const handleClickOpenEdit = (booking) => {
+    setCurrentEditBooking(booking);
+    setOpenEdit(true);
+  };
+
+  const handleCloseEdit = () => {
+    setOpenEdit(false);
+    setCurrentEditBooking(null);
+  };
+
+  const handleSaveEdit = () => {
+    // Add your save logic here
+    setOpenEdit(false);
+    setCurrentEditBooking(null);
+  };
+
+  const handleEditChange = (field, value) => {
+    setCurrentEditBooking({ ...currentEditBooking, [field]: value });
+  };
+
   const renderBooking = (booking: any, isPast: boolean) => {
     const rentalDays = calculateRentalDays(booking.startDate, booking.endDate);
     return (
@@ -118,7 +141,10 @@ const Bookings: React.FC = () => {
               {isPast ? (
                 <Button variant="contained" color="primary" onClick={() => handleDownloadInvoice(booking.id)} sx={{ ml: 2 }}>Rechnung herunterladen</Button>
               ) : (
-                <Button variant="contained" color="secondary" onClick={handleClickOpenCancel} sx={{ ml: 2 }}>Buchung stornieren</Button>
+                <React.Fragment>
+                  <Button variant="contained" color="secondary" onClick={handleClickOpenCancel} sx={{ ml: 2 }}>Buchung stornieren</Button>
+                  <Button variant="contained" color="secondary" onClick={() => handleClickOpenEdit(booking)} sx={{ ml: 2 }}>Bearbeiten</Button>
+                </React.Fragment>
               )}
             </Grid>
           </Grid>
@@ -192,6 +218,64 @@ const Bookings: React.FC = () => {
           <DialogActions>
             <Button onClick={handleCloseCancel} color="primary">Abbrechen</Button>
             <Button onClick={handleConfirmCancel} color="secondary">Stornieren</Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog open={openEdit} onClose={handleCloseEdit}>
+          <DialogTitle>Buchung bearbeiten</DialogTitle>
+          <DialogContent>
+            <TextField
+              margin="dense"
+              label="Auto"
+              type="text"
+              fullWidth
+              value={currentEditBooking?.car || ''}
+              onChange={(e) => handleEditChange('car', e.target.value)}
+            />
+            <TextField
+              margin="dense"
+              label="Preis"
+              type="text"
+              fullWidth
+              value={currentEditBooking?.price || ''}
+              onChange={(e) => handleEditChange('price', e.target.value)}
+            />
+            <TextField
+              margin="dense"
+              label="Startort"
+              type="text"
+              fullWidth
+              value={currentEditBooking?.startLocation || ''}
+              onChange={(e) => handleEditChange('startLocation', e.target.value)}
+            />
+            <TextField
+              margin="dense"
+              label="Endort"
+              type="text"
+              fullWidth
+              value={currentEditBooking?.endLocation || ''}
+              onChange={(e) => handleEditChange('endLocation', e.target.value)}
+            />
+            <TextField
+              margin="dense"
+              label="Startdatum"
+              type="datetime-local"
+              fullWidth
+              value={currentEditBooking?.startDate.toISOString().slice(0, 16) || ''}
+              onChange={(e) => handleEditChange('startDate', new Date(e.target.value))}
+            />
+            <TextField
+              margin="dense"
+              label="Enddatum"
+              type="datetime-local"
+              fullWidth
+              value={currentEditBooking?.endDate.toISOString().slice(0, 16) || ''}
+              onChange={(e) => handleEditChange('endDate', new Date(e.target.value))}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseEdit} color="primary">Abbrechen</Button>
+            <Button onClick={handleSaveEdit} color="secondary">Speichern</Button>
           </DialogActions>
         </Dialog>
       </Box>
