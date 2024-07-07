@@ -10,16 +10,14 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { MobileDateTimePicker } from '@mui/x-date-pickers';
 
-
 const Reservation: React.FC = () => {
   const location = useLocation();
   const { car, searchLocation, returnLocation, pickupDate, returnDate } = location.state || {};
 
   const theme = useTheme();
 
-  const [carType, setCarType] = useState('');
   const [carName, setcarname] = useState(car.name);
-  const [carClass, setcarClass] = useState('');
+  const [carClass, setcarClass] = useState(car.vehicleCategory);
   const [carTransmission, setcarTransmission] = useState(car.transmission);
   const [carDrive, setcarnamecarDrive] = useState('');
   const [carSeatings, setcarnamecarSeatings] = useState(car.passengers);
@@ -69,7 +67,6 @@ const Reservation: React.FC = () => {
   const handleSubmit = (event: { preventDefault: () => void; }) => {
     event.preventDefault();
     console.log({
-      carType,
       carName,
       carClass,
       carDrive,
@@ -135,16 +132,7 @@ const Reservation: React.FC = () => {
                   disabled
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
-                <StyledTextField
-                  fullWidth
-                  label="Fahrzeugtyp"
-                  value={carType}
-                  sx={{ backgroundColor: theme.palette.background.paper }}
-                  disabled
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12}>
                 <StyledTextField
                   fullWidth
                   label="Fahrzeug Bezeichnung"

@@ -36,7 +36,7 @@ const CarPresentation: React.FC = () => {
       {
         id: 1,
         name: 'Auto 1',
-        vehicleCategory: 1,
+        vehicleCategory: 55,
         transmission: 'Automatik',
         maxSeatCount: 5,
         pricePerHour: 2000, // 20€/Stunde in Cent
