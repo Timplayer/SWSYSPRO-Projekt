@@ -17,23 +17,19 @@ const Reservation: React.FC = () => {
 
   const theme = useTheme();
 
-  const [carName, setcarname] = useState(car.name);
-  const [carClass, setcarClass] = useState(car.vehicleCategory);
-  const [carTransmission, setcarTransmission] = useState(car.transmission);
-  const [carDrive, setcarnamecarDrive] = useState('');
-  const [carSeatings, setcarnamecarSeatings] = useState(car.passengers);
+  const [carName, setCarName] = useState(car.name);
+  const [carClass, setCarClass] = useState(car.vehicleCategory);
+  const [carTransmission, setCarTransmission] = useState(car.transmission);
+  const [carDrive, setCarDrive] = useState(car.transmission);
+  const [carSeatings, setCarSeatings] = useState(car.maxSeatCount);
 
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
 
-  const [pickupDatecopy, setPickupDate] = useState<Date | null>(
-    pickupDate ? pickupDate : new Date() 
-  );
-  const [returnDatecopy, setReturnDate] = useState<Date | null>(
-    returnDate ? returnDate : new Date() 
-  );
-  const [pickupLocationcopy, setPickupLocation] = useState(searchLocation);
-  const [returnLocationcopy, setReturnLocation] = useState(returnLocation);
+  const [pickupDateCopy, setPickupDate] = useState<Date | null>(pickupDate ? new Date(pickupDate) : new Date());
+  const [returnDateCopy, setReturnDate] = useState<Date | null>(returnDate ? new Date(returnDate) : new Date());
+  const [pickupLocationCopy, setPickupLocation] = useState(searchLocation);
+  const [returnLocationCopy, setReturnLocation] = useState(returnLocation);
   const [differentReturnLocation, setDifferentReturnLocation] = useState(false);
 
   const [driverAge, setDriverAge] = useState('');
@@ -43,12 +39,10 @@ const Reservation: React.FC = () => {
   const [additionalDriverAge, setAdditionalDriverAge] = useState('25');
 
   useEffect(() => {
-     // console.log(keycloak.tokenParsed);
-      const { given_name, family_name, email } = keycloak.tokenParsed;
-      setCustomerName(`${given_name} ${family_name}`);
-      setCustomerEmail(email);
-    }
-  , [keycloak]);
+    const { given_name, family_name, email } = keycloak.tokenParsed;
+    setCustomerName(`${given_name} ${family_name}`);
+    setCustomerEmail(email);
+  }, []);
 
   const [locations, setLocations] = useState<Array<{ label: string, value: string }>>([]);
 
@@ -65,32 +59,45 @@ const Reservation: React.FC = () => {
     fetchLocations();
   }, []);
 
-  const handleSubmit = (event: { preventDefault: () => void; }) => {
+  const handleSubmit = async (event: { preventDefault: () => void; }) => {
     event.preventDefault();
-    console.log({
+
+    const reservationData = {
       carName,
       carClass,
       carDrive,
       carTransmission,
       carSeatings,
       additionalDriver,
-      pickupDate,
-      returnDate,
-      pickupLocationcopy,
-      returnLocation: differentReturnLocation ? returnLocation : pickupLocationcopy, 
+      pickupDate: pickupDateCopy,
+      returnDate: returnDateCopy,
+      pickupLocation: pickupLocationCopy,
+      returnLocation: differentReturnLocation ? returnLocationCopy : pickupLocationCopy, 
       customerName,
       customerEmail,
       driverAge,
       additionalDriverName,
       additionalDriverAge,
-    });
+    };
 
+    try {
+      const response = await axios.post('https://localhost:8080/api/reservations', reservationData, {
+        headers: {
+          Authorization: `Bearer ${keycloak.token}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
-
-
-
-    navigate('/mybookings');
-  };  
+      if (response.status === 201) {
+        console.log('Reservation successful:', response.data);
+        navigate('/mybookings');
+      } else {
+        console.error('Reservation failed:', response);
+      }
+    } catch (error) {
+      console.error('Error making reservation:', error);
+    }
+  };
 
   const StyledTextField = styled(TextField)({
     '& .Mui-disabled': {
@@ -108,19 +115,19 @@ const Reservation: React.FC = () => {
 
       <Container>
         <Box 
-        sx={{ 
-          marginTop: 7, 
-          marginBottom: 12, 
-          backgroundColor: 'white', 
-          padding: 2, 
-          borderRadius: 4, 
-          boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)'
-        }}
+          sx={{ 
+            marginTop: 7, 
+            marginBottom: 12, 
+            backgroundColor: 'white', 
+            padding: 2, 
+            borderRadius: 4, 
+            boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)'
+          }}
         >
           <Typography variant="h4" gutterBottom>HiveDrive Reservierung</Typography>
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
-            <Grid item xs={12}>
+              <Grid item xs={12}>
                 <StyledTextField
                   fullWidth
                   label="Name"
@@ -190,7 +197,7 @@ const Reservation: React.FC = () => {
                   required
                   fullWidth
                   label="Abholort"
-                  value={pickupLocationcopy}
+                  value={pickupLocationCopy}
                   onChange={(e) => setPickupLocation(e.target.value)}
                   sx={{ backgroundColor: theme.palette.background.paper }}
                 >
@@ -208,7 +215,7 @@ const Reservation: React.FC = () => {
                     select
                     fullWidth
                     label="Rückgabeort"
-                    value={returnLocationcopy}
+                    value={returnLocationCopy}
                     onChange={(e) => setReturnLocation(e.target.value)}
                     sx={{ backgroundColor: theme.palette.background.paper }}
                   >
@@ -233,33 +240,33 @@ const Reservation: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12} md={6}>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <MobileDateTimePicker
-                  ampm={false}
-                  label="Abholdatum"
-                  value={pickupDatecopy}
-                  onChange={(date) => {
-                    setPickupDate(date);
-                    if (date && returnDatecopy && date > returnDatecopy) {
-                      setReturnDate(date);
-                    }
-                  }}
-                  minDate={now}
-                  minTime={new Date(now.getTime() - 1 * 60 * 1000)}
-                />
-              </LocalizationProvider>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <MobileDateTimePicker
+                    ampm={false}
+                    label="Abholdatum"
+                    value={pickupDateCopy}
+                    onChange={(date) => {
+                      setPickupDate(date);
+                      if (date && returnDateCopy && date > returnDateCopy) {
+                        setReturnDate(date);
+                      }
+                    }}
+                    minDate={now}
+                    minTime={new Date(now.getTime() - 1 * 60 * 1000)}
+                  />
+                </LocalizationProvider>
               </Grid>
               <Grid item xs={12} md={6}>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <MobileDateTimePicker
-                  ampm={false}
-                  label="Rückgabedatum"
-                  value={returnDatecopy}
-                  onChange={(date) => setReturnDate(date)}
-                  minDate={pickupDatecopy || now}
-                  minTime={pickupDatecopy || now}
-                />
-              </LocalizationProvider>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <MobileDateTimePicker
+                    ampm={false}
+                    label="Rückgabedatum"
+                    value={returnDateCopy}
+                    onChange={(date) => setReturnDate(date)}
+                    minDate={pickupDateCopy || now}
+                    minTime={pickupDateCopy || now}
+                  />
+                </LocalizationProvider>
               </Grid>
               <Grid item xs={12}>
                 <FormControl component="fieldset" sx={{ backgroundColor: theme.palette.background.paper, p: 2, borderRadius: 1 }}>
