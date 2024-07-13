@@ -4,9 +4,7 @@ import Sidebar from '../components/Sidebar';
 import Overview from "./admin/Overview.tsx";
 import Vehicles from "./admin/Vehicles/Vehicles.tsx";
 import Stations from "./admin/Stations/Stations.tsx";
-import Reservations from './admin/Reservations.tsx';
 import Users from './admin/Users.tsx';
-import withRoot from '../withRoot.tsx';
 
 const theme = createTheme({
     palette: {
@@ -31,8 +29,6 @@ const Admin: React.FC = () => {
                 return <Vehicles/>;
             case 'Stations':
                 return <Stations/>;
-            case 'Reservations':
-                return <Reservations/>;
             case 'Accounts':
                 return <Users/>
             case 'Error':

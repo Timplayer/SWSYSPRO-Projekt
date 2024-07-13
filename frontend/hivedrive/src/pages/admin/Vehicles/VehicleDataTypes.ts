@@ -20,7 +20,7 @@ export enum DriverSystem {
 }
 
 export interface VehicleType {
-    id?: number;
+    id: number;
     name: string;
     vehicleCategory: number;
     transmission: Transmission;

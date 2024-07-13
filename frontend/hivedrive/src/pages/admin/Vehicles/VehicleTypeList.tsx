@@ -6,7 +6,6 @@ import {
     IconButton,
     Box,
     Typography,
-    Avatar,
     Dialog,
     DialogActions,
     DialogContent,
@@ -18,8 +17,6 @@ import {
     InputLabel,
     Select,
     MenuItem,
-    createTheme,
-    ThemeProvider
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import { VehicleType, Transmission } from './VehicleDataTypes';
@@ -79,21 +76,8 @@ const VehicleTypeList: React.FC<VehicleTypeListProps> = ({
         }
     };
 
-    const theme = createTheme({
-        palette: {
-            mode: 'dark',
-            background: {
-                default: '#121212'
-            },
-            text: {
-                primary: '#ffffff',
-                secondary: '#aaaaaa'
-            }
-        }
-    });
 
     return (
-        <ThemeProvider theme={theme}>
             <Box sx={{ padding: 2 }}>
                 <Typography variant="h4" gutterBottom color="textPrimary">
                     Fahrzeug Typen
@@ -190,7 +174,6 @@ const VehicleTypeList: React.FC<VehicleTypeListProps> = ({
                     </DialogActions>
                 </Dialog>
             </Box>
-        </ThemeProvider>
     );
 };
 
