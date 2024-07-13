@@ -193,6 +193,7 @@ func addCarToStation(writer http.ResponseWriter, request *http.Request, tx pgx.T
 	}
 	if !slices.Contains(introspectionResult.Access.Roles, "employee") {
 		http.Error(writer, "Access denied", http.StatusUnauthorized)
+		return reservationNullable{}, true
 	}
 
 	r, fail := getRequestBody[stationAndTime](writer, request.Body)
