@@ -1,4 +1,3 @@
-// AddStation.tsx
 import React, { useState } from 'react';
 import { Box, Button, TextField } from '@mui/material';
 import { Station } from './StationTypes';
@@ -49,7 +48,7 @@ const AddStation: React.FC<AddStationProps> = ({ handleAddStation }) => {
     };
 
     return (
-        <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <TextField
                 label="Station Name"
                 value={stationName}

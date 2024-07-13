@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 
 import EditIcon from '@mui/icons-material/Edit';
-import { Vehicle, VehicleCategory, Producer } from './VehicleTypes';
+import { Vehicle, VehicleCategory, Producer } from './VehicleDataTypes';
 
 interface VehicleListProps {
     vehicles: Vehicle[];
@@ -95,18 +95,17 @@ const VehicleList: React.FC<VehicleListProps> = ({
                             </>
                         }
                     >
-                        <Avatar src={vehicle.imageUrls[0]} sx={{ marginRight: 2 }} />
-                        <ListItemText
-                            primary={`${vehicle.name} (${vehicle.status})`}
-                            secondary={
-                                <>
-                                    Vehicle Category: {getCategoryName(vehicle.vehicleCategory)}<br />
-                                    Producer: {getProducerName(vehicle.producer)}<br />
-                                    Reception Date: {vehicle.receptionDate}<br />
-                                    Completion Date: {vehicle.completionDate}
-                                </>
-                            }
-                        />
+                    <ListItemText
+                        primary={`${vehicle.name} (${vehicle.status})`}
+                        secondary={
+                            <>
+                                Vehicle Category: {getCategoryName(vehicle.vehicleCategory)}<br />
+                                Producer: {getProducerName(vehicle.producer)}<br />
+                                Reception Date: {vehicle.receptionDate}<br />
+                                Completion Date: {vehicle.completionDate}
+                            </>
+                        }
+                    />
                     </ListItem>
                 ))}
             </List>

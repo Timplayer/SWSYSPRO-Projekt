@@ -4,7 +4,7 @@ import { Box, Button, List, ListItem, ListItemText, IconButton, Typography, Text
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckIcon from '@mui/icons-material/Check';
-import { VehicleCategory } from './VehicleTypes';
+import { VehicleCategory } from './VehicleDataTypes';
 
 interface VehicleCategoriesProps {
     categories: VehicleCategory[];

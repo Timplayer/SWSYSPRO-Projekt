@@ -1,46 +1,63 @@
 // Vehicles.tsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, Divider, Typography, Tabs, Tab } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { Box, Divider, Typography, Tabs, Tab, createTheme } from '@mui/material';
 import VehicleList from './VehicleList';
 import AddVehicle from './AddVehicle';
 import VehicleCategories from './VehicleCategories';
 import Producers from './Producers';
-import { Vehicle, VehicleCategory, Producer } from './VehicleTypes';
-import keycloak from '../../../keycloak';
-
+import { Vehicle, VehicleCategory, Producer, VehicleType } from './VehicleDataTypes';
+import AddVehicleType from './AddVehicleType';
+import VehicleTypeList from './VehicleTypeList';
+import { ThemeProvider } from '@emotion/react';
 
 const Vehicles: React.FC = () => {
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+    const [vehicleTypes, setVehicleTypes] = useState<VehicleType[]>([]);
     const [categories, setCategories] = useState<VehicleCategory[]>([]);
     const [producers, setProducers] = useState<Producer[]>([]);
     const [tabIndex, setTabIndex] = useState<number>(0);
 
     useEffect(() => {
-        
         axios.get('/api/vehicles')
             .then(response => setVehicles(response.data))
             .catch(error => console.error('Error fetching vehicles:', error));
-        
+
+        axios.get('/api/vehicleTypes')
+            .then(response => setVehicleTypes(response.data))
+            .catch(error => console.error('Error fetching vehicle types:', error));
+
         axios.get('/api/vehicleCategories')
             .then(response => setCategories(response.data))
             .catch(error => console.error('Error fetching vehicle categories:', error));
-        
+
         axios.get('/api/producers')
             .then(response => setProducers(response.data))
             .catch(error => console.error('Error fetching producers:', error));
     }, []);
 
-    const handleAddVehicle = (newVehicle: Omit<Vehicle, 'id'>) : Promise<number> => {
-        
+    const handleAddVehicle = (newVehicle: Omit<Vehicle, 'id'>): Promise<number> => {
         return axios.post('/api/vehicles', newVehicle)
             .then(response => {
                 setVehicles([...vehicles, response.data]);
                 return response.data.id;
             })
-            .catch(error => console.error('Error adding vehicle:', error));
+            .catch(error => {
+                console.error('Error adding vehicle:', error);
+                throw error;
+            });
+    };
 
+    const handleAddVehicleType = (newVehicleType: Omit<VehicleType, 'id'>): Promise<number> => {
+        return axios.post('/api/vehicleTypes', newVehicleType)
+            .then(response => {
+                setVehicleTypes([...vehicleTypes, response.data]);
+                return response.data.id;
+            })
+            .catch(error => {
+                console.error('Error adding vehicle type:', error);
+                throw error;
+            });
     };
 
     const handleUpdateVehicle = (updatedVehicle: Vehicle) => {
@@ -52,7 +69,16 @@ const Vehicles: React.FC = () => {
             })
             .catch(error => console.error('Error updating vehicle:', error));
     };
-    
+
+    const handleUpdateVehicleType = (updatedVehicleType: VehicleType) => {
+        axios.put(`/api/vehicleTypes/id/${updatedVehicleType.id}`, updatedVehicleType)
+            .then(response => {
+                setVehicleTypes(vehicleTypes.map(vehicleType => 
+                    vehicleType.id === updatedVehicleType.id ? response.data : vehicleType
+                ));
+            })
+            .catch(error => console.error('Error updating vehicle type:', error));
+    };
 
     const handleAddCategory = (name: string) => {
         const newCategory = { name };
@@ -88,7 +114,7 @@ const Vehicles: React.FC = () => {
 
     const handleUpdateProducer = (id: number, name: string) => {
         const updatedProducer = { name };
-    
+
         axios.put(`/api/producers/id/${id}`, updatedProducer)
             .then(response => {
                 setProducers(producers.map(producer =>
@@ -97,7 +123,7 @@ const Vehicles: React.FC = () => {
             })
             .catch(error => console.error('Error updating producer:', error));
     };
-    
+
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setTabIndex(newValue);
     };
@@ -113,7 +139,32 @@ const Vehicles: React.FC = () => {
         }
     };
 
+    const handleFetchVehicleTypeImages = async (vehicleTypeId: number) => {
+        try {
+            const response = await axios.get(`/api/images/vehicleTypes/id/${vehicleTypeId}`);
+            var urls = new Array<string>();
+            urls.push(response.data.url);
+            return urls;
+        } catch (error) {
+            return new Array<string>();
+        }
+    };
+
+    const theme = createTheme({
+        palette: {
+            mode: 'dark',
+            background: {
+                default: '#121212'
+            },
+            text: {
+                primary: '#ffffff',
+                secondary: '#ffffff'
+            }
+        }
+    });
+
     return (
+        <ThemeProvider theme={theme}>
         <Box sx={{ p: 3, color: "#ffffff" }}>
             <Typography variant="h4" gutterBottom>
                 Vehicles
@@ -121,6 +172,8 @@ const Vehicles: React.FC = () => {
             <Tabs value={tabIndex} onChange={handleTabChange}>
                 <Tab label="Fahrzeugliste" />
                 <Tab label="Fahrzeug hinzufügen" />
+                <Tab label="Fahrzeug Type hinzufügen" />
+                <Tab label="Fahrzeug Typen Liste" />
                 <Tab label="Fahrzeugkategorien" />
                 <Tab label="Hersteller" />
             </Tabs>
@@ -136,19 +189,34 @@ const Vehicles: React.FC = () => {
             )}
             {tabIndex === 1 && (
                 <AddVehicle
-                    categories={categories}
+                    vehicleTypes={vehicleTypes}
                     producers={producers}
                     handleAddVehicle={handleAddVehicle}
                 />
             )}
             {tabIndex === 2 && (
+                <AddVehicleType
+                    categories={categories}
+                    producers={producers}
+                    handleAddVehicleType={handleAddVehicleType}
+                />
+            )}
+            {tabIndex === 3 && (
+                <VehicleTypeList
+                    vehicleTypes={vehicleTypes}
+                    categories={categories}
+                    handleFetchImage={handleFetchVehicleTypeImages}
+                    handleUpdateVehicleType={handleUpdateVehicleType}
+                />
+            )}
+            {tabIndex === 4 && (
                 <VehicleCategories
                     categories={categories}
                     handleAddCategory={handleAddCategory}
                     handleUpdateCategory={handleUpdateCategory}
                 />
             )}
-            {tabIndex === 3 && (
+            {tabIndex === 5 && (
                 <Producers
                     producers={producers}
                     handleAddProducer={handleAddProducer}
@@ -156,6 +224,7 @@ const Vehicles: React.FC = () => {
                 />
             )}
         </Box>
+        </ThemeProvider>
     );
 };
 

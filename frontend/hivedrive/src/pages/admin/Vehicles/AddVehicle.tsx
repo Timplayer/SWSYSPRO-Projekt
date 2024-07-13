@@ -3,20 +3,20 @@ import { Box, Button, Chip, FormControl, InputLabel, MenuItem, Select, TextField
 import ImageIcon from '@mui/icons-material/Image';
 import { useDropzone } from 'react-dropzone';
 import dayjs from 'dayjs';
-import { Vehicle, VehicleCategory, Producer } from './VehicleTypes';
+import { Vehicle, VehicleType, Producer } from './VehicleDataTypes';
 import { LocalizationProvider, MobileDateTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import axios from 'axios';
 
 interface AddVehicleProps {
-    categories: VehicleCategory[];
+    vehicleTypes: VehicleType[];
     producers: Producer[];
     handleAddVehicle: (vehicle: Omit<Vehicle, 'id'>) => Promise<number>;
 }
 
-const AddVehicle: React.FC<AddVehicleProps> = ({ categories, producers, handleAddVehicle }) => {
+const AddVehicle: React.FC<AddVehicleProps> = ({ vehicleTypes, producers, handleAddVehicle }) => {
     const [name, setName] = useState<string>('');
-    const [vehicleCategory, setVehicleCategory] = useState<number>(0);
+    const [vehicleType, setVehicleType] = useState<number>(0);
     const [producer, setProducer] = useState<number>(0);
     const [status, setStatus] = useState<string>('');
     const [receptionDate, setReceptionDate] = useState<Date | null>(new Date());
@@ -38,7 +38,7 @@ const AddVehicle: React.FC<AddVehicleProps> = ({ categories, producers, handleAd
         onDrop
     });
 
-    const uploadImage = async (image: File, vehicleId: number)  => {
+    const uploadImage = async (image: File, vehicleId: number) => {
         const formData = new FormData();
         formData.append('file', image);
         formData.append('file_name', image.name);
@@ -50,10 +50,10 @@ const AddVehicle: React.FC<AddVehicleProps> = ({ categories, producers, handleAd
     };
 
     const handleSubmit = async () => {
-        if (name.trim() && vehicleCategory > 0 && producer > 0 && status.trim()) {
+        if (name.trim() && vehicleType > 0 && producer > 0 && status.trim()) {
             const newVehicle = {
                 name,
-                vehicleCategory,
+                vehicleType,
                 producer,
                 status,
                 receptionDate: dayjs(receptionDate).toISOString(),
@@ -62,9 +62,9 @@ const AddVehicle: React.FC<AddVehicleProps> = ({ categories, producers, handleAd
 
             handleAddVehicle(newVehicle).then(vehicleId => {
                 Promise.all(images.map(image => uploadImage(image, vehicleId)));
-                
+
                 setName('');
-                setVehicleCategory(0);
+                setVehicleType(0);
                 setProducer(0);
                 setStatus('');
                 setReceptionDate(new Date());
@@ -86,15 +86,15 @@ const AddVehicle: React.FC<AddVehicleProps> = ({ categories, producers, handleAd
                 sx={{ minWidth: '200px' }}
             />
             <FormControl variant="outlined" sx={{ minWidth: '200px' }}>
-                <InputLabel>Vehicle Category</InputLabel>
+                <InputLabel>Vehicle Type</InputLabel>
                 <Select
-                    value={vehicleCategory}
-                    onChange={(e) => setVehicleCategory(e.target.value as number)}
-                    label="Vehicle Category"
+                    value={vehicleType}
+                    onChange={(e) => setVehicleType(e.target.value as number)}
+                    label="Vehicle Type"
                 >
-                    {categories.map((category) => (
-                        <MenuItem key={category.id} value={category.id}>
-                            {category.name}
+                    {vehicleTypes.map((vehicleType) => (
+                        <MenuItem key={vehicleType.id} value={vehicleType.id}>
+                            {vehicleType.name}
                         </MenuItem>
                     ))}
                 </Select>
@@ -130,7 +130,7 @@ const AddVehicle: React.FC<AddVehicleProps> = ({ categories, producers, handleAd
                     minDate={now}
                     minTime={now}
                 />
-            </LocalizationProvider>         
+            </LocalizationProvider>
 
             <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <MobileDateTimePicker
@@ -141,7 +141,7 @@ const AddVehicle: React.FC<AddVehicleProps> = ({ categories, producers, handleAd
                     minDate={now}
                     minTime={now}
                 />
-            </LocalizationProvider>   
+            </LocalizationProvider>
 
             <Box {...getRootProps()} sx={{ border: '1px dashed gray', padding: 2, textAlign: 'center' }}>
                 <input {...getInputProps()} />

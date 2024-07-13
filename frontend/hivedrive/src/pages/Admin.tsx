@@ -10,22 +10,16 @@ import withRoot from '../withRoot.tsx';
 
 const theme = createTheme({
     palette: {
-        primary: {
-            main: '#1A202C',
-        },
-        secondary: {
-            main: '#F6AD55',
-        },
+        mode: 'dark',
         background: {
-            default: '#1A202C',
-            paper: '#1A202C',
+            default: '#121212'
         },
         text: {
-            primary: '#fffffff',
-        },
-    },
+            primary: '#ffffff',
+            secondary: '#aaaaaa'
+        }
+    }
 });
-
 const Admin: React.FC = () => {
     const [selectedTab, setSelectedTab] = useState('Overview');
 
@@ -62,4 +56,4 @@ const Admin: React.FC = () => {
     );
 };
 
-export default withRoot(Admin);
+export default Admin;
