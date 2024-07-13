@@ -4,9 +4,6 @@ import {
     ListItem,
     ListItemText,
     IconButton,
-    Box,
-    Typography,
-    Avatar,
     Dialog,
     DialogActions,
     DialogContent,
@@ -17,11 +14,11 @@ import {
 } from '@mui/material';
 
 import EditIcon from '@mui/icons-material/Edit';
-import { Vehicle, VehicleCategory, Producer } from './VehicleDataTypes';
+import { Vehicle, VehicleType, Producer } from './VehicleDataTypes';
 
 interface VehicleListProps {
     vehicles: Vehicle[];
-    categories: VehicleCategory[];
+    vehicleTypes: VehicleType[];
     producers: Producer[];
     handleFetchImage: (id: number) => Promise<string[]>;
     handleUpdateVehicle: (vehicle: Vehicle) => void;
@@ -33,7 +30,7 @@ interface VehicleWithImage extends Vehicle {
 
 const VehicleList: React.FC<VehicleListProps> = ({
     vehicles,
-    categories,
+    vehicleTypes,
     producers,
     handleFetchImage,
     handleUpdateVehicle
@@ -54,9 +51,12 @@ const VehicleList: React.FC<VehicleListProps> = ({
         fetchAllImages();
     }, [vehicles]);
 
-    const getCategoryName = (categoryId: number) => {
-        const category = categories.find(cat => cat.id === categoryId);
-        return category ? category.name : 'Unknown';
+    const getVehicleTypeName = (vehicleTypeId: number) => {
+        console.log(vehicles);
+        console.log(vehicleTypes);
+        console.log(vehicleTypeId);
+        const vehicleType = vehicleTypes.find(type => type.id === vehicleTypeId);
+        return vehicleType ? vehicleType.name : 'Unknown';
     };
 
     const getProducerName = (producerId: number) => {
@@ -99,10 +99,10 @@ const VehicleList: React.FC<VehicleListProps> = ({
                         primary={`${vehicle.name} (${vehicle.status})`}
                         secondary={
                             <>
-                                Vehicle Category: {getCategoryName(vehicle.vehicleCategory)}<br />
-                                Producer: {getProducerName(vehicle.producer)}<br />
-                                Reception Date: {vehicle.receptionDate}<br />
-                                Completion Date: {vehicle.completionDate}
+                                Fahrzeugtyp: {getVehicleTypeName(vehicle.vehicleCategory)} <br/>
+                                Produzent: {getProducerName(vehicle.producer)} <br/>
+                                Datum des Empfangs: {vehicle.receptionDate} <br/>
+                                Datum des Auslaufens: {vehicle.completionDate}
                             </>
                         }
                     />
@@ -111,10 +111,10 @@ const VehicleList: React.FC<VehicleListProps> = ({
             </List>
 
             <Dialog open={!!editingVehicle} onClose={() => setEditingVehicle(null)}>
-                <DialogTitle>Edit Vehicle</DialogTitle>
+                <DialogTitle>Fahrzeug bearbeiten</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        Edit the details of the vehicle.
+                        Bearbeiten Sie die Details des Fahrzeugs.
                     </DialogContentText>
                     <TextField
                         margin="dense"
@@ -154,4 +154,4 @@ const VehicleList: React.FC<VehicleListProps> = ({
     );
 };
 
-export default  VehicleList;
+export default VehicleList;

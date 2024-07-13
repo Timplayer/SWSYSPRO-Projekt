@@ -1,37 +1,22 @@
 import React, { useState } from 'react';
 import { Box, Button, Chip, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
-import { LocalizationProvider, MobileDateTimePicker } from '@mui/lab';
-import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import { useDropzone } from 'react-dropzone';
 import axios from 'axios';
-import dayjs from 'dayjs';
-
-export enum Transmission {
-    Automatik = "Automatik",
-    Manuell = "Manuell",
-}
-
-export interface VehicleType {
-    id: number;
-    name: string;
-    vehicleCategory: number;
-    transmission: Transmission;
-    maxSeatCount: number;
-    pricePerHour: number;
-}
+import { VehicleType, Transmission, DriverSystem } from './VehicleDataTypes';
 
 interface AddVehicleTypeProps {
     categories: { id: number; name: string }[];
-    producers: { id: number; name: string }[];
     handleAddVehicleType: (vehicle: VehicleType) => Promise<number>;
 }
 
-const AddVehicleType: React.FC<AddVehicleTypeProps> = ({ categories, producers, handleAddVehicleType }) => {
+const AddVehicleType: React.FC<AddVehicleTypeProps> = ({ categories, handleAddVehicleType }) => {
     const [name, setName] = useState<string>('');
     const [vehicleCategory, setVehicleCategory] = useState<number>(0);
     const [transmission, setTransmission] = useState<Transmission>(Transmission.Automatik);
+    const [driverSystem, setDriverSystem] = useState<DriverSystem>(DriverSystem.FWD);
     const [maxSeatCount, setMaxSeatCount] = useState<number>(0);
     const [pricePerHour, setPricePerHour] = useState<number>(0.00);
+    const [minAgeToDrive, setMinAgeToDrive] = useState<number>(0);
     const [images, setImages] = useState<File[]>([]);
 
     const onDrop = (acceptedFiles: File[]) => {
@@ -61,13 +46,15 @@ const AddVehicleType: React.FC<AddVehicleTypeProps> = ({ categories, producers, 
     };
 
     const handleSubmit = async () => {
-        if (name.trim() && vehicleCategory > 0 && maxSeatCount > 0 && pricePerHour > 0) {
-            const newVehicleType = {
+        if (name.trim() && vehicleCategory > 0 && maxSeatCount > 0 && pricePerHour > 0 && minAgeToDrive > 0 && driverSystem) {
+            const newVehicleType: VehicleType = {
                 name,
                 vehicleCategory,
                 transmission,
+                driverSystem,
                 maxSeatCount,
                 pricePerHour,
+                minAgeToDrive,
             };
 
             handleAddVehicleType(newVehicleType).then(vehicleId => {
@@ -76,8 +63,10 @@ const AddVehicleType: React.FC<AddVehicleTypeProps> = ({ categories, producers, 
                 setName('');
                 setVehicleCategory(0);
                 setTransmission(Transmission.Automatik);
+                setDriverSystem(DriverSystem.FWD);
                 setMaxSeatCount(0);
                 setPricePerHour(0.00);
+                setMinAgeToDrive(0);
                 setImages([]);
             });
         }
@@ -107,18 +96,30 @@ const AddVehicleType: React.FC<AddVehicleTypeProps> = ({ categories, producers, 
                 </Select>
             </FormControl>
             <FormControl variant="outlined" sx={{ minWidth: '200px' }}>
-                <InputLabel>Transmission</InputLabel>
+                <InputLabel>Getriebe</InputLabel>
                 <Select
                     value={transmission}
                     onChange={(e) => setTransmission(e.target.value as Transmission)}
-                    label="Transmission"
+                    label="Getriebe"
                 >
                     <MenuItem value={Transmission.Automatik}>Automatik</MenuItem>
                     <MenuItem value={Transmission.Manuell}>Manuell</MenuItem>
                 </Select>
             </FormControl>
+            <FormControl variant="outlined" sx={{ minWidth: '200px' }}>
+                <InputLabel>Antrieb</InputLabel>
+                <Select
+                    value={driverSystem}
+                    onChange={(e) => setDriverSystem(e.target.value as DriverSystem)}
+                    label="Antrieb"
+                >
+                    <MenuItem value={DriverSystem.FWD}>FWD</MenuItem>
+                    <MenuItem value={DriverSystem.RWD}>RWD</MenuItem>
+                    <MenuItem value={DriverSystem.AWD}>AWD</MenuItem>
+                </Select>
+            </FormControl>
             <TextField
-                label="Max Seat Count"
+                label="Maximale Sitzplatzanzahl"
                 type="number"
                 value={maxSeatCount}
                 onChange={(e) => setMaxSeatCount(Number(e.target.value))}
@@ -126,17 +127,25 @@ const AddVehicleType: React.FC<AddVehicleTypeProps> = ({ categories, producers, 
                 sx={{ minWidth: '200px' }}
             />
             <TextField
-                label="Price Per Hour"
+                label="Preis pro Stunde"
                 type="number"
                 value={pricePerHour}
                 onChange={(e) => setPricePerHour(Number(e.target.value))}
                 variant="outlined"
                 sx={{ minWidth: '200px' }}
             />
+            <TextField
+                label="Mindestalter zum Fahren"
+                type="number"
+                value={minAgeToDrive}
+                onChange={(e) => setMinAgeToDrive(Number(e.target.value))}
+                variant="outlined"
+                sx={{ minWidth: '200px' }}
+            />
             <Box {...getRootProps()} sx={{ border: '1px dashed gray', padding: 2, textAlign: 'center' }}>
                 <input {...getInputProps()} />
                 <Typography variant="body1" gutterBottom>
-                    Drag 'n' drop some images here, or click to select images
+                    Ziehen Sie Bilder hierher, oder klicken Sie, um Bilder auszuwählen.
                 </Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
@@ -149,7 +158,7 @@ const AddVehicleType: React.FC<AddVehicleTypeProps> = ({ categories, producers, 
                 ))}
             </Box>
             <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ alignSelf: 'center' }}>
-                Add Vehicle
+                Fahrzeug hinzufügen
             </Button>
         </Box>
     );

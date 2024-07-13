@@ -8,21 +8,27 @@ export interface Vehicle {
     receptionDate: string;
     completionDate: string;
 }
-
-export enum Transmission{
+export enum Transmission {
     Automatik = "Automatik",
     Manuell = "Manuell",
 }
 
-export interface VehicleType{
-    id : number,
-    name : string,
-    vehicleCategory : number,
-    transmission : Transmission,
-    maxSeatCount : number,
-    pricePerHour : number,
+export enum DriverSystem {
+    FWD = "FWD",
+    RWD = "RWD",
+    AWD = "AWD",
 }
 
+export interface VehicleType {
+    id?: number;
+    name: string;
+    vehicleCategory: number;
+    transmission: Transmission;
+    driverSystem: DriverSystem; 
+    maxSeatCount: number;
+    pricePerHour: number;
+    minAgeToDrive: number; 
+}
 export interface VehicleCategory {
     id: number;
     name: string;

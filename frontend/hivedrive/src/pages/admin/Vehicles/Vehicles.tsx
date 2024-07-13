@@ -124,7 +124,7 @@ const Vehicles: React.FC = () => {
             .catch(error => console.error('Error updating producer:', error));
     };
 
-    const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
         setTabIndex(newValue);
     };
 
@@ -181,7 +181,7 @@ const Vehicles: React.FC = () => {
             {tabIndex === 0 && (
                 <VehicleList
                     vehicles={vehicles}
-                    categories={categories}
+                    vehicleTypes={vehicleTypes}
                     producers={producers}
                     handleFetchImage={handleFetchImages}
                     handleUpdateVehicle={handleUpdateVehicle}
@@ -197,7 +197,6 @@ const Vehicles: React.FC = () => {
             {tabIndex === 2 && (
                 <AddVehicleType
                     categories={categories}
-                    producers={producers}
                     handleAddVehicleType={handleAddVehicleType}
                 />
             )}
