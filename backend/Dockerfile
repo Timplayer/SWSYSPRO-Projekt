@@ -12,7 +12,7 @@ COPY . .
 RUN CGO_ENABLED=0 go build -o /go/bin/app
 
 # minimal container to execute
-FROM gcr.io/distroless/static-debian12
+FROM gcr.io/distroless/static-debian12:latest
 COPY --from=builder /go/bin/app /
 EXPOSE 80
 CMD ["/app"]
