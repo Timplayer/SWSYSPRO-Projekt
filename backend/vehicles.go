@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -12,13 +11,13 @@ import (
 )
 
 type vehicle struct {
-	Id              int64     `json:"id"`
-	Name            string    `json:"name"`
-	VehicleCategory int64     `json:"vehicleCategory"`
-	Producer        int64     `json:"producer"`
-	Status          string    `json:"status"`
-	ReceptionDate   time.Time `json:"receptionDate"`
-	CompletionDate  time.Time `json:"completionDate"`
+	Id              int64     `json:"id" db:"id"`
+	Name            string    `json:"name" db:"name"`
+	VehicleCategory int64     `json:"vehicleCategory" db:"vehiclecategory"`
+	Producer        int64     `json:"producer" db:"producer"`
+	Status          string    `json:"status" db:"status"`
+	ReceptionDate   time.Time `json:"receptionDate" db:"receptiondate"`
+	CompletionDate  time.Time `json:"completionDate" db:"completiondate"`
 }
 
 func updateVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
@@ -37,60 +36,36 @@ func updateVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
 	}
 }
 
-func postVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		v, fail := getRequestBody[vehicle](writer, request.Body)
-		if fail {
-			return
-		}
-		err := dbpool.QueryRow(context.Background(),
-			"INSERT INTO vehicles (name, vehicleCategory, producer, status, receptionDate, completionDate) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;", v.Name, v.VehicleCategory, v.Producer, v.Status, v.ReceptionDate, v.CompletionDate).Scan(&v.Id)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, insertOperation, cVehicle, err)
-			return
-		}
-		log.Printf(genericSuccess, insertOperation, cVehicle, v.Id)
-		returnTAsJSON(writer, v, http.StatusCreated)
+func postVehicle(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (vehicle, bool) {
+	v, fail := getRequestBody[vehicle](writer, request.Body)
+	if fail {
+		return vehicle{}, true
 	}
+	v, fail = getT[vehicle](writer, request, tx, "postVehicle",
+		`INSERT INTO vehicles (name, vehicleCategory, producer, status, receptionDate, completionDate)
+                               VALUES ($1  , $2             , $3      , $4    , $5           , $6)
+                               RETURNING *;`,
+		v.Name, v.VehicleCategory, v.Producer, v.Status, v.ReceptionDate, v.CompletionDate)
+	if fail {
+		return vehicle{}, true
+	}
+	return v, false
 }
 
-func getVehicleById(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		var v vehicle
-		err := dbpool.QueryRow(context.Background(), "SELECT * FROM vehicles WHERE vehicles.id = $1;",
-			mux.Vars(request)["id"]).Scan(&v.Id, &v.Name, &v.VehicleCategory, &v.Producer, &v.Status, &v.ReceptionDate, &v.CompletionDate)
-		if errors.Is(err, pgx.ErrNoRows) {
-			writer.WriteHeader(http.StatusNotFound)
-			log.Printf(errorGenericNotFound, cVehicle, cVehicle)
-			return
-		}
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicle, err)
-		}
-		returnTAsJSON(writer, v, http.StatusOK)
+func getVehicleById(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (vehicle, bool) {
+	v, fail := getT[vehicle](writer, request, tx, cDefect,
+		"SELECT * FROM vehicles WHERE vehicles.id = $1;",
+		mux.Vars(request)["id"])
+	if fail {
+		return vehicle{}, true
 	}
+	return v, false
 }
 
 func getVehicles(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT * FROM vehicles;")
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error geting Database Connection: %v\n", err)
-			return
-		}
-		defer rows.Close()
-		vehicles, err := pgx.CollectRows(rows,
-			func(row pgx.CollectableRow) (vehicle, error) {
-				var v vehicle
-				err := rows.Scan(&v.Id, &v.Name, &v.VehicleCategory, &v.Producer, &v.Status, &v.ReceptionDate, &v.CompletionDate)
-				return v, err
-			})
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cVehicle, err)
+		vehicles, fail := getTs[vehicle](writer, request, dbpool, cVehicle, "SELECT * FROM vehicles")
+		if fail {
 			return
 		}
 		returnTAsJSON(writer, vehicles, http.StatusOK)

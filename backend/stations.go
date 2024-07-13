@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -11,17 +10,17 @@ import (
 )
 
 type station struct {
-	Id          int64   `json:"id"`
-	Name        string  `json:"name"`
-	Latitude    float64 `json:"latitude"`
-	Longitude   float64 `json:"longitude"`
-	Country     string  `json:"country"`
-	State       string  `json:"state"`
-	City        string  `json:"city"`
-	Zip         string  `json:"zip"`
-	Street      string  `json:"street"`
-	HouseNumber string  `json:"house_number"`
-	Capacity    int64   `json:"capacity"`
+	Id          int64   `json:"id" db:"id"`
+	Name        string  `json:"name" db:"name"`
+	Latitude    float64 `json:"latitude" db:"latitude"`
+	Longitude   float64 `json:"longitude" db:"longitude"`
+	Country     string  `json:"country" db:"country"`
+	State       string  `json:"state" db:"state"`
+	City        string  `json:"city" db:"city"`
+	Zip         string  `json:"zip" db:"zip"`
+	Street      string  `json:"street" db:"street"`
+	HouseNumber string  `json:"house_number" db:"house_number"`
+	Capacity    int64   `json:"capacity" db:"capacity"`
 }
 
 func updateStation(dbpool *pgxpool.Pool) http.HandlerFunc {
@@ -40,64 +39,69 @@ func updateStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 	}
 }
 
-func postStation(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		s, fail := getRequestBody[station](writer, request.Body)
-		if fail {
-			return
-		}
-		err := dbpool.QueryRow(context.Background(),
-			"INSERT INTO stations (name, location, country, state, city, zip, street, houseNumber, capacity) VALUES ($1, point($2, $3), $4, $5, $6, $7, $8, $9, $10) RETURNING id",
-			s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber, s.Capacity).Scan(&s.Id)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, insertOperation, cStation, err)
-			return
-		}
-		log.Printf(genericSuccess, insertOperation, cStation, s.Id)
-		returnTAsJSON(writer, s, http.StatusCreated)
-		return
+func postStation(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (station, bool) {
+	s, fail := getRequestBody[station](writer, request.Body)
+	if fail {
+		return station{}, true
 	}
+	s, fail = getT[station](writer, request, tx, "postStation",
+		`INSERT INTO stations (name, location, country, state, city, zip, street, houseNumber, capacity)
+                   VALUES ($1, point($2, $3), $4  , $5   , $6  , $7 , $8    , $9         , $10)
+        		RETURNING stations.id,
+        		          stations.name,
+        		          stations.location[0] as latitude,
+        		          stations.location[1] as longitude,
+        		          stations.country,
+        		          stations.state,
+        		          stations.city,
+        		          stations.zip,
+        		          stations.street,
+        		          stations.houseNumber,
+        		          stations.capacity`,
+		s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber, s.Capacity)
+	if fail {
+		return station{}, true
+	}
+	return s, false
 }
 
-func getStationByID(dbpool *pgxpool.Pool) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		var s station
-		err := dbpool.QueryRow(context.Background(), "SELECT stations.id, stations.name, stations.location[0] as latitude, stations.location[1] as longitude, stations.country, stations.state, stations.city, stations.zip, stations.street, stations.houseNumber, stations.capacity FROM stations WHERE stations.id = $1",
-			mux.Vars(request)["id"]).Scan(&s.Id, &s.Name, &s.Latitude, &s.Longitude, &s.Country, &s.State, &s.City, &s.Zip, &s.Street, &s.HouseNumber, &s.Capacity)
-		if errors.Is(err, pgx.ErrNoRows) {
-			writer.WriteHeader(http.StatusNotFound)
-			log.Printf(errorGenericNotFound, cStation, cStation)
-			return
-		}
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
-			return
-		}
-		returnTAsJSON(writer, s, http.StatusOK)
+func getStationByID(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (station, bool) {
+	s, fail := getT[station](writer, request, tx, "healthcheck",
+		`SELECT stations.id,
+                        stations.name,
+                        stations.location[0] as latitude,
+                        stations.location[1] as longitude,
+                        stations.country,
+                        stations.state,
+                        stations.city,
+                        stations.zip,
+                        stations.street,
+                        stations.houseNumber,
+                        stations.capacity 
+                  FROM stations WHERE stations.id = $1`,
+		mux.Vars(request)["id"])
+	if fail {
+		return station{}, true
 	}
-
+	return s, false
 }
 
 func getStations(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		rows, err := dbpool.Query(context.Background(), "SELECT stations.id, stations.name, stations.location[0] as latitude, stations.location[1] as longitude, stations.country, stations.state, stations.city, stations.zip, stations.street, stations.houseNumber, stations.capacity FROM stations;")
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Error geting Database Connection: %v\n", err)
-			return
-		}
-		defer rows.Close()
-		stations, err := pgx.CollectRows(rows,
-			func(row pgx.CollectableRow) (station, error) {
-				var s station
-				err := rows.Scan(&s.Id, &s.Name, &s.Latitude, &s.Longitude, &s.Country, &s.State, &s.City, &s.Zip, &s.Street, &s.HouseNumber, &s.Capacity)
-				return s, err
-			})
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf(errorExecutingOperationGeneric, findingOperation, cStation, err)
+		stations, fail := getTs[station](writer, request, dbpool, cStation,
+			`SELECT stations.id, 
+                        stations.name,
+                        stations.location[0] as latitude,
+                        stations.location[1] as longitude,
+                        stations.country,
+                        stations.state,
+                        stations.city,
+                        stations.zip,
+                        stations.street,
+                        stations.houseNumber,
+                        stations.capacity
+                  FROM stations;`)
+		if fail {
 			return
 		}
 		returnTAsJSON(writer, stations, http.StatusOK)
