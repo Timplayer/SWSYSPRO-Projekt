@@ -16,7 +16,6 @@ import (
 )
 
 var (
-	keycloakRealm        string
 	keycloakClientID     string
 	keycloakClientSecret string
 )
