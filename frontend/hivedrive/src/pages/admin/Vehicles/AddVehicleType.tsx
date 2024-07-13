@@ -6,7 +6,7 @@ import { VehicleType, Transmission, DriverSystem } from './VehicleDataTypes';
 
 interface AddVehicleTypeProps {
     categories: { id: number; name: string }[];
-    handleAddVehicleType: (vehicle: VehicleType) => Promise<number>;
+    handleAddVehicleType: (vehicle: Omit<VehicleType, 'id'>) => Promise<number>;
 }
 
 const AddVehicleType: React.FC<AddVehicleTypeProps> = ({ categories, handleAddVehicleType }) => {
@@ -47,7 +47,7 @@ const AddVehicleType: React.FC<AddVehicleTypeProps> = ({ categories, handleAddVe
 
     const handleSubmit = async () => {
         if (name.trim() && vehicleCategory > 0 && maxSeatCount > 0 && pricePerHour > 0 && minAgeToDrive > 0 && driverSystem) {
-            const newVehicleType: VehicleType = {
+            const newVehicleType: Omit<VehicleType,'id'> = {
                 name,
                 vehicleCategory,
                 transmission,
