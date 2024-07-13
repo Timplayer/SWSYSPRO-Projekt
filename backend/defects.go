@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
 	"net/http"
+	"slices"
 	"time"
 )
 
@@ -21,17 +22,44 @@ type defect struct {
 
 func updateDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
+		introspectionResult, err := introspect(writer, request)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
 		d, fail := getRequestBody[defect](writer, request.Body)
 		if fail {
 			return
 		}
-		result, err := dbpool.Exec(context.Background(), "UPDATE defects SET name = $1, date = $2, description = $3, status = $4 WHERE id = $5", d.Name, d.Date, d.Description, d.Status, d.Id)
-		fail = checkUpdateSingleRow(writer, err, result, "update defect")
-		if fail {
-			return
+		if slices.Contains(introspectionResult.Access.Roles, "employee") {
+			result, err := dbpool.Exec(context.Background(),
+				`UPDATE defects 
+                    SET name = $1, date = $2, description = $3, status = $4 
+                  WHERE id = $5`,
+				d.Name, d.Date, d.Description, d.Status,
+				d.Id)
+			fail = checkUpdateSingleRow(writer, err, result, "update defect")
+			if fail {
+				return
+			}
+			log.Printf(genericSuccess, updateOperation, cDefect, d.Id)
+			returnTAsJSON(writer, d, http.StatusCreated)
+		} else {
+			result, err := dbpool.Exec(context.Background(),
+				`UPDATE defects 
+                    SET name = $1, date = $2, description = $3, status = $4 
+                  WHERE id = $5 AND user_id = $6`,
+				d.Name, d.Date, d.Description, d.Status,
+				d.Id, introspectionResult.UserId)
+			fail = checkUpdateSingleRow(writer, err, result, "update defect")
+			if fail {
+				return
+			}
+			log.Printf(genericSuccess, updateOperation, cDefect, d.Id)
+			returnTAsJSON(writer, d, http.StatusCreated)
 		}
-		log.Printf(genericSuccess, updateOperation, cDefect, d.Id)
-		returnTAsJSON(writer, d, http.StatusCreated)
+
 	}
 }
 
