@@ -11,8 +11,11 @@ import (
 
 func hello() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		writer.WriteHeader(http.StatusOK)
-		writer.Write([]byte("hello world"))
+		_, err := writer.Write([]byte("hello world"))
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -21,8 +24,10 @@ func testDBpost(dbpool *pgxpool.Pool) http.HandlerFunc {
 		tag, err := dbpool.Exec(context.Background(), "INSERT INTO test (name) VALUES ($1)",
 			mux.Vars(request)["name"])
 		if err != nil {
+			http.Error(writer, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			log.Fatalf("Failed to add collum to table: %v\n", err)
 		}
+		writer.WriteHeader(http.StatusCreated)
 		log.Printf("Successfully insterted %d rows\n", tag.RowsAffected())
 	}
 }

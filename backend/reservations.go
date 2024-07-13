@@ -52,6 +52,7 @@ func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, requ
 			log.Printf(errorStartingTransaction, err)
 			return
 		}
+		//goland:noinspection GoUnhandledErrorResult
 		defer tx.Rollback(request.Context())
 
 		r, fail = getT[reservation](writer, request, tx, "postReservation",
@@ -90,6 +91,7 @@ func putReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, reque
 			log.Printf(errorStartingTransaction, err)
 			return
 		}
+		//goland:noinspection GoUnhandledErrorResult
 		defer tx.Rollback(request.Context())
 
 		result, err := tx.Exec(context.Background(),

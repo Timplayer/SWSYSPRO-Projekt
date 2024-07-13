@@ -133,5 +133,6 @@ func createStationsTable(dbpool *pgxpool.Pool) {
 		"CREATE TABLE IF NOT EXISTS stations(id BIGSERIAL PRIMARY KEY, name TEXT, location POINT, country TEXT, state TEXT, city TEXT, zip TEXT, street TEXT, houseNumber TEXT, capacity INTEGER);")
 	if err != nil {
 		log.Fatalf(failedToCreateTable, err)
+		return
 	}
 }

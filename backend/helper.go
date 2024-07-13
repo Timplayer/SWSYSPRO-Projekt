@@ -37,7 +37,12 @@ func returnTAsJSON[T any](writer http.ResponseWriter, t T, httpResponseCode int)
 	}
 	writer.Header().Set(contentType, applicationJSON)
 	writer.WriteHeader(httpResponseCode)
-	writer.Write(body)
+	_, err = writer.Write(body)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf("Error sending HTTP response: %v", err)
+		return
+	}
 }
 
 func checkUpdateSingleRow(writer http.ResponseWriter, err error, result pgconn.CommandTag, operation string) bool {
@@ -109,6 +114,7 @@ func RestRequestWithTransaction[T any](dbpool *pgxpool.Pool, success int, fn fun
 			log.Printf(errorStartingTransaction, err)
 			return
 		}
+		//goland:noinspection GoUnhandledErrorResult
 		defer tx.Rollback(request.Context())
 
 		t, done := fn(writer, request, tx)
@@ -116,7 +122,12 @@ func RestRequestWithTransaction[T any](dbpool *pgxpool.Pool, success int, fn fun
 			return
 		}
 
-		tx.Commit(request.Context())
+		err = tx.Commit(request.Context())
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Could not commit Transaction: %v\n", err)
+			return
+		}
 		returnTAsJSON(writer, t, success)
 	}
 }
