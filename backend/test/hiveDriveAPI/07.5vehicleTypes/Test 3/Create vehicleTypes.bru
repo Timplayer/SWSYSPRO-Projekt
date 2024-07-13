@@ -13,10 +13,12 @@ post {
 body:json {
   {
     "name": "Opel Mokka",
-    "vehicleCategory" : 1,
-    "transmission" : "Automatic",
-    "MaxSeatCount" : 3,
-    "PricePerHour" : 0.1
+    "vehicleCategory": 1,
+    "transmission": "automatic",
+    "driverSystem": "rwd",
+    "maxSeatCount": 3,
+    "pricePerHour": 0.1,
+    "minAgeToDrive": 18
   }
 }
 
@@ -28,11 +30,17 @@ tests {
   
   test("ID is correct?", function() {
     const data = res.getBody();
-    expect (data.id).exists;
+    expect(data.id).exists;
   });
   
   test("Name is correct?", function() {
     const data = res.getBody();
-    expect (data.name).to.equal("Opel Mokka");
+    expect(data.name).to.equal("Opel Mokka");
+    expect(data.vehicleCategory).to.equal(1);
+    expect(data.transmission).to.equal("automatic");
+    expect(data.driverSystem).to.equal("rwd");
+    expect(data.maxSeatCount).to.equal(3);
+    expect(data.pricePerHour).to.equal("0.1");
+    expect(data.minAgeToDrive).to.equal(18);
   });
 }
