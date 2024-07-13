@@ -186,6 +186,15 @@ type stationAndTime struct {
 }
 
 func addCarToStation(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (reservationNullable, bool) {
+	introspectionResult, err := introspect(writer, request)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusUnauthorized)
+		return reservationNullable{}, true
+	}
+	if !slices.Contains(introspectionResult.Access.Roles, "employee") {
+		http.Error(writer, "Access denied", http.StatusUnauthorized)
+	}
+
 	r, fail := getRequestBody[stationAndTime](writer, request.Body)
 	if fail {
 		return reservationNullable{}, true
