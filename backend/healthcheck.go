@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
 	"net/http"
@@ -10,8 +11,11 @@ import (
 
 func hello() http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		writer.WriteHeader(http.StatusOK)
-		writer.Write([]byte("hello world"))
+		_, err := writer.Write([]byte("hello world"))
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -20,27 +24,23 @@ func testDBpost(dbpool *pgxpool.Pool) http.HandlerFunc {
 		tag, err := dbpool.Exec(context.Background(), "INSERT INTO test (name) VALUES ($1)",
 			mux.Vars(request)["name"])
 		if err != nil {
+			http.Error(writer, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			log.Fatalf("Failed to add collum to table: %v\n", err)
 		}
+		writer.WriteHeader(http.StatusCreated)
 		log.Printf("Successfully insterted %d rows\n", tag.RowsAffected())
 	}
 }
 
-func testDBget(db *pgxpool.Pool) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		var name string
-		err := db.QueryRow(context.TODO(), "Select name from test ORDER BY id DESC LIMIT 1").Scan(&name)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			log.Printf("failed to scan row: %v", err)
-			return
-		}
+type name struct {
+	Name string
+}
 
-		_, err = writer.Write([]byte(name))
-		if err != nil {
-			log.Printf("failed to write response: %v\n", err)
-			return
-		}
+func testDBget(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (name, bool) {
 
+	n, fail := getT[name](writer, request, tx, "healthcheck", "Select name from test ORDER BY id DESC LIMIT 1")
+	if fail {
+		return name{}, true
 	}
+	return n, false
 }
