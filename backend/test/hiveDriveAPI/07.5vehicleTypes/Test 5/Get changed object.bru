@@ -18,11 +18,17 @@ tests {
   
   test("ID is correct?", function() {
     const data = res.getBody();
-    expect (data.id).to.equal(3);
+    expect(data.id).to.equal(3);
   });
   
   test("Name is correct?", function() {
     const data = res.getBody();
-    expect (data.name).to.equal("VW Polo");
+    expect(data.name).to.equal("VW Polo");
+    expect(data.vehicleCategory).to.equal(1);
+    expect(data.transmission).to.equal("automatic");
+    expect(data.driverSystem).to.equal("fwd");
+    expect(data.maxSeatCount).to.equal(3);
+    expect(data.pricePerHour).to.equal("0.1");
+    expect(data.minAgeToDrive).to.equal(18);
   });
 }
