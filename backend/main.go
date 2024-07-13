@@ -197,7 +197,7 @@ func validate(
 func introspect(writer http.ResponseWriter, request *http.Request) (*introspection, error) {
 	auth := request.Header.Get("Authorization")
 	if auth == "" {
-		return nil, errors.New("Auth header missing")
+		return nil, errors.New("auth header missing")
 	}
 	if !strings.HasPrefix(auth, oidc.PrefixBearer) {
 
@@ -215,7 +215,7 @@ func introspect(writer http.ResponseWriter, request *http.Request) (*introspecti
 
 	introspectionResult, fail := getRequestBody[introspection](writer, r.Body)
 	if fail {
-		return nil, errors.New("Could not introspect token")
+		return nil, errors.New("could not introspect token")
 	}
 	if !introspectionResult.Active {
 		return &introspectionResult, errors.New("invalid token")
