@@ -12,6 +12,7 @@ import (
 
 type defect struct {
 	Id          int64     `json:"id" db:"id"`
+	UserId      string    `json:"userId" db:"user_id"`
 	Name        string    `json:"name" db:"name"`
 	Date        time.Time `json:"date" db:"date"`
 	Description string    `json:"description" db:"description"`
@@ -35,13 +36,19 @@ func updateDefect(dbpool *pgxpool.Pool) http.HandlerFunc {
 }
 
 func postDefect(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (defect, bool) {
+	introspectionResult, err := introspect(writer, request)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusUnauthorized)
+		return defect{}, true
+	}
+
 	d, fail := getRequestBody[defect](writer, request.Body)
 	if fail {
 		return defect{}, true
 	}
 	d, fail = getT[defect](writer, request, tx, "postDefect",
-		"INSERT INTO defects (name, date, description, status) VALUES ($1, $2, $3, $4) RETURNING *",
-		d.Name, d.Date, d.Description, d.Status)
+		"INSERT INTO defects (user_id, name, date, description, status) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+		introspectionResult.UserId, d.Name, d.Date, d.Description, d.Status)
 	if fail {
 		return defect{}, true
 	}
@@ -69,7 +76,14 @@ func getDefects(dbpool *pgxpool.Pool) http.HandlerFunc {
 }
 
 func createDefectsTable(dbpool *pgxpool.Pool) {
-	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS defects (id BIGSERIAL PRIMARY KEY, name TEXT NOT NULL, date TIMESTAMP NOT NULL, description TEXT, status TEXT);")
+	_, err := dbpool.Exec(context.Background(),
+		`CREATE TABLE IF NOT EXISTS defects
+              (id BIGSERIAL PRIMARY KEY,
+               user_id TEXT,
+               name TEXT NOT NULL,
+               date TIMESTAMP NOT NULL,
+               description TEXT, 
+               status TEXT);`)
 	if err != nil {
 		log.Fatalf(failedToCreateTable, err)
 	}
