@@ -87,13 +87,17 @@ func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if err != nil {
 			return
 		}
+		//goland:noinspection GoUnhandledErrorResult
 		defer tx.Rollback(request.Context())
 		p, fail := getT[picture](writer, request, tx, "getImageByID",
 			"SELECT * FROM images WHERE id = $1", mux.Vars(request)["id"])
 		if fail {
 			return
 		}
-		tx.Commit(request.Context())
+		err = tx.Commit(request.Context())
+		if err != nil {
+			return
+		}
 		returnTAsJSON(writer, p.File, http.StatusOK)
 	}
 }

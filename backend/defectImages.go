@@ -23,6 +23,7 @@ func deleteDefectImage(writer http.ResponseWriter, request *http.Request, tx pgx
 	result, err := tx.Exec(context.Background(),
 		"DELETE FROM defectImage WHERE imageId = $1;", mux.Vars(request)["id"])
 	if checkUpdateSingleRow(writer, err, result, "deleteDefectImage") {
+		//goland:noinspection GoUnhandledErrorResult
 		tx.Rollback(request.Context())
 		return picture{}, true
 	}
