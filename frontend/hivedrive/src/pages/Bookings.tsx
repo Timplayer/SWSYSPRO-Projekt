@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -24,34 +24,36 @@ const Bookings: React.FC = () => {
   const [openCancel, setOpenCancel] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [currentEditBooking, setCurrentEditBooking] = useState(null);
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const response = await fetch('https://localhost:8080/api/reservations');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setBookings(data);
+        setLoading(false);
+      } catch (error) {
+        setError(error.message);
+        setLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, []);
 
   const currentDate = new Date();
-  const bookings = [
-    {
-      id: 1,
-      car: 'KIA STONIC',
-      price: '97,30 €',
-      startLocation: 'Gran Canaria Meloneras',
-      endLocation: 'Gran Canaria Meloneras',
-      startDate: new Date('2024-07-08T09:22:00'),
-      endDate: new Date('2024-07-08T23:00:00')
-    },
-    {
-      id: 2,
-      car: 'FORD FOCUS',
-      price: '150,00 €',
-      startLocation: 'Berlin Tegel',
-      endLocation: 'Berlin Tegel',
-      startDate: new Date('2024-06-15T09:00:00'),
-      endDate: new Date('2024-06-17T18:00:00')
-    }
-  ];
 
-  const currentBookings = bookings.filter(booking => booking.startDate > currentDate);
-  const pastBookings = bookings.filter(booking => booking.startDate <= currentDate);
+  const currentBookings = bookings.filter(booking => new Date(booking.start_zeit) > currentDate);
+  const pastBookings = bookings.filter(booking => new Date(booking.start_zeit) <= currentDate);
 
-  const calculateRentalDays = (startDate: Date, endDate: Date) => {
-    const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+  const calculateRentalDays = (startDate, endDate) => {
+    const diffTime = Math.abs(new Date(endDate).getTime() - new Date(startDate).getTime());
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
@@ -92,7 +94,7 @@ const Bookings: React.FC = () => {
     setOpenCancel(false);
   };
 
-  const handleDownloadInvoice = (bookingId: number) => {
+  const handleDownloadInvoice = (bookingId) => {
     // Add your invoice download logic here
     console.log(`Download invoice for booking ${bookingId}`);
   };
@@ -117,22 +119,22 @@ const Bookings: React.FC = () => {
     setCurrentEditBooking({ ...currentEditBooking, [field]: value });
   };
 
-  const renderBooking = (booking: any, isPast: boolean) => {
-    const rentalDays = calculateRentalDays(booking.startDate, booking.endDate);
+  const renderBooking = (booking, isPast) => {
+    const rentalDays = calculateRentalDays(booking.start_zeit, booking.end_zeit);
     return (
       <Card variant="outlined" key={booking.id} sx={{ mb: 2 }}>
         <CardContent>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
-              <Typography variant="h6">{booking.car}</Typography>
+              <Typography variant="h6">Auto Klasse: {booking.auto_klasse}</Typography>
               <Typography>{rentalDays} Miettag{rentalDays > 1 ? 'e' : ''}</Typography>
-              <Typography>{booking.price}</Typography>
+              <Typography>ID: {booking.id}</Typography>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <Typography>Start: {booking.startLocation}</Typography>
-              <Typography>Ende: {booking.endLocation}</Typography>
-              <Typography>{booking.startDate.toLocaleString()}</Typography>
-              <Typography>{booking.endDate.toLocaleString()}</Typography>
+              <Typography>Start: Station {booking.start_station}</Typography>
+              <Typography>Ende: Station {booking.end_station}</Typography>
+              <Typography>{new Date(booking.start_zeit).toLocaleString()}</Typography>
+              <Typography>{new Date(booking.end_zeit).toLocaleString()}</Typography>
             </Grid>
             <Grid item xs={12}>
               <Button variant="contained" onClick={handleClickOpenInfo}>Fahrzeuginfo</Button>
@@ -152,6 +154,14 @@ const Bookings: React.FC = () => {
       </Card>
     );
   };
+
+  if (loading) {
+    return <Typography>Loading...</Typography>;
+  }
+
+  if (error) {
+    return <Typography>Error: {error}</Typography>;
+  }
 
   return (
     <React.Fragment>
@@ -226,51 +236,43 @@ const Bookings: React.FC = () => {
           <DialogContent>
             <TextField
               margin="dense"
-              label="Auto"
-              type="text"
+              label="Auto Klasse"
+              type="number"
               fullWidth
-              value={currentEditBooking?.car || ''}
-              onChange={(e) => handleEditChange('car', e.target.value)}
+              value={currentEditBooking?.auto_klasse || ''}
+              onChange={(e) => handleEditChange('auto_klasse', e.target.value)}
             />
             <TextField
               margin="dense"
-              label="Preis"
-              type="text"
+              label="Startstation"
+              type="number"
               fullWidth
-              value={currentEditBooking?.price || ''}
-              onChange={(e) => handleEditChange('price', e.target.value)}
+              value={currentEditBooking?.start_station || ''}
+              onChange={(e) => handleEditChange('start_station', e.target.value)}
             />
             <TextField
               margin="dense"
-              label="Startort"
-              type="text"
+              label="Endstation"
+              type="number"
               fullWidth
-              value={currentEditBooking?.startLocation || ''}
-              onChange={(e) => handleEditChange('startLocation', e.target.value)}
-            />
-            <TextField
-              margin="dense"
-              label="Endort"
-              type="text"
-              fullWidth
-              value={currentEditBooking?.endLocation || ''}
-              onChange={(e) => handleEditChange('endLocation', e.target.value)}
+              value={currentEditBooking?.end_station || ''}
+              onChange={(e) => handleEditChange('end_station', e.target.value)}
             />
             <TextField
               margin="dense"
               label="Startdatum"
               type="datetime-local"
               fullWidth
-              value={currentEditBooking?.startDate.toISOString().slice(0, 16) || ''}
-              onChange={(e) => handleEditChange('startDate', new Date(e.target.value))}
+              value={currentEditBooking?.start_zeit?.toISOString().slice(0, 16) || ''}
+              onChange={(e) => handleEditChange('start_zeit', new Date(e.target.value))}
             />
             <TextField
               margin="dense"
               label="Enddatum"
               type="datetime-local"
               fullWidth
-              value={currentEditBooking?.endDate.toISOString().slice(0, 16) || ''}
-              onChange={(e) => handleEditChange('endDate', new Date(e.target.value))}
+              value={currentEditBooking?.end_zeit?.toISOString().slice(0, 16) || ''}
+              onChange={(e) => handleEditChange('end_zeit', new Date(e.target.value))}
             />
           </DialogContent>
           <DialogActions>
