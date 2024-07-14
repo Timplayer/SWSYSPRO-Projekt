@@ -9,18 +9,20 @@ import axios from 'axios';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { MobileDateTimePicker } from '@mui/x-date-pickers';
+import { VehicleType, Transmission, DriverSystem } from '../Types.ts';
 
 const Reservation: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
   const { car, searchLocation, returnLocation, pickupDate, returnDate } = location.state || {};
 
   const theme = useTheme();
 
   const [carName, setCarName] = useState(car.name);
   const [carClass, setCarClass] = useState(car.vehicleCategory);
-  const [carTransmission, setCarTransmission] = useState(car.transmission);
-  const [carDrive, setCarDrive] = useState(car.transmission);
+  const [carTransmission, setCarTransmission] = useState(car.transmission as Transmission);
+  const [carDrive, setCarDrive] = useState(car.driveType as DriverSystem);
   const [carSeatings, setCarSeatings] = useState(car.maxSeatCount);
 
   const [customerName, setCustomerName] = useState('');
@@ -28,6 +30,7 @@ const Reservation: React.FC = () => {
 
   const [pickupDateCopy, setPickupDate] = useState<Date | null>(pickupDate ? new Date(pickupDate) : new Date());
   const [returnDateCopy, setReturnDate] = useState<Date | null>(returnDate ? new Date(returnDate) : new Date());
+  
   const [pickupLocationCopy, setPickupLocation] = useState(searchLocation);
   const [returnLocationCopy, setReturnLocation] = useState(returnLocation);
   const [differentReturnLocation, setDifferentReturnLocation] = useState(false);
@@ -62,26 +65,16 @@ const Reservation: React.FC = () => {
   const handleSubmit = async (event: { preventDefault: () => void; }) => {
     event.preventDefault();
 
-    const reservationData = {
-      carName,
-      carClass,
-      carDrive,
-      carTransmission,
-      carSeatings,
-      additionalDriver,
-      pickupDate: pickupDateCopy,
-      returnDate: returnDateCopy,
-      pickupLocation: pickupLocationCopy,
-      returnLocation: differentReturnLocation ? returnLocationCopy : pickupLocationCopy, 
-      customerName,
-      customerEmail,
-      driverAge,
-      additionalDriverName,
-      additionalDriverAge,
-    };
-
     try {
-      const response = await axios.post('https://localhost:8080/api/reservations', reservationData, {
+      const api_reservation_data = {
+        start_zeit: pickupDateCopy,
+        start_station: 1,
+        end_zeit: returnDateCopy,
+        end_station: 1,
+        auto_klasse: carClass,
+      }
+
+      const response = await axios.post('/api/reservations', api_reservation_data, {
         headers: {
           Authorization: `Bearer ${keycloak.token}`,
           'Content-Type': 'application/json'

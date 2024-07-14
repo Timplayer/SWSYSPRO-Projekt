@@ -9,21 +9,25 @@ import AppFooter from '../views/AppFooter';
 import CarSearchBar from '../components/CarSearchBar';
 import keycloak from '../keycloak';
 import axios from 'axios';
-import { Car } from './Types.ts';
+import { Reservation, Transmission, VehicleCategory, VehicleType, DriverSystem } from '../Types.ts';
 
 const BookingPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { location: searchLocation, returnLocation, pickupDate, returnDate } = location.state || {};
-  const [cars, setCars] = useState<Car[]>([]);
-  const [vehicleCategories, setVehicleCategories] = useState<{id: number, name: string}[]>([]);
+  
+  const { location: startLocation, returnLocation, pickupDate, returnDate } = location.state || {};
 
-  const [sortOption, setSortOption] = React.useState('lowestPrice');
-  const [vehicleCategory, setVehicleCategory] = React.useState<string[]>([]);
-  const [transmission, setTransmission] = React.useState(''); 
-  const [driveType, setDriveType] = React.useState(''); 
-  const [seatCount, setSeatCount] = React.useState('2+'); 
-  const [driverAge, setDriverAge] = React.useState('25+'); 
+  const [cars, setCars] = useState<VehicleType[]>([]);
+  const [reservation, setReservation] = useState<Reservation>();
+
+  const [vehicleCategories, setVehicleCategories] = useState<VehicleCategory[]>([]);
+  const [filterCategories, setFilterCategories] = useState<VehicleCategory[]>([]);
+
+  const [sortOption, setSortOption] = useState('lowestPrice');
+  const [transmission, setTransmission] = useState<Transmission[]>([]);
+  const [driveType, setDriveType] = useState<DriverSystem[]>([]);
+  const [seatCount, setSeatCount] = useState('2+'); 
+  const [driverAge, setDriverAge] = useState('25+'); 
 
   useEffect(() => {
     const fetchVehicleCategories = async () => {
@@ -34,15 +38,17 @@ const BookingPage: React.FC = () => {
     const fetchLocations = async () => {
       const response = await axios.get('/api/vehicleTypes');
       const carData = response.data;
-  
+      
+      console.log(response);
+
       const fetchImages = async (carId: number) => {
         const imageResponse = await axios.get(`/api/images/vehicleCategories/id/${carId}`);
         return imageResponse.data.map((img: { url: string }) => img.url);
       };
 
       const carsWithImages = await Promise.all(
-        carData.map(async (car: Car) => {
-          const images = await fetchImages(car.id);
+        carData.map(async (car: VehicleType) => {
+          const images = {}; // await fetchImages(car.id);
           return { ...car, images };
         })
       );
@@ -54,52 +60,56 @@ const BookingPage: React.FC = () => {
     fetchLocations();
   }, []);
 
-  const handleBook = (car: Car) => {
+  const handleBook = (car: VehicleType) => {
     if (!keycloak.authenticated) {
       navigate('/login');
-  } else {
-    navigate('/carbooking', {
-      state: {
-        car,
-        searchLocation,
-        returnLocation,
-        pickupDate,
-        returnDate,
-      }, });
-  }
+    } else {
+      navigate('/carbooking', {
+        state: {
+          car,
+          startLocation,
+          returnLocation,
+          pickupDate,
+          returnDate,
+        },
+      });
+    }
   };
 
-  const filterCars = (cars: Car[]) => {
+  const filterCars = (cars: VehicleType[]) => {
     return cars.filter(car => {
-      const selectedCategoryIds = vehicleCategories
-      .filter(category => vehicleCategory.includes(category.name))
-      .map(category => category.id);
+      const filterCategoryNames = filterCategories.map(category => category.name);
+      console.log(cars);
 
-      //const matchesVehicleCategory = vehicleCategory.length === 0 || selectedCategoryIds.includes(car.vehicleCategory);
-      const matchesTransmission = !transmission || car.transmission === transmission;
+      const selectedCategoryIds = vehicleCategories
+        .filter(category => filterCategoryNames.includes(category.name))
+        .map(category => category.id);
+
+      const matchesVehicleCategory = filterCategories.length === 0 || selectedCategoryIds.includes(car.vehicleCategory);
+      const matchesTransmission = transmission.length === 0 || transmission.includes(car.transmission);
+      const matchesDriveType = driveType.length === 0 || driveType.includes(car.driverSystem);
       const matchesSeatCount = !seatCount || car.maxSeatCount >= parseInt(seatCount, 10);
-      console.log(car.transmission, transmission, matchesTransmission);
-      return  matchesTransmission && matchesSeatCount;
+
+      return matchesVehicleCategory && matchesTransmission && matchesDriveType && matchesSeatCount;
     });
   };
 
   const filteredCars = filterCars(cars);
 
-
   return (
     <React.Fragment>
       <AppAppBar />
       <CarSearchBar
-        initialLocation={searchLocation}
+        initialLocation={startLocation}
         initialReturnLocation={returnLocation}
         initialPickupDate={pickupDate}
         initialReturnDate={returnDate}
       />
-     <FilterBar
+      <FilterBar
         sortOption={sortOption}
         setSortOption={setSortOption}
-        vehicleCategory={vehicleCategory}
-        setVehicleCategory={setVehicleCategory}
+        vehicleCategory={filterCategories}
+        setVehicleCategory={setFilterCategories}
         transmission={transmission}
         setTransmission={setTransmission}
         driveType={driveType}
