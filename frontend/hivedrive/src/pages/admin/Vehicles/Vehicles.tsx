@@ -10,6 +10,7 @@ import { Vehicle, VehicleCategory, Producer, VehicleType } from './VehicleDataTy
 import AddVehicleType from './AddVehicleType';
 import VehicleTypeList from './VehicleTypeList';
 import { ThemeProvider } from '@emotion/react';
+import keycloak from '../../../keycloak';
 
 const Vehicles: React.FC = () => {
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -19,25 +20,54 @@ const Vehicles: React.FC = () => {
     const [tabIndex, setTabIndex] = useState<number>(0);
 
     useEffect(() => {
-        axios.get('/api/vehicles')
+        axios.get('/api/vehicles', 
+            { 
+                headers: {
+                    Authorization: `Bearer ${keycloak.token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
             .then(response => setVehicles(response.data))
             .catch(error => console.error('Error fetching vehicles:', error));
 
-        axios.get('/api/vehicleTypes')
+        axios.get('/api/vehicleTypes',
+            { 
+                headers: {
+                    Authorization: `Bearer ${keycloak.token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
             .then(response => setVehicleTypes(response.data))
             .catch(error => console.error('Error fetching vehicle types:', error));
 
-        axios.get('/api/vehicleCategories')
+        axios.get('/api/vehicleCategories',
+            { 
+                headers: {
+                    Authorization: `Bearer ${keycloak.token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
             .then(response => setCategories(response.data))
             .catch(error => console.error('Error fetching vehicle categories:', error));
 
-        axios.get('/api/producers')
+        axios.get('/api/producers',{ 
+                headers: {
+                    Authorization: `Bearer ${keycloak.token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
             .then(response => setProducers(response.data))
             .catch(error => console.error('Error fetching producers:', error));
     }, []);
 
     const handleAddVehicle = (newVehicle: Omit<Vehicle, 'id'>): Promise<number> => {
-        return axios.post('/api/vehicles', newVehicle)
+        return axios.post('/api/vehicles', newVehicle, 
+          { 
+             headers: {
+              Authorization: `Bearer ${keycloak.token}`,
+              'Content-Type': 'application/json'
+            }
+          })
             .then(response => {
                 setVehicles([...vehicles, response.data]);
                 return response.data.id;
@@ -49,8 +79,15 @@ const Vehicles: React.FC = () => {
     };
 
     const handleAddVehicleType = (newVehicleType: Omit<VehicleType, 'id'>): Promise<number> => {
-        return axios.post('/api/vehicleTypes', newVehicleType)
+        return axios.post('/api/vehicleTypes', newVehicleType, 
+            { 
+                headers: {
+                    Authorization: `Bearer ${keycloak.token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
             .then(response => {
+                console.log(response);
                 setVehicleTypes([...vehicleTypes, response.data]);
                 return response.data.id;
             })
@@ -61,7 +98,12 @@ const Vehicles: React.FC = () => {
     };
 
     const handleUpdateVehicle = (updatedVehicle: Vehicle) => {
-        axios.put(`/api/vehicles/id/${updatedVehicle.id}`, updatedVehicle)
+        axios.put(`/api/vehicles/id/${updatedVehicle.id}`, updatedVehicle, { 
+                headers: {
+                    Authorization: `Bearer ${keycloak.token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
             .then(response => {
                 setVehicles(vehicles.map(vehicle => 
                     vehicle.id === updatedVehicle.id ? response.data : vehicle
@@ -71,7 +113,13 @@ const Vehicles: React.FC = () => {
     };
 
     const handleUpdateVehicleType = (updatedVehicleType: VehicleType) => {
-        axios.put(`/api/vehicleTypes/id/${updatedVehicleType.id}`, updatedVehicleType)
+        axios.put(`/api/vehicleTypes/id/${updatedVehicleType.id}`, updatedVehicleType, 
+            { 
+                headers: {
+                    Authorization: `Bearer ${keycloak.token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
             .then(response => {
                 setVehicleTypes(vehicleTypes.map(vehicleType => 
                     vehicleType.id === updatedVehicleType.id ? response.data : vehicleType
@@ -83,7 +131,13 @@ const Vehicles: React.FC = () => {
     const handleAddCategory = (name: string) => {
         const newCategory = { name };
 
-        axios.post('/api/vehicleCategories', newCategory)
+        axios.post('/api/vehicleCategories', newCategory, 
+            { 
+                headers: {
+                    Authorization: `Bearer ${keycloak.token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
             .then(response => {
                 setCategories([...categories, response.data]);
             })
@@ -93,7 +147,13 @@ const Vehicles: React.FC = () => {
     const handleUpdateCategory = (id: number, name: string) => {
         const updatedCategory = { id, name };
 
-        axios.put(`/api/vehicleCategories/id/${id}`, updatedCategory)
+        axios.put(`/api/vehicleCategories/id/${id}`, updatedCategory,
+            { 
+                headers: {
+                    Authorization: `Bearer ${keycloak.token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
             .then(response => {
                 setCategories(categories.map(category =>
                     category.id === id ? response.data : category
@@ -105,7 +165,12 @@ const Vehicles: React.FC = () => {
     const handleAddProducer = (name: string) => {
         const newProducer = { name };
 
-        axios.post('/api/producers', newProducer)
+        axios.post('/api/producers', newProducer, { 
+                headers: {
+                    Authorization: `Bearer ${keycloak.token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
             .then(response => {
                 setProducers([...producers, response.data]);
             })
@@ -115,7 +180,13 @@ const Vehicles: React.FC = () => {
     const handleUpdateProducer = (id: number, name: string) => {
         const updatedProducer = { name };
 
-        axios.put(`/api/producers/id/${id}`, updatedProducer)
+        axios.put(`/api/producers/id/${id}`, updatedProducer,
+            { 
+                headers: {
+                    Authorization: `Bearer ${keycloak.token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
             .then(response => {
                 setProducers(producers.map(producer =>
                     producer.id === id ? { ...producer, name: response.data.name } : producer
@@ -130,7 +201,12 @@ const Vehicles: React.FC = () => {
 
     const handleFetchImages = async (vehicleId: number) => {
         try {
-            const response = await axios.get(`/api/images/vehicles/id/${vehicleId}`);
+            const response = await axios.get(`/api/images/vehicles/id/${vehicleId}`, { 
+                headers: {
+                    Authorization: `Bearer ${keycloak.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
             var urls = new Array<string>();
             urls.push(response.data.url);
             return urls;
@@ -141,7 +217,13 @@ const Vehicles: React.FC = () => {
 
     const handleFetchVehicleTypeImages = async (vehicleTypeId: number) => {
         try {
-            const response = await axios.get(`/api/images/vehicleTypes/id/${vehicleTypeId}`);
+            const response = await axios.get(`/api/images/vehicleTypes/id/${vehicleTypeId}`, { 
+                headers: {
+                    Authorization: `Bearer ${keycloak.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
             var urls = new Array<string>();
             urls.push(response.data.url);
             return urls;
