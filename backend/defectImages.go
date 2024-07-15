@@ -74,21 +74,21 @@ func getDefectImagesByDefectId(dbpool *pgxpool.Pool) http.HandlerFunc {
 				urls[i].URL = httpsPrefix + request.Host + fileAPIpath + strconv.FormatInt(ids[i].Id, 10)
 			}
 			returnTAsJSON(writer, ids, http.StatusOK)
-		} else {
-			ids, fail := getTs[id](writer, request, dbpool, "DefectImages",
-				`SELECT images.id FROM defects 
+		}
+
+		ids, fail := getTs[id](writer, request, dbpool, "DefectImages",
+			`SELECT images.id FROM defects 
     			JOIN defectImage ON defects.id = defectImage.defectId
     			JOIN images ON defectImage.imageId = images.id 
             WHERE defects.id = $1 and defects.userid = $2 ORDER BY images.displayorder`,
-				mux.Vars(request)["id"], introspectionResult.UserId)
-			if fail {
-				return
-			}
-			urls := make([]url, len(ids))
-			for i := range ids {
-				urls[i].URL = httpsPrefix + request.Host + fileAPIpath + strconv.FormatInt(ids[i].Id, 10)
-			}
-			returnTAsJSON(writer, ids, http.StatusOK)
+			mux.Vars(request)["id"], introspectionResult.UserId)
+		if fail {
+			return
 		}
+		urls := make([]url, len(ids))
+		for i := range ids {
+			urls[i].URL = httpsPrefix + request.Host + fileAPIpath + strconv.FormatInt(ids[i].Id, 10)
+		}
+		returnTAsJSON(writer, ids, http.StatusOK)
 	}
 }
