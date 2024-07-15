@@ -74,3 +74,8 @@ var supportedFileTypes = []string{imageJPEG, imagePNG, imageGIF, imageWEBP, imag
 const postVehilceImageSQL = "INSERT INTO vehicleImage (vehicleId, imageId) VALUES ($1, $2);"
 const deleteVehicleImageSQL = "DELETE FROM vehicleImage WHERE imageId = $1;"
 const getVehicleImagesByVehicleIdSQL = "SELECT images.url FROM vehicles JOIN vehicleImage ON vehicles.id = vehicleImage.vehicleId JOIN images ON vehicleImage.imageId = images.id WHERE vehicles.id = $1 ORDER BY images.displayorder"
+
+const postDefectImageSQL = "INSERT INTO defectImage (defectId, imageId) VALUES ($1, $2);"
+const deleteDefectImageSQL = "DELETE FROM defectImage WHERE imageId = $1;"
+const getDefectImagesByDefectIdSQL = "SELECT images.url FROM defects JOIN defectImage ON defects.id = defectImage.defectId JOIN images ON defectImage.imageId = images.id WHERE defect.id = $1 ORDER BY images.displayorder"
+
