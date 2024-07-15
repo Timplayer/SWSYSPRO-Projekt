@@ -133,13 +133,6 @@ const FilterBar: React.FC<FilterContextType> = ({
         >
           Anzahl Sitze
         </Button>
-        <Button
-          color="inherit"
-          aria-label="filter"
-          onClick={(event) => handleMenuOpen(event, 'driverAge')}
-        >
-          Alter des Fahrers
-        </Button>
         <Button variant="contained" size='small' color="secondary" onClick={resetFilters}>
           Alle Filter zurücksetzen
         </Button>
