@@ -82,10 +82,6 @@ const FilterBar: React.FC<FilterContextType> = ({
     setSeatCount(event.target.value as string);
   };
 
-  const handleDriverAgeChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setDriverAge(event.target.value as string);
-  };
-
   const resetFilters = () => {
     setSortOption('lowestPrice');
     setVehicleCategory([]);
