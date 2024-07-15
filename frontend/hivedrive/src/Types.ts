@@ -7,6 +7,7 @@ export interface Vehicle {
     status: string;
     receptionDate: string;
     completionDate: string;
+    images? : string[]
 }
 export enum Transmission {
     Automatik = "automatic",
