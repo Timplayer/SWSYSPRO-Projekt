@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -12,47 +12,84 @@ import {
   CardContent,
   Grid,
   TextField,
+  MenuItem
 } from '@mui/material';
 import AppAppBar from '../views/AppAppBar';
 import AppFooter from '../views/AppFooter';
 import withRoot from '../withRoot';
+import axios from 'axios';
+import { Reservation, VehicleType } from '../Types';
+import keycloak from '../keycloak';
+import { MobileDateTimePicker } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
 const Bookings: React.FC = () => {
   const [openInfo, setOpenInfo] = useState(false);
   const [openReturnDetails, setOpenReturnDetails] = useState(false);
   const [openMoreInfo, setOpenMoreInfo] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
+  const [removeId, setRemoveId] = useState<number | null>(null);
   const [openEdit, setOpenEdit] = useState(false);
-  const [currentEditBooking, setCurrentEditBooking] = useState(null);
+  const [currentEditBooking, setCurrentEditBooking] = useState<Reservation | null>(null);
+  const [bookings, setBookings] = useState<Reservation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [locations, setLocations] = useState<Array<{ label: string, value: number }>>([]);
+  const [vehicleTypes, setVehicleCategories] = useState<VehicleType[]>([]);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      const response = await axios.get('/api/stations');
+      const locationsData = response.data.map((location: any) => ({
+        label: location.name,
+        value: location.id,
+      }));
+      setLocations(locationsData);
+    };
+    fetchLocations();
+  }, []);
+
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const response = await axios.get('/api/reservations', {
+          headers: {
+            'Authorization': `Bearer ${keycloak.token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        setBookings(response.data);
+        setLoading(false);
+      } catch (error) {
+        setError(error.message);
+        setLoading(false);
+      }
+    };
+
+    const fetchVehicleType = async () => {
+      const response = await axios.get('/api/vehicleTypes');
+      setVehicleCategories(response.data);
+    };
+
+    fetchVehicleType();
+    fetchBookings();
+  }, []);
 
   const currentDate = new Date();
-  const bookings = [
-    {
-      id: 1,
-      car: 'KIA STONIC',
-      price: '97,30 €',
-      startLocation: 'Gran Canaria Meloneras',
-      endLocation: 'Gran Canaria Meloneras',
-      startDate: new Date('2024-07-08T09:22:00'),
-      endDate: new Date('2024-07-08T23:00:00')
-    },
-    {
-      id: 2,
-      car: 'FORD FOCUS',
-      price: '150,00 €',
-      startLocation: 'Berlin Tegel',
-      endLocation: 'Berlin Tegel',
-      startDate: new Date('2024-06-15T09:00:00'),
-      endDate: new Date('2024-06-17T18:00:00')
-    }
-  ];
 
-  const currentBookings = bookings.filter(booking => booking.startDate > currentDate);
-  const pastBookings = bookings.filter(booking => booking.startDate <= currentDate);
+  const currentBookings = bookings.filter(booking => new Date(booking.start_zeit) > currentDate);
+  const pastBookings = bookings.filter(booking => new Date(booking.start_zeit) <= currentDate);
 
-  const calculateRentalDays = (startDate: Date, endDate: Date) => {
-    const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const calculateRentalDays = (startDate: string, endDate: string) => {
+    const diffTime = Math.abs(new Date(endDate).getTime() - new Date(startDate).getTime());
+    return Math.ceil(diffTime / (1000 * 60 * 60 ));
+  };
+
+  const getVehicleNameById = (id: number): string | undefined => {
+    const vehicle = vehicleTypes.find(v => v.id === id);
+    console.log(vehicleTypes);
+    return vehicle ? vehicle.name : undefined;
   };
 
   const handleClickOpenInfo = () => {
@@ -79,26 +116,50 @@ const Bookings: React.FC = () => {
     setOpenMoreInfo(false);
   };
 
-  const handleClickOpenCancel = () => {
+  const handleClickOpenCancel = (id: number) => {
+    setRemoveId(id);
     setOpenCancel(true);
   };
 
   const handleCloseCancel = () => {
     setOpenCancel(false);
+    setRemoveId(null);
   };
 
-  const handleConfirmCancel = () => {
-    // Add your cancellation logic here
-    setOpenCancel(false);
+  const handleConfirmCancel = async () => {
+    if (removeId !== null) {
+      try {
+        await axios.delete(`/api/reservations/id/${removeId}`, {
+          headers: {
+            'Authorization': `Bearer ${keycloak.token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        setBookings(bookings.filter((booking) => booking.id !== removeId));
+        setOpenCancel(false);
+        setRemoveId(null);
+      } catch (error) {
+        setError(error.message);
+      }
+    }
   };
 
-  const handleDownloadInvoice = (bookingId: number) => {
-    // Add your invoice download logic here
-    console.log(`Download invoice for booking ${bookingId}`);
+  const [openDialog, setOpenDialog] = useState(false);
+
+  const handleDialogOpen = () => {
+    setOpenDialog(true);
   };
 
-  const handleClickOpenEdit = (booking) => {
-    setCurrentEditBooking(booking);
+  const handleDialogClose = () => {
+    setOpenDialog(false);
+  };
+
+  const handleClickOpenEdit = (booking: Reservation) => {
+    setCurrentEditBooking({
+      ...booking,
+      start_zeit: new Date(booking.start_zeit),
+      end_zeit: new Date(booking.end_zeit),
+    });
     setOpenEdit(true);
   };
 
@@ -107,42 +168,94 @@ const Bookings: React.FC = () => {
     setCurrentEditBooking(null);
   };
 
-  const handleSaveEdit = () => {
-    // Add your save logic here
-    setOpenEdit(false);
-    setCurrentEditBooking(null);
+  const handleSaveEdit = async () => {
+    if (currentEditBooking) {
+      const updatedBooking = {
+        auto_klasse: currentEditBooking.auto_klasse,
+        start_station: currentEditBooking.start_station,
+        end_station: currentEditBooking.end_station,
+        start_zeit: currentEditBooking.start_zeit,
+        end_zeit: currentEditBooking.end_zeit,
+      };
+
+      try {
+        await axios.delete(`/api/reservations/id/${currentEditBooking.id}`, {
+          headers: {
+            'Authorization': `Bearer ${keycloak.token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const response = await axios.post('/api/reservations', updatedBooking, {
+          headers: {
+            'Authorization': `Bearer ${keycloak.token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        setBookings(bookings.map(booking => (booking.id === currentEditBooking.id ? response.data : booking)));
+        setOpenEdit(false);
+        setCurrentEditBooking(null);
+      } catch (error) {
+        setError(error.message);
+      }
+    }
   };
 
-  const handleEditChange = (field, value) => {
-    setCurrentEditBooking({ ...currentEditBooking, [field]: value });
+  const handleEditChange = (field: keyof Reservation, value: any) => {
+    if (currentEditBooking) {
+      setCurrentEditBooking({ ...currentEditBooking, [field]: value });
+    }
   };
 
-  const renderBooking = (booking: any, isPast: boolean) => {
-    const rentalDays = calculateRentalDays(booking.startDate, booking.endDate);
+  const renderBooking = (booking: Reservation, isPast: boolean) => {
+    const rentalDays = calculateRentalDays(booking.start_zeit, booking.end_zeit);
     return (
       <Card variant="outlined" key={booking.id} sx={{ mb: 2 }}>
         <CardContent>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
-              <Typography variant="h6">{booking.car}</Typography>
-              <Typography>{rentalDays} Miettag{rentalDays > 1 ? 'e' : ''}</Typography>
-              <Typography>{booking.price}</Typography>
+              <Typography variant="h6">Auto Klasse: {getVehicleNameById(booking.auto_klasse)}</Typography>
+              <Typography>Mietdauer: {rentalDays} Stunden</Typography>
+              <Typography>Buchungs-ID: {booking.id}</Typography>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <Typography>Start: {booking.startLocation}</Typography>
-              <Typography>Ende: {booking.endLocation}</Typography>
-              <Typography>{booking.startDate.toLocaleString()}</Typography>
-              <Typography>{booking.endDate.toLocaleString()}</Typography>
+              <Typography>Start: Station {booking.start_station}</Typography>
+              <Typography>Ende: Station {booking.end_station}</Typography>
+              <Typography>{new Date(booking.start_zeit).toLocaleString()}</Typography>
+              <Typography>{new Date(booking.end_zeit).toLocaleString()}</Typography>
             </Grid>
             <Grid item xs={12}>
               <Button variant="contained" onClick={handleClickOpenInfo}>Fahrzeuginfo</Button>
               <Button variant="contained" onClick={handleClickOpenReturnDetails}>Rückgabedetails</Button>
               <Button variant="contained" onClick={handleClickOpenMoreInfo}>Mehr anzeigen</Button>
               {isPast ? (
-                <Button variant="contained" color="primary" onClick={() => handleDownloadInvoice(booking.id)} sx={{ ml: 2 }}>Rechnung herunterladen</Button>
-              ) : (
+               <React.Fragment>
+               <Button
+                 variant="contained"
+                 color="primary"
+                 onClick={handleDialogOpen}
+                 sx={{ ml: 2 }}
+               >
+                 Rechnung herunterladen
+               </Button>
+               <Dialog open={openDialog} onClose={handleDialogClose}>
+                 <DialogTitle>Coming Soon</DialogTitle>
+                 <DialogContent>
+                   <Typography variant="body1">
+                     Diese Funktion ist noch nicht verfügbar, wird aber bald hinzugefügt.
+                   </Typography>
+                 </DialogContent>
+                 <DialogActions>
+                   <Button onClick={handleDialogClose} color="primary">
+                     Schließen
+                   </Button>
+                 </DialogActions>
+               </Dialog>
+             </React.Fragment>
+                    ) : (
                 <React.Fragment>
-                  <Button variant="contained" color="secondary" onClick={handleClickOpenCancel} sx={{ ml: 2 }}>Buchung stornieren</Button>
+                  <Button variant="contained" color="secondary" onClick={() => handleClickOpenCancel(booking.id)} sx={{ ml: 2 }}>Buchung stornieren</Button>
                   <Button variant="contained" color="secondary" onClick={() => handleClickOpenEdit(booking)} sx={{ ml: 2 }}>Bearbeiten</Button>
                 </React.Fragment>
               )}
@@ -152,6 +265,14 @@ const Bookings: React.FC = () => {
       </Card>
     );
   };
+
+  if (loading) {
+    return <Typography>Loading...</Typography>;
+  }
+
+  if (error) {
+    return <Typography>Error: {error}</Typography>;
+  }
 
   return (
     <React.Fragment>
@@ -224,54 +345,62 @@ const Bookings: React.FC = () => {
         <Dialog open={openEdit} onClose={handleCloseEdit}>
           <DialogTitle>Buchung bearbeiten</DialogTitle>
           <DialogContent>
-            <TextField
-              margin="dense"
-              label="Auto"
-              type="text"
-              fullWidth
-              value={currentEditBooking?.car || ''}
-              onChange={(e) => handleEditChange('car', e.target.value)}
-            />
-            <TextField
-              margin="dense"
-              label="Preis"
-              type="text"
-              fullWidth
-              value={currentEditBooking?.price || ''}
-              onChange={(e) => handleEditChange('price', e.target.value)}
-            />
-            <TextField
-              margin="dense"
-              label="Startort"
-              type="text"
-              fullWidth
-              value={currentEditBooking?.startLocation || ''}
-              onChange={(e) => handleEditChange('startLocation', e.target.value)}
-            />
-            <TextField
-              margin="dense"
-              label="Endort"
-              type="text"
-              fullWidth
-              value={currentEditBooking?.endLocation || ''}
-              onChange={(e) => handleEditChange('endLocation', e.target.value)}
-            />
-            <TextField
-              margin="dense"
-              label="Startdatum"
-              type="datetime-local"
-              fullWidth
-              value={currentEditBooking?.startDate.toISOString().slice(0, 16) || ''}
-              onChange={(e) => handleEditChange('startDate', new Date(e.target.value))}
-            />
-            <TextField
-              margin="dense"
-              label="Enddatum"
-              type="datetime-local"
-              fullWidth
-              value={currentEditBooking?.endDate.toISOString().slice(0, 16) || ''}
-              onChange={(e) => handleEditChange('endDate', new Date(e.target.value))}
-            />
+            <Box mb={2}>
+              <TextField
+                select
+                margin="dense"
+                label={'Abholung'}
+                value={currentEditBooking?.start_station || ''}
+                onChange={(e) => handleEditChange('start_station', e.target.value)}
+                fullWidth
+              >
+                {locations.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Box>
+            <Box mb={2}>
+              <TextField
+                select
+                margin="dense"
+                label={'Rückgabe'}
+                value={currentEditBooking?.end_station || ''}
+                onChange={(e) => handleEditChange('end_station', e.target.value)}
+                fullWidth
+              >
+                {locations.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Box>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <Box mb={2}>
+                <MobileDateTimePicker
+                  ampm={false}
+                  label="Abholdatum"
+                  value={currentEditBooking?.start_zeit}
+                  onChange={(date) => {
+                    if (date) handleEditChange('start_zeit', date);
+                  }}
+                  minDate={currentDate}
+                />
+              </Box>
+              <Box mb={2}>
+                <MobileDateTimePicker
+                  ampm={false}
+                  label="Rückgabedatum"
+                  value={currentEditBooking?.end_zeit}
+                  onChange={(date) => {
+                    if (date) handleEditChange('end_zeit', date);
+                  }}
+                  minDate={currentEditBooking?.start_zeit || currentDate}
+                />
+              </Box>
+            </LocalizationProvider>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseEdit} color="primary">Abbrechen</Button>

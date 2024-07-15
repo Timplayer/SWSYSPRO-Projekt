@@ -3,27 +3,22 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import withRoot from '../withRoot';
 import AppAppBar from '../views/AppAppBar';
 import AppFooter from '../views/AppFooter';
-import { Container, Box, Typography, TextField, MenuItem, Checkbox, FormControlLabel, Button, Grid, Radio, RadioGroup, FormControl, FormLabel, useTheme, styled } from '@mui/material';
+import { Container, Box, Typography, TextField, MenuItem, Checkbox, FormControlLabel, Button, Grid, useTheme, styled } from '@mui/material';
 import keycloak from '../keycloak';
 import axios from 'axios';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { MobileDateTimePicker } from '@mui/x-date-pickers';
-import { VehicleType, Transmission, DriverSystem } from '../Types.ts';
+import { Transmission, DriverSystem, VehicleCategory } from '../Types.ts';
 
 const Reservation: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
 
   const { car, searchLocation, returnLocation, pickupDate, returnDate } = location.state || {};
 
-  const theme = useTheme();
-
-  const [carName, setCarName] = useState(car.name);
-  const [carClass, setCarClass] = useState(car.vehicleCategory);
-  const [carTransmission, setCarTransmission] = useState(car.transmission as Transmission);
-  const [carDrive, setCarDrive] = useState(car.driveType as DriverSystem);
-  const [carSeatings, setCarSeatings] = useState(car.maxSeatCount);
+  const [vehicleCategories, setVehicleCategories] = useState<VehicleCategory[]>([]);
 
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
@@ -35,30 +30,35 @@ const Reservation: React.FC = () => {
   const [returnLocationCopy, setReturnLocation] = useState(returnLocation);
   const [differentReturnLocation, setDifferentReturnLocation] = useState(false);
 
-  const [driverAge, setDriverAge] = useState('');
-
-  const [additionalDriver, setAdditionalDriver] = useState(false);
-  const [additionalDriverName, setAdditionalDriverName] = useState('');
-  const [additionalDriverAge, setAdditionalDriverAge] = useState('25');
+  const [locations, setLocations] = useState<Array<{ label: string, value: string }>>([]);
 
   useEffect(() => {
-    const { given_name, family_name, email } = keycloak.tokenParsed;
-    setCustomerName(`${given_name} ${family_name}`);
-    setCustomerEmail(email);
-  }, []);
+    if (!location.state || !car) {
+      navigate('/');
+    }
+  }, [location.state, car]);
 
-  const [locations, setLocations] = useState<Array<{ label: string, value: string }>>([]);
 
   useEffect(() => {
     const fetchLocations = async () => {
       const response = await axios.get('/api/stations');
       const locationsData = response.data.map((location: any) => ({
         label: location.name,
-        value: location.name
+        value: location.id
       }));
       setLocations(locationsData);
     };
 
+    const fetchVehicleCategories = async() => {
+      const response = await axios.get('/api/vehicleCategories');
+      setVehicleCategories(response.data);
+    }
+
+    const { given_name, family_name, email } = keycloak.tokenParsed;
+    setCustomerName(`${given_name} ${family_name}`);
+    setCustomerEmail(email);
+
+    fetchVehicleCategories();
     fetchLocations();
   }, []);
 
@@ -68,15 +68,15 @@ const Reservation: React.FC = () => {
     try {
       const api_reservation_data = {
         start_zeit: pickupDateCopy,
-        start_station: 1,
+        start_station: pickupLocationCopy,
         end_zeit: returnDateCopy,
-        end_station: 1,
-        auto_klasse: carClass,
+        end_station:  differentReturnLocation ? returnLocationCopy : pickupLocationCopy,
+        auto_klasse: car.id,
       }
 
       const response = await axios.post('/api/reservations', api_reservation_data, {
         headers: {
-          Authorization: `Bearer ${keycloak.token}`,
+          'Authorization': `Bearer ${keycloak.token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -92,6 +92,35 @@ const Reservation: React.FC = () => {
     }
   };
 
+  const getDriverSystemName = (drive: DriverSystem): string => {
+    switch (drive) {
+        case DriverSystem.FWD:
+            return "Vorderradantrieb";
+        case DriverSystem.RWD:
+            return "Hinterradantrieb";
+        case DriverSystem.AWD:
+            return "Allradantrieb";
+        default:
+            return "";
+    }
+  };
+
+  const getTransmissonName = (transmission: Transmission): string => {
+    switch (transmission) {
+        case Transmission.Automatik:
+          return "Automatik"
+          case Transmission.Manuell:
+            return "Manuell";
+        default:
+            return "";
+    }
+  };
+
+  const getVehicaleCategorieNameById = (id: number): string => {
+    const carClass = vehicleCategories.find((cls) => cls.id === id);
+    return carClass ? carClass.name : "Unbekannt";
+  };
+  
   const StyledTextField = styled(TextField)({
     '& .Mui-disabled': {
       color: 'rgba(0, 0, 0, 0.87)', 
@@ -101,6 +130,18 @@ const Reservation: React.FC = () => {
   });
 
   const now = new Date();
+
+  if (!car) {
+    return null;
+  }
+
+  const isSameDay = (date1: Date, date2: Date) => {
+    return (
+      date1.getFullYear() === date2.getFullYear() &&
+      date1.getMonth() === date2.getMonth() &&
+      date1.getDate() === date2.getDate()
+    );
+  };
 
   return (
     <React.Fragment>
@@ -143,7 +184,7 @@ const Reservation: React.FC = () => {
                 <StyledTextField
                   fullWidth
                   label="Fahrzeug Bezeichnung"
-                  value={carName}
+                  value={car.name}
                   sx={{ backgroundColor: theme.palette.background.paper }}
                   disabled
                 />
@@ -152,7 +193,7 @@ const Reservation: React.FC = () => {
                 <StyledTextField
                   fullWidth
                   label="Fahrzeugklasse"
-                  value={carClass}
+                  value={getVehicaleCategorieNameById(car.vehicleCategory)}
                   sx={{ backgroundColor: theme.palette.background.paper }}
                   disabled
                 />
@@ -161,7 +202,7 @@ const Reservation: React.FC = () => {
                 <StyledTextField
                   fullWidth
                   label="Getriebe"
-                  value={carTransmission}
+                  value={getTransmissonName(car.transmission)}
                   sx={{ backgroundColor: theme.palette.background.paper }}
                   disabled
                 />
@@ -170,7 +211,7 @@ const Reservation: React.FC = () => {
                 <StyledTextField
                   fullWidth
                   label="Antrieb"
-                  value={carDrive}
+                  value={getDriverSystemName(car.driverSystem)}
                   sx={{ backgroundColor: theme.palette.background.paper }}
                   disabled
                 />
@@ -179,7 +220,7 @@ const Reservation: React.FC = () => {
                 <StyledTextField
                   fullWidth
                   label="Anzahl der Sitzplätze"
-                  value={carSeatings}
+                  value={car.maxSeatCount}
                   sx={{ backgroundColor: theme.palette.background.paper }}
                   disabled
                 />
@@ -238,14 +279,15 @@ const Reservation: React.FC = () => {
                     ampm={false}
                     label="Abholdatum"
                     value={pickupDateCopy}
-                    onChange={(date) => {
+                    onAccept={(date) => {
                       setPickupDate(date);
                       if (date && returnDateCopy && date > returnDateCopy) {
                         setReturnDate(date);
                       }
                     }}
+                    onChange={(date) => setPickupDate(date)}
                     minDate={now}
-                    minTime={new Date(now.getTime() - 1 * 60 * 1000)}
+                    minTime={pickupDateCopy && isSameDay(pickupDateCopy, now) ? new Date(now.getTime() - 1 * 60 * 1000) : undefined}
                   />
                 </LocalizationProvider>
               </Grid>
@@ -255,72 +297,13 @@ const Reservation: React.FC = () => {
                     ampm={false}
                     label="Rückgabedatum"
                     value={returnDateCopy}
+                    onAccept={(date) => setReturnDate(date)}
                     onChange={(date) => setReturnDate(date)}
                     minDate={pickupDateCopy || now}
-                    minTime={pickupDateCopy || now}
+                    minTime={returnDateCopy && isSameDay(returnDateCopy, pickupDateCopy) ? new Date(now.getTime() - 1 * 60 * 1000) : undefined}
                   />
                 </LocalizationProvider>
               </Grid>
-              <Grid item xs={12}>
-                <FormControl component="fieldset" sx={{ backgroundColor: theme.palette.background.paper, p: 2, borderRadius: 1 }}>
-                  <FormLabel component="legend">Alter des Fahrers</FormLabel>
-                  <RadioGroup
-                    row
-                    aria-label="driverAge"
-                    name="driverAge"
-                    value={driverAge}
-                    onChange={(e) => setDriverAge(e.target.value)}
-                  >
-                    <FormControlLabel value="18" control={<Radio />} label="18+" />
-                    <FormControlLabel value="21" control={<Radio />} label="21+" />
-                    <FormControlLabel value="23" control={<Radio />} label="23+" />
-                    <FormControlLabel value="25" control={<Radio />} label="25+" />
-                  </RadioGroup>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={additionalDriver}
-                      onChange={(e) => setAdditionalDriver(e.target.checked)}
-                      color="primary"
-                    />
-                  }
-                  label="Zusatzfahrer hinzufügen"
-                />
-              </Grid>
-              {additionalDriver && (
-                <>
-                  <Grid item xs={12}>
-                    <TextField
-                      required
-                      fullWidth
-                      label="Zusatzfahrer Name"
-                      value={additionalDriverName}
-                      onChange={(e) => setAdditionalDriverName(e.target.value)}
-                      sx={{ backgroundColor: theme.palette.background.paper }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <FormControl component="fieldset" sx={{ backgroundColor: theme.palette.background.paper, p: 2, borderRadius: 1 }}>
-                      <FormLabel component="legend">Alter des Zusatzfahrers</FormLabel>
-                      <RadioGroup
-                        row
-                        aria-label="additionalDriverAge"
-                        name="additionalDriverAge"
-                        value={additionalDriverAge}
-                        onChange={(e) => setAdditionalDriverAge(e.target.value)}
-                      >
-                        <FormControlLabel value="18" control={<Radio />} label="18+" />
-                        <FormControlLabel value="21" control={<Radio />} label="21+" />
-                        <FormControlLabel value="23" control={<Radio />} label="23+" />
-                        <FormControlLabel value="25" control={<Radio />} label="25+" />
-                      </RadioGroup>
-                    </FormControl>
-                  </Grid>
-                </>
-              )}
               <Grid item xs={12}>
                 <Button type="submit" variant="contained" color="primary" fullWidth>
                   Reservierung abschicken

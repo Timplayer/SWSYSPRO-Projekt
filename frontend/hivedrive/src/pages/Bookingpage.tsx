@@ -9,16 +9,15 @@ import AppFooter from '../views/AppFooter';
 import CarSearchBar from '../components/CarSearchBar';
 import keycloak from '../keycloak';
 import axios from 'axios';
-import { Reservation, Transmission, VehicleCategory, VehicleType, DriverSystem } from '../Types.ts';
+import { Transmission, VehicleCategory, VehicleType, DriverSystem } from '../Types.ts';
 
 const BookingPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const { location: startLocation, returnLocation, pickupDate, returnDate } = location.state || {};
+  const { startLocation, returnLocation, pickupDate, returnDate, availabilityVehicleTypes } = location.state || {};
 
   const [cars, setCars] = useState<VehicleType[]>([]);
-  const [reservation, setReservation] = useState<Reservation>();
 
   const [vehicleCategories, setVehicleCategories] = useState<VehicleCategory[]>([]);
   const [filterCategories, setFilterCategories] = useState<VehicleCategory[]>([]);
@@ -29,7 +28,8 @@ const BookingPage: React.FC = () => {
   const [seatCount, setSeatCount] = useState('2+'); 
   const [driverAge, setDriverAge] = useState('25+'); 
 
-  useEffect(() => {
+  useEffect(() => { 
+
     const fetchVehicleCategories = async () => {
       const response = await axios.get('/api/vehicleCategories');
       setVehicleCategories(response.data);
@@ -39,16 +39,14 @@ const BookingPage: React.FC = () => {
       const response = await axios.get('/api/vehicleTypes');
       const carData = response.data;
       
-      console.log(response);
-
       const fetchImages = async (carId: number) => {
-        const imageResponse = await axios.get(`/api/images/vehicleCategories/id/${carId}`);
+        const imageResponse = await axios.get(`/api/images/vehicleTypes/id/${carId}`);
         return imageResponse.data.map((img: { url: string }) => img.url);
       };
 
       const carsWithImages = await Promise.all(
         carData.map(async (car: VehicleType) => {
-          const images = {}; // await fetchImages(car.id);
+          const images = await fetchImages(car.id);
           return { ...car, images };
         })
       );
@@ -61,25 +59,29 @@ const BookingPage: React.FC = () => {
   }, []);
 
   const handleBook = (car: VehicleType) => {
+    
     if (!keycloak.authenticated) {
       navigate('/login');
-    } else {
+    } 
+    else 
+    {
+
       navigate('/carbooking', {
         state: {
-          car,
-          startLocation,
-          returnLocation,
-          pickupDate,
-          returnDate,
+          car: car,
+          searchLocation: startLocation,
+          returnLocation: returnLocation,
+          pickupDate: pickupDate,
+          returnDate: returnDate,
         },
       });
     }
   };
 
   const filterCars = (cars: VehicleType[]) => {
+
     return cars.filter(car => {
       const filterCategoryNames = filterCategories.map(category => category.name);
-      console.log(cars);
 
       const selectedCategoryIds = vehicleCategories
         .filter(category => filterCategoryNames.includes(category.name))
@@ -89,12 +91,30 @@ const BookingPage: React.FC = () => {
       const matchesTransmission = transmission.length === 0 || transmission.includes(car.transmission);
       const matchesDriveType = driveType.length === 0 || driveType.includes(car.driverSystem);
       const matchesSeatCount = !seatCount || car.maxSeatCount >= parseInt(seatCount, 10);
-
-      return matchesVehicleCategory && matchesTransmission && matchesDriveType && matchesSeatCount;
+      let matchesAvailabilityVehicleTypes = false;
+  
+      if(!availabilityVehicleTypes){
+        matchesAvailabilityVehicleTypes = true;
+      }else{
+        matchesAvailabilityVehicleTypes = availabilityVehicleTypes.includes(car.id)
+      }
+      return matchesAvailabilityVehicleTypes && matchesVehicleCategory && matchesTransmission && matchesDriveType && matchesSeatCount;
     });
   };
 
-  const filteredCars = filterCars(cars);
+  const sortCars = (cars: VehicleType[]) => {
+    return cars.sort((a, b) => {
+      if (sortOption === 'lowestPrice') {
+        return a.pricePerHour - b.pricePerHour;
+      } else if (sortOption === 'highestPrice') {
+        return b.pricePerHour - a.pricePerHour;
+      } else {
+        return 0;
+      }
+    });
+  };
+
+  const filteredCars = sortCars(filterCars(cars));
 
   return (
     <React.Fragment>
@@ -135,7 +155,7 @@ const BookingPage: React.FC = () => {
             ))}
           </Grid>
         ) : (
-          <Typography variant="h6" gutterBottom>
+          <Typography variant="h6" gutterBottom sx={{color:'#ffffff'}}>
             Keine Autos gefunden für die ausgewählten Kriterien.
           </Typography>
         )}

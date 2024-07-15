@@ -7,6 +7,7 @@ export interface Vehicle {
     status: string;
     receptionDate: string;
     completionDate: string;
+    images? : string[]
 }
 export enum Transmission {
     Automatik = "automatic",
@@ -40,9 +41,17 @@ export interface Producer {
 }
 
 export interface Reservation{
+  id : number,  
   start_zeit: Date,
   start_station: number,
   end_zeit: Date,
   end_station: number,
   auto_klasse: number,
+}
+
+export interface Availability{
+    time : Date,
+    pos : number,
+    auto_klasse : number,
+    availability : number,
 }

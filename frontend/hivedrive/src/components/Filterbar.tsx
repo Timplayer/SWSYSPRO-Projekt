@@ -82,10 +82,6 @@ const FilterBar: React.FC<FilterContextType> = ({
     setSeatCount(event.target.value as string);
   };
 
-  const handleDriverAgeChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setDriverAge(event.target.value as string);
-  };
-
   const resetFilters = () => {
     setSortOption('lowestPrice');
     setVehicleCategory([]);
@@ -133,13 +129,6 @@ const FilterBar: React.FC<FilterContextType> = ({
         >
           Anzahl Sitze
         </Button>
-        <Button
-          color="inherit"
-          aria-label="filter"
-          onClick={(event) => handleMenuOpen(event, 'driverAge')}
-        >
-          Alter des Fahrers
-        </Button>
         <Button variant="contained" size='small' color="secondary" onClick={resetFilters}>
           Alle Filter zurücksetzen
         </Button>
@@ -151,7 +140,6 @@ const FilterBar: React.FC<FilterContextType> = ({
             <RadioGroup value={sortOption} onChange={handleSortChange}>
               <FormControlLabel value="lowestPrice" control={<Radio />} label="Niedrigster Preis zuerst" />
               <FormControlLabel value="highestPrice" control={<Radio />} label="Höchster Preis zuerst" />
-              <FormControlLabel value="electricFirst" control={<Radio />} label="Elektrische Fahrzeuge zuerst" />
             </RadioGroup>
           </Box>
         )}
@@ -196,17 +184,6 @@ const FilterBar: React.FC<FilterContextType> = ({
               <FormControlLabel value="4+" control={<Radio />} label="4+" />
               <FormControlLabel value="5+" control={<Radio />} label="5+" />
               <FormControlLabel value="7+" control={<Radio />} label="7+" />
-            </RadioGroup>
-          </Box>
-        )}
-        {activeMenu === 'driverAge' && (
-          <Box sx={{ width: '300px', padding: 2 }}>
-            <Typography variant="h6">Alter des Fahrers</Typography>
-            <RadioGroup value={driverAge} onChange={handleDriverAgeChange}>
-              <FormControlLabel value="18+" control={<Radio />} label="18+" />
-              <FormControlLabel value="21+" control={<Radio />} label="21+" />
-              <FormControlLabel value="23+" control={<Radio />} label="23+" />
-              <FormControlLabel value="25+" control={<Radio />} label="25+" />
             </RadioGroup>
           </Box>
         )}

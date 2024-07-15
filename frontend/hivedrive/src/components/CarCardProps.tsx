@@ -3,7 +3,7 @@ import { Card, CardContent, Typography, CardMedia, IconButton, Button } from '@m
 import DriveEtaIcon from '@mui/icons-material/DriveEta';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import { Car } from '../pages/Types';
+import { Transmission, Vehicle as Car } from '../Types';
 
 interface CarCardProps {
   car: Car
@@ -14,12 +14,26 @@ const CarCard: React.FC<CarCardProps> = ({car, onBook }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const handlePrevImage = () => {
-    setCurrentImageIndex((prevIndex) => (prevIndex - 1 + car.images.length) % car.images.length);
+    if(car.images){
+      setCurrentImageIndex((prevIndex) => (prevIndex - 1 + car.images.length) % car.images.length);
+    }
   };
 
   const handleNextImage = () => {
-    console.log(car.images);
-    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % car.images.length);
+    if(car.images){
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % car.images.length);
+    }
+  };
+
+  const getTransmissonName = (transmission: Transmission): string => {
+    switch (transmission) {
+        case Transmission.Automatik:
+          return "Automatik"
+          case Transmission.Manuell:
+            return "Manuell";
+        default:
+            return "";
+    }
   };
 
   return (
@@ -46,14 +60,13 @@ const CarCard: React.FC<CarCardProps> = ({car, onBook }) => {
       </div>
       <CardContent>
         <Typography variant="h6">{car.name}</Typography>
-        <Typography variant="body2">{`Inkl. ${0}`}</Typography>
-        <Typography variant="body2">{`${car.pricePerHour} /Tag`}</Typography>
+        <Typography variant="body2">{`${car.pricePerHour} /ProStunde`}</Typography>
         <div>
           <IconButton>
             <DriveEtaIcon />
           </IconButton>
           <Typography variant="body2">{`${car.maxSeatCount} Passengers`}</Typography>
-          <Typography variant="body2">{car.transmission}</Typography>
+          <Typography variant="body2">{getTransmissonName(car.transmission)}</Typography>
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
           <Button variant="contained" color="primary" onClick={onBook}>
