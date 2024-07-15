@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { Box, Button, Chip, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { useDropzone } from 'react-dropzone';
 import axios from 'axios';
-import { VehicleType, Transmission, DriverSystem } from '../../../Types';
+import { VehicleType, Transmission, DriverSystem, VehicleCategory } from '../../../Types';
+import keycloak from '../../../keycloak';
 
 interface AddVehicleTypeProps {
-    categories: { id: number; name: string }[];
+    categories: VehicleCategory[];
     handleAddVehicleType: (vehicle: Omit<VehicleType, 'id'>) => Promise<number>;
 }
 
@@ -41,7 +42,10 @@ const AddVehicleType: React.FC<AddVehicleTypeProps> = ({ categories, handleAddVe
         formData.append('display_order', '0');
 
         await axios.post(`/api/images/vehicleTypes/id/${vehicleId}`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
+            headers: { 
+                Authorization: `Bearer ${keycloak.token}`,
+                'Content-Type': 'multipart/form-data'
+            }
         });
     };
 
@@ -57,8 +61,8 @@ const AddVehicleType: React.FC<AddVehicleTypeProps> = ({ categories, handleAddVe
                 minAgeToDrive,
             };
 
-            handleAddVehicleType(newVehicleType).then(vehicleId => {
-                Promise.all(images.map(image => uploadImage(image, vehicleId)));
+            handleAddVehicleType(newVehicleType).then((vehicleId : number) => {
+                Promise.all(images.map((image : File) => uploadImage(image, vehicleId)));
 
                 setName('');
                 setVehicleCategory(0);
