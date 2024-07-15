@@ -219,5 +219,8 @@ func introspect(writer http.ResponseWriter, request *http.Request) (*introspecti
 	if !introspectionResult.Active {
 		return &introspectionResult, errors.New("invalid token")
 	}
+	if introspectionResult.UserId == "" {
+		return &introspectionResult, errors.New("invalid token, missing userID")
+	}
 	return &introspectionResult, nil
 }
