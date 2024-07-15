@@ -111,6 +111,14 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
 
   const now = new Date();
 
+  const isSameDay = (date1: Date, date2: Date) => {
+    return (
+      date1.getFullYear() === date2.getFullYear() &&
+      date1.getMonth() === date2.getMonth() &&
+      date1.getDate() === date2.getDate()
+    );
+  };
+
   return (
     <Container maxWidth={false} sx={{ backgroundColor: 'secondary.light', width: '100%', padding: '16px' }}>
       <Box sx={{ mt: 4 }}>
@@ -169,8 +177,9 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
                     setReturnDate(date);
                   }
                 }}
+                onChange={(date) => setPickupDate(date)}
                 minDate={now}
-                minTime={new Date(now.getTime() - 1 * 60 * 1000)}
+                minTime={pickupDate && isSameDay(pickupDate, now) ? new Date(now.getTime() - 1 * 60 * 1000) : undefined}
               />
             </LocalizationProvider>
           </Grid>
@@ -181,8 +190,9 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
                 label="Rückgabedatum"
                 value={returnDate}
                 onAccept={(date) => setReturnDate(date)}
+                onChange={(date) => setReturnDate(date)}
                 minDate={pickupDate || now}
-                minTime={pickupDate || now}
+                minTime={returnDate && isSameDay(returnDate, pickupDate) ? new Date(now.getTime() - 1 * 60 * 1000) : undefined}
               />
             </LocalizationProvider>
           </Grid>

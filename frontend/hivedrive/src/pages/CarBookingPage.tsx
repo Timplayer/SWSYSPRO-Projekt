@@ -3,13 +3,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import withRoot from '../withRoot';
 import AppAppBar from '../views/AppAppBar';
 import AppFooter from '../views/AppFooter';
-import { Container, Box, Typography, TextField, MenuItem, Checkbox, FormControlLabel, Button, Grid, Radio, RadioGroup, FormControl, FormLabel, useTheme, styled } from '@mui/material';
+import { Container, Box, Typography, TextField, MenuItem, Checkbox, FormControlLabel, Button, Grid, useTheme, styled } from '@mui/material';
 import keycloak from '../keycloak';
 import axios from 'axios';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { MobileDateTimePicker } from '@mui/x-date-pickers';
-import { VehicleType, Transmission, DriverSystem, VehicleCategory } from '../Types.ts';
+import { Transmission, DriverSystem, VehicleCategory } from '../Types.ts';
 
 const Reservation: React.FC = () => {
   const navigate = useNavigate();
@@ -29,12 +29,6 @@ const Reservation: React.FC = () => {
   const [pickupLocationCopy, setPickupLocation] = useState(searchLocation);
   const [returnLocationCopy, setReturnLocation] = useState(returnLocation);
   const [differentReturnLocation, setDifferentReturnLocation] = useState(false);
-
-  const [driverAge, setDriverAge] = useState('');
-
-  const [additionalDriver, setAdditionalDriver] = useState(false);
-  const [additionalDriverName, setAdditionalDriverName] = useState('');
-  const [additionalDriverAge, setAdditionalDriverAge] = useState('25');
 
   const [locations, setLocations] = useState<Array<{ label: string, value: string }>>([]);
 
@@ -140,6 +134,14 @@ const Reservation: React.FC = () => {
   if (!car) {
     return null;
   }
+
+  const isSameDay = (date1: Date, date2: Date) => {
+    return (
+      date1.getFullYear() === date2.getFullYear() &&
+      date1.getMonth() === date2.getMonth() &&
+      date1.getDate() === date2.getDate()
+    );
+  };
 
   return (
     <React.Fragment>
@@ -277,14 +279,15 @@ const Reservation: React.FC = () => {
                     ampm={false}
                     label="Abholdatum"
                     value={pickupDateCopy}
-                    onChange={(date) => {
+                    onAccept={(date) => {
                       setPickupDate(date);
                       if (date && returnDateCopy && date > returnDateCopy) {
                         setReturnDate(date);
                       }
                     }}
+                    onChange={(date) => setPickupDate(date)}
                     minDate={now}
-                    minTime={new Date(now.getTime() - 1 * 60 * 1000)}
+                    minTime={pickupDateCopy && isSameDay(pickupDateCopy, now) ? new Date(now.getTime() - 1 * 60 * 1000) : undefined}
                   />
                 </LocalizationProvider>
               </Grid>
@@ -294,72 +297,13 @@ const Reservation: React.FC = () => {
                     ampm={false}
                     label="Rückgabedatum"
                     value={returnDateCopy}
+                    onAccept={(date) => setReturnDate(date)}
                     onChange={(date) => setReturnDate(date)}
                     minDate={pickupDateCopy || now}
-                    minTime={pickupDateCopy || now}
+                    minTime={returnDateCopy && isSameDay(returnDateCopy, pickupDateCopy) ? new Date(now.getTime() - 1 * 60 * 1000) : undefined}
                   />
                 </LocalizationProvider>
               </Grid>
-              <Grid item xs={12}>
-                <FormControl component="fieldset" sx={{ backgroundColor: theme.palette.background.paper, p: 2, borderRadius: 1 }}>
-                  <FormLabel component="legend">Alter des Fahrers</FormLabel>
-                  <RadioGroup
-                    row
-                    aria-label="driverAge"
-                    name="driverAge"
-                    value={driverAge}
-                    onChange={(e) => setDriverAge(e.target.value)}
-                  >
-                    <FormControlLabel value="18" control={<Radio />} label="18+" />
-                    <FormControlLabel value="21" control={<Radio />} label="21+" />
-                    <FormControlLabel value="23" control={<Radio />} label="23+" />
-                    <FormControlLabel value="25" control={<Radio />} label="25+" />
-                  </RadioGroup>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={additionalDriver}
-                      onChange={(e) => setAdditionalDriver(e.target.checked)}
-                      color="primary"
-                    />
-                  }
-                  label="Zusatzfahrer hinzufügen"
-                />
-              </Grid>
-              {additionalDriver && (
-                <>
-                  <Grid item xs={12}>
-                    <TextField
-                      required
-                      fullWidth
-                      label="Zusatzfahrer Name"
-                      value={additionalDriverName}
-                      onChange={(e) => setAdditionalDriverName(e.target.value)}
-                      sx={{ backgroundColor: theme.palette.background.paper }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <FormControl component="fieldset" sx={{ backgroundColor: theme.palette.background.paper, p: 2, borderRadius: 1 }}>
-                      <FormLabel component="legend">Alter des Zusatzfahrers</FormLabel>
-                      <RadioGroup
-                        row
-                        aria-label="additionalDriverAge"
-                        name="additionalDriverAge"
-                        value={additionalDriverAge}
-                        onChange={(e) => setAdditionalDriverAge(e.target.value)}
-                      >
-                        <FormControlLabel value="18" control={<Radio />} label="18+" />
-                        <FormControlLabel value="21" control={<Radio />} label="21+" />
-                        <FormControlLabel value="23" control={<Radio />} label="23+" />
-                        <FormControlLabel value="25" control={<Radio />} label="25+" />
-                      </RadioGroup>
-                    </FormControl>
-                  </Grid>
-                </>
-              )}
               <Grid item xs={12}>
                 <Button type="submit" variant="contained" color="primary" fullWidth>
                   Reservierung abschicken

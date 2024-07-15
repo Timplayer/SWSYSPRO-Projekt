@@ -12,6 +12,7 @@ import {
   CardContent,
   Grid,
   TextField,
+  MenuItem
 } from '@mui/material';
 import AppAppBar from '../views/AppAppBar';
 import AppFooter from '../views/AppFooter';
@@ -19,6 +20,9 @@ import withRoot from '../withRoot';
 import axios from 'axios';
 import { Reservation } from '../Types';
 import keycloak from '../keycloak';
+import { MobileDateTimePicker } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
 const Bookings: React.FC = () => {
   const [openInfo, setOpenInfo] = useState(false);
@@ -31,6 +35,21 @@ const Bookings: React.FC = () => {
   const [bookings, setBookings] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [locations, setLocations] = useState<Array<{ label: string, value: number }>>([]);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      const response = await axios.get('/api/stations');
+      const locationsData = response.data.map((location: any) => ({
+        label: location.name,
+        value: location.id,
+      }));
+      setLocations (locationsData);
+    };
+    fetchLocations();
+  }, []);
+
+  const now = new Date();
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -219,7 +238,6 @@ const Bookings: React.FC = () => {
   if (error) {
     return <Typography>Error: {error}</Typography>;
   }
-
   return (
     <React.Fragment>
       <AppAppBar />
@@ -287,55 +305,84 @@ const Bookings: React.FC = () => {
             <Button onClick={handleConfirmCancel} color="secondary">Stornieren</Button>
           </DialogActions>
         </Dialog>
-      <Dialog open={openEdit} onClose={handleCloseEdit}>
-          <DialogTitle>Buchung bearbeiten</DialogTitle>
-          <DialogContent>
-            <TextField
-              margin="dense"
-              label="Auto Klasse"
-              type="number"
-              fullWidth
-              value={currentEditBooking?.auto_klasse || ''}
-              onChange={(e) => handleEditChange('auto_klasse', e.target.value)}
+       <Dialog open={openEdit} onClose={handleCloseEdit}>
+      <DialogTitle>Buchung bearbeiten</DialogTitle>
+      <DialogContent>
+        <Box mb={2}>
+          <TextField
+            select
+            margin="dense"
+            label={'Abholung'}
+            value={currentEditBooking?.start_station || ''}
+            onChange={(e) => handleEditChange('start_station', e.target.value)}
+            fullWidth
+          >
+            {locations.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Box>
+        <Box mb={2}>
+          <TextField
+            select
+            margin="dense"
+            label={'Rückgabe'}
+            value={currentEditBooking?.end_station || ''}
+            onChange={(e) => handleEditChange('end_station', e.target.value)}
+            fullWidth
+          >
+            {locations.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Box>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <Box mb={2}>
+            <MobileDateTimePicker
+              ampm={false}
+              label="Abholdatum"
+              value={currentEditBooking?.start_zeit}
+              onAccept={(date) => {
+                if (date) {
+                  currentEditBooking?.start_zeit.setDate(date.getDate());
+                  currentEditBooking?.start_zeit.setMinutes(date.getMinutes());
+                  currentEditBooking?.start_zeit.setHours(date.getHours());
+                  if (currentEditBooking?.end_zeit && date > currentEditBooking.end_zeit) {
+                    currentEditBooking.end_zeit.setDate(date.getDate());
+                    currentEditBooking.end_zeit.setMinutes(date.getMinutes());
+                    currentEditBooking.end_zeit.setHours(date.getHours());
+                  }
+                }
+              }}
+              minDate={now}
             />
-            <TextField
-              margin="dense"
-              label="Startstation"
-              type="number"
-              fullWidth
-              value={currentEditBooking?.start_station || ''}
-              onChange={(e) => handleEditChange('start_station', e.target.value)}
+          </Box>
+          <Box mb={2}>
+            <MobileDateTimePicker
+              ampm={false}
+              label="Rückgabedatum"
+              value={currentEditBooking?.end_zeit}
+              onAccept={(date) => {
+                if (date) {
+                  currentEditBooking?.end_zeit.setDate(date.getDate());
+                  currentEditBooking?.end_zeit.setMinutes(date.getMinutes());
+                  currentEditBooking?.end_zeit.setHours(date.getHours());
+                }
+              }}
+              minDate={currentEditBooking?.start_zeit || now}
             />
-            <TextField
-              margin="dense"
-              label="Endstation"
-              type="number"
-              fullWidth
-              value={currentEditBooking?.end_station || ''}
-              onChange={(e) => handleEditChange('end_station', e.target.value)}
-            />
-            <TextField
-              margin="dense"
-              label="Startdatum"
-              type="datetime-local"
-              fullWidth
-              value={currentEditBooking?.start_zeit ? new Date(currentEditBooking.start_zeit).toISOString().slice(0, 16) : ''}
-              onChange={(e) => handleEditChange('start_zeit', e.target.value)}
-            />
-            <TextField
-              margin="dense"
-              label="Enddatum"
-              type="datetime-local"
-              fullWidth
-              value={currentEditBooking?.end_zeit ? new Date(currentEditBooking.end_zeit).toISOString().slice(0, 16) : ''}
-              onChange={(e) => handleEditChange('end_zeit', e.target.value)}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseEdit} color="primary">Abbrechen</Button>
-            <Button onClick={handleSaveEdit} color="secondary">Speichern</Button>
-          </DialogActions>
-        </Dialog>
+          </Box>
+        </LocalizationProvider>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleCloseEdit} color="primary">Abbrechen</Button>
+        <Button onClick={handleSaveEdit} color="secondary">Speichern</Button>
+      </DialogActions>
+    </Dialog>
       </Box>
       <AppFooter />
     </React.Fragment>
