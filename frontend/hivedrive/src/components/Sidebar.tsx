@@ -13,10 +13,10 @@ export interface TabItem {
 }
 
 export const tabs: TabItem[] = [
-    { key: 'Overview', label: 'Overview', icon: <Home /> },
-    { key: 'Cars', label: 'Cars', icon: <CarRental /> },
-    { key: 'Stations', label: 'Stations', icon: <EvStation /> },
-    { key: 'Accounts', label: 'Accounts', icon: <AccountBox /> },
+    { key: 'Overview', label: 'Übersicht', icon: <Home /> },
+    { key: 'Cars', label: 'Autos', icon: <CarRental /> },
+    { key: 'Stations', label: 'Stationen', icon: <EvStation /> },
+    { key: 'Accounts', label: 'Konten', icon: <AccountBox /> },
 
 ];
 

@@ -5,6 +5,7 @@ import axios from 'axios';
 import StationList from './StationsList';
 import AddStation from './AddStation';
 import { Station } from './StationTypes';
+import keycloak from '../../../keycloak';
 
 
 const Stations: React.FC = () => {
@@ -12,24 +13,36 @@ const Stations: React.FC = () => {
     const [tabIndex, setTabIndex] = useState<number>(0);
 
     useEffect(() => {
-        axios.get('/api/stations')
-            .then(response => setStations(response.data))
-            .catch(error => console.error('Error fetching stations:', error));
+        axios.get('/api/stations', { 
+            headers: {
+                Authorization: `Bearer ${keycloak.token}`,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => setStations(response.data))
+        .catch(error => console.error('Error fetching stations:', error));
+
     }, []);
 
     const handleAddStation = (newStation: Omit<Station, 'id'>) => {
-        axios.post('/api/stations', newStation)
-            .then(response => {
-                setStations([...stations, response.data]);
+        axios.post('/api/stations', newStation, { 
+                headers: {
+                    Authorization: `Bearer ${keycloak.token}`,
+                    'Content-Type': 'application/json'
+                }
             })
+            .then(response => { setStations([...stations, response.data]); })
             .catch(error => console.error('Error adding station:', error));
     };
 
     const handleEditStation = (id: number) => {
-        axios.delete(`/api/stations/id/${id}`)
-            .then(() => {
-                setStations(stations.filter(station => station.id !== id));
+        axios.delete(`/api/stations/id/${id}`, { 
+                headers: {
+                    Authorization: `Bearer ${keycloak.token}`,
+                    'Content-Type': 'application/json'
+                }
             })
+            .then(() => { setStations(stations.filter(station => station.id !== id)); })
             .catch(error => console.error('Error deleting station:', error));
     };
 
@@ -40,11 +53,11 @@ const Stations: React.FC = () => {
     return (
         <Box sx={{ p: 3 }}>
             <Typography variant="h4" gutterBottom>
-                Stations
+                Stationen
             </Typography>
             <Tabs value={tabIndex} onChange={handleTabChange}>
-                <Tab label="Station List" />
-                <Tab label="Add Station" />
+                <Tab label="Station Liste" />
+                <Tab label="Station hinzufügen" />
             </Tabs>
             <Divider sx={{ mb: 2 }} />
             {tabIndex === 0 && (
