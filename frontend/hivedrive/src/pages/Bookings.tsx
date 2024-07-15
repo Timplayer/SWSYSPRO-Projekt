@@ -18,6 +18,7 @@ import AppFooter from '../views/AppFooter';
 import withRoot from '../withRoot';
 import axios from 'axios';
 import { Reservation } from '../Types';
+import keycloak from '../keycloak';
 
 const Bookings: React.FC = () => {
   const [openInfo, setOpenInfo] = useState(false);
@@ -33,11 +34,16 @@ const Bookings: React.FC = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const response = await axios.get('/api/reservations');
+        const response = await axios.get('/api/reservations',{
+          headers: {
+            'Authorization': `Bearer ${keycloak.token}`,
+            'Content-Type': 'application/json'
+          }
+        });
         setBookings(response.data);
         setLoading(false);
       } catch (error) {
-       setError(error.message);
+        setError(error.message);
         setLoading(false);
       }
     };

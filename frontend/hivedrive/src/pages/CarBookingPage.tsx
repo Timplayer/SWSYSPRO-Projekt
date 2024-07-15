@@ -54,7 +54,7 @@ const Reservation: React.FC = () => {
       const response = await axios.get('/api/stations');
       const locationsData = response.data.map((location: any) => ({
         label: location.name,
-        value: location.name
+        value: location.id
       }));
       setLocations(locationsData);
     };
@@ -68,15 +68,15 @@ const Reservation: React.FC = () => {
     try {
       const api_reservation_data = {
         start_zeit: pickupDateCopy,
-        start_station: 1,
+        start_station: pickupLocationCopy,
         end_zeit: returnDateCopy,
-        end_station: 1,
+        end_station:  differentReturnLocation ? returnLocationCopy : pickupLocationCopy,
         auto_klasse: carClass,
       }
 
       const response = await axios.post('/api/reservations', api_reservation_data, {
         headers: {
-          Authorization: `Bearer ${keycloak.token}`,
+          'Authorization': `Bearer ${keycloak.token}`,
           'Content-Type': 'application/json'
         }
       });

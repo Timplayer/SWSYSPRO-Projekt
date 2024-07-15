@@ -3,7 +3,7 @@ import { Box, Card, CardContent, CardMedia, Typography, Button, Container, IconB
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import { useLocationContext } from '../Utils/LocationContext';
 import { useNavigate } from 'react-router-dom';
-import { Car } from '../pages/Types';
+import { VehicleType as Car } from '../Types';
 import axios from 'axios';
 import keycloak from '../keycloak';
 
@@ -31,56 +31,6 @@ const CarPresentation: React.FC = () => {
 
   const displayedCars = cars.slice(0, 10).length > 0 ? [cars[currentIndex], cars[(currentIndex + 1) % Math.min(cars.length, 10)]] : [];
 
-  const generateTestCars = (): Car[] => {
-    return [
-      {
-        id: 1,
-        name: 'Auto 1',
-        vehicleCategory: 55,
-        transmission: 'Automatik',
-        maxSeatCount: 5,
-        pricePerHour: 2000, // 20€/Stunde in Cent
-        images: ['https://via.placeholder.com/200']
-      },
-      {
-        id: 2,
-        name: 'Auto 2',
-        vehicleCategory: 2,
-        transmission: 'Manuell',
-        maxSeatCount: 4,
-        pricePerHour: 1500, // 15€/Stunde in Cent
-        images: ['https://via.placeholder.com/200']
-      },
-      {
-        id: 3,
-        name: 'Auto 3',
-        vehicleCategory: 3,
-        transmission: 'Automatik',
-        maxSeatCount: 5,
-        pricePerHour: 2500, // 25€/Stunde in Cent
-        images: ['https://via.placeholder.com/200']
-      },
-      {
-        id: 4,
-        name: 'Auto 4',
-        vehicleCategory: 4,
-        transmission: 'Automatik',
-        maxSeatCount: 2,
-        pricePerHour: 3000, // 30€/Stunde in Cent
-        images: ['https://via.placeholder.com/200']
-      },
-      {
-        id: 5,
-        name: 'Auto 5',
-        vehicleCategory: 5,
-        transmission: 'Manuell',
-        maxSeatCount: 7,
-        pricePerHour: 2200, // 22€/Stunde in Cent
-        images: ['https://via.placeholder.com/200']
-      }
-    ];
-  };
-
   useEffect(() => {
     const fetchLocations = async () => {
       try {
@@ -88,7 +38,7 @@ const CarPresentation: React.FC = () => {
         const carData = response.data;
 
         const fetchImages = async (carId: number) => {
-          const imageResponse = await axios.get(`/api/images/vehicleCategories/id/${carId}`);
+          const imageResponse = await axios.get(`/api/images/vehicleTypes/id/${carId}`);
           return imageResponse.data.map((img: { url: string }) => img.url);
         };
 
@@ -97,13 +47,11 @@ const CarPresentation: React.FC = () => {
             const images = await fetchImages(car.id);
             return { ...car, images };
           })
-        );
-        setCars(generateTestCars());
-        //setCars(carsWithImages);
+        );     
+        setCars(carsWithImages);
       } catch (error) {
         console.error("Error fetching cars: ", error);
-        // Use generated test cars in case of error
-        setCars(generateTestCars());
+
       }
     };
 
