@@ -135,7 +135,7 @@ const BookingPage: React.FC = () => {
             ))}
           </Grid>
         ) : (
-          <Typography variant="h6" gutterBottom>
+          <Typography variant="h6" gutterBottom sx={{color:'#ffffff'}}>
             Keine Autos gefunden für die ausgewählten Kriterien.
           </Typography>
         )}

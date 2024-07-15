@@ -16,6 +16,8 @@ import {
 import AppAppBar from '../views/AppAppBar';
 import AppFooter from '../views/AppFooter';
 import withRoot from '../withRoot';
+import axios from 'axios';
+import { Reservation } from '../Types';
 
 const Bookings: React.FC = () => {
   const [openInfo, setOpenInfo] = useState(false);
@@ -24,22 +26,18 @@ const Bookings: React.FC = () => {
   const [openCancel, setOpenCancel] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [currentEditBooking, setCurrentEditBooking] = useState(null);
-  const [bookings, setBookings] = useState([]);
+  const [bookings, setBookings] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const response = await fetch('https://localhost:8080/api/reservations');
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
-        setBookings(data);
+        const response = await axios.get('/api/reservations');
+        setBookings(response.data);
         setLoading(false);
       } catch (error) {
-        setError(error.message);
+       setError(error.message);
         setLoading(false);
       }
     };
