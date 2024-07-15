@@ -25,6 +25,10 @@ type url struct {
 	URL string `json:"url"`
 }
 
+type id struct {
+	Id int64 `db:"id"`
+}
+
 func postImage(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (picture, bool) {
 	p, fail := addImageToDB(writer, request, tx)
 	if fail {
