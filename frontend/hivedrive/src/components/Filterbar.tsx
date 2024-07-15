@@ -198,17 +198,6 @@ const FilterBar: React.FC<FilterContextType> = ({
             </RadioGroup>
           </Box>
         )}
-        {activeMenu === 'driverAge' && (
-          <Box sx={{ width: '300px', padding: 2 }}>
-            <Typography variant="h6">Alter des Fahrers</Typography>
-            <RadioGroup value={driverAge} onChange={handleDriverAgeChange}>
-              <FormControlLabel value="18+" control={<Radio />} label="18+" />
-              <FormControlLabel value="21+" control={<Radio />} label="21+" />
-              <FormControlLabel value="23+" control={<Radio />} label="23+" />
-              <FormControlLabel value="25+" control={<Radio />} label="25+" />
-            </RadioGroup>
-          </Box>
-        )}
       </Menu>
     </AppBar>
   );
