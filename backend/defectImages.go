@@ -56,14 +56,34 @@ func deleteDefectImage(writer http.ResponseWriter, request *http.Request, tx pgx
 
 func getDefectImagesByDefectId(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		ids, fail := getTs[id](writer, request, dbpool, "DefectImages",
-			`SELECT images.id FROM defects 
+		introspectionResult, err := introspect(writer, request)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		if slices.Contains(introspectionResult.Access.Roles, "employee") {
+			urls, fail := getTs[url](writer, request, dbpool, "DefectImages",
+				`SELECT images.url FROM defects 
     			JOIN defectImage ON defects.id = defectImage.defectId
     			JOIN images ON defectImage.imageId = images.id 
             WHERE defects.id = $1 ORDER BY images.displayorder`,
-			mux.Vars(request)["id"])
-		if fail {
-			return
+				mux.Vars(request)["id"])
+			if fail {
+				return
+			}
+			returnTAsJSON(writer, urls, http.StatusOK)
+		} else {
+			urls, fail := getTs[url](writer, request, dbpool, "DefectImages",
+				`SELECT images.url FROM defects 
+    			JOIN defectImage ON defects.id = defectImage.defectId
+    			JOIN images ON defectImage.imageId = images.id 
+            WHERE defects.id = $1 and defects.userid = $2 ORDER BY images.displayorder`,
+				mux.Vars(request)["id"], introspectionResult.UserId)
+			if fail {
+				return
+			}
+			returnTAsJSON(writer, urls, http.StatusOK)
 		}
 		urls := make([]url, len(ids))
 		for i := range ids {
