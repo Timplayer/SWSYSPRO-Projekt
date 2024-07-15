@@ -27,15 +27,15 @@ const Bookings: React.FC = () => {
   const [openCancel, setOpenCancel] = useState(false);
   const [removeid, setremoveid] = useState(0);
   const [openEdit, setOpenEdit] = useState(false);
-  const [currentEditBooking, setCurrentEditBooking] = useState(null);
+  const [currentEditBooking, setCurrentEditBooking] = useState<Reservation | null>(null);
   const [bookings, setBookings] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const response = await axios.get('/api/reservations',{
+        const response = await axios.get('/api/reservations', {
           headers: {
             'Authorization': `Bearer ${keycloak.token}`,
             'Content-Type': 'application/json'
@@ -57,7 +57,7 @@ const Bookings: React.FC = () => {
   const currentBookings = bookings.filter(booking => new Date(booking.start_zeit) > currentDate);
   const pastBookings = bookings.filter(booking => new Date(booking.start_zeit) <= currentDate);
 
-  const calculateRentalDays = (startDate, endDate) => {
+  const calculateRentalDays = (startDate: string, endDate: string) => {
     const diffTime = Math.abs(new Date(endDate).getTime() - new Date(startDate).getTime());
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
@@ -86,7 +86,7 @@ const Bookings: React.FC = () => {
     setOpenMoreInfo(false);
   };
 
-  const handleClickOpenCancel = (id : number) => {
+  const handleClickOpenCancel = (id: number) => {
     setremoveid(id);
     setOpenCancel(true);
   };
@@ -95,43 +95,88 @@ const Bookings: React.FC = () => {
     setOpenCancel(false);
   };
 
-  const handleConfirmCancel = () => {
-    axios.delete( `/api/reservations/id/${removeid}`,{
-      headers: {
-        'Authorization': `Bearer ${keycloak.token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    setBookings(bookings.filter((booking) => booking.id!== removeid));
-    setOpenCancel(false);
+  const handleConfirmCancel = async () => {
+    try {
+      await axios.delete(`/api/reservations/id/${removeid}`, {
+        headers: {
+          'Authorization': `Bearer ${keycloak.token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      setBookings(bookings.filter((booking) => booking.id !== removeid));
+      setOpenCancel(false);
+    } catch (error) {
+      setError(error.message);
+    }
   };
 
-  const handleDownloadInvoice = (bookingId) => {
+  const handleDownloadInvoice = (bookingId: number) => {
     // Add your invoice download logic here
     console.log(`Download invoice for booking ${bookingId}`);
   };
 
-  const handleClickOpenEdit = (booking) => {
-    setCurrentEditBooking(booking);
+  const handleClickOpenEdit = (booking: Reservation) => {
+    setCurrentEditBooking({
+      ...booking,
+      start_zeit: new Date(booking.start_zeit),
+      end_zeit: new Date(booking.end_zeit),
+    });
     setOpenEdit(true);
   };
+  
 
   const handleCloseEdit = () => {
     setOpenEdit(false);
     setCurrentEditBooking(null);
   };
 
-  const handleSaveEdit = () => {
-    // Add your save logic here
-    setOpenEdit(false);
-    setCurrentEditBooking(null);
+  const handleSaveEdit = async () => {
+    if (currentEditBooking) {
+      const updatedBooking = {
+        auto_klasse: currentEditBooking.auto_klasse,
+        start_station: currentEditBooking.start_station,
+        end_station: currentEditBooking.end_station,
+        start_zeit: currentEditBooking.start_zeit,
+        end_zeit: currentEditBooking.end_zeit,
+      };
+
+      try {
+        // Delete the old booking
+        await axios.delete(`/api/reservations/id/${currentEditBooking.id}`, {
+          headers: {
+            'Authorization': `Bearer ${keycloak.token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        // Create the new booking
+        const response = await axios.post('/api/reservations', updatedBooking, {
+          headers: {
+            'Authorization': `Bearer ${keycloak.token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        setBookings(bookings.map(booking => (booking.id === currentEditBooking.id ? response.data : booking)));
+        setOpenEdit(false);
+        setCurrentEditBooking(null);
+      } catch (error) {
+        setError(error.message);
+      }
+    }
   };
 
-  const handleEditChange = (field, value) => {
-    setCurrentEditBooking({ ...currentEditBooking, [field]: value });
+  const handleEditChange = (field: keyof Reservation, value: any) => {
+    if (currentEditBooking) {
+      if (field === 'start_zeit' || field === 'end_zeit') {
+        setCurrentEditBooking({ ...currentEditBooking, [field]: new Date(value) });
+      } else {
+        setCurrentEditBooking({ ...currentEditBooking, [field]: value });
+      }
+    }
   };
 
-  const renderBooking = (booking, isPast) => {
+  const renderBooking = (booking: Reservation, isPast: boolean) => {
     const rentalDays = calculateRentalDays(booking.start_zeit, booking.end_zeit);
     return (
       <Card variant="outlined" key={booking.id} sx={{ mb: 2 }}>
@@ -156,7 +201,7 @@ const Bookings: React.FC = () => {
                 <Button variant="contained" color="primary" onClick={() => handleDownloadInvoice(booking.id)} sx={{ ml: 2 }}>Rechnung herunterladen</Button>
               ) : (
                 <React.Fragment>
-                  <Button variant="contained" color="secondary" onClick={() => handleClickOpenCancel(booking.id)} sx={{ ml: 2 }}>Buchung stornieren</Button>   
+                  <Button variant="contained" color="secondary" onClick={() => handleClickOpenCancel(booking.id)} sx={{ ml: 2 }}>Buchung stornieren</Button>
                   <Button variant="contained" color="secondary" onClick={() => handleClickOpenEdit(booking)} sx={{ ml: 2 }}>Bearbeiten</Button>
                 </React.Fragment>
               )}
@@ -242,8 +287,7 @@ const Bookings: React.FC = () => {
             <Button onClick={handleConfirmCancel} color="secondary">Stornieren</Button>
           </DialogActions>
         </Dialog>
-
-        <Dialog open={openEdit} onClose={handleCloseEdit}>
+      <Dialog open={openEdit} onClose={handleCloseEdit}>
           <DialogTitle>Buchung bearbeiten</DialogTitle>
           <DialogContent>
             <TextField
@@ -275,16 +319,16 @@ const Bookings: React.FC = () => {
               label="Startdatum"
               type="datetime-local"
               fullWidth
-              value={currentEditBooking?.start_zeit?.toISOString().slice(0, 16) || ''}
-              onChange={(e) => handleEditChange('start_zeit', new Date(e.target.value))}
+              value={currentEditBooking?.start_zeit ? new Date(currentEditBooking.start_zeit).toISOString().slice(0, 16) : ''}
+              onChange={(e) => handleEditChange('start_zeit', e.target.value)}
             />
             <TextField
               margin="dense"
               label="Enddatum"
               type="datetime-local"
               fullWidth
-              value={currentEditBooking?.end_zeit?.toISOString().slice(0, 16) || ''}
-              onChange={(e) => handleEditChange('end_zeit', new Date(e.target.value))}
+              value={currentEditBooking?.end_zeit ? new Date(currentEditBooking.end_zeit).toISOString().slice(0, 16) : ''}
+              onChange={(e) => handleEditChange('end_zeit', e.target.value)}
             />
           </DialogContent>
           <DialogActions>
