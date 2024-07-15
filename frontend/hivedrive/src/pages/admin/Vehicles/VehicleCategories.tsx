@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Box, Button, List, ListItem, ListItemText, IconButton, Typography, TextField } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckIcon from '@mui/icons-material/Check';
-import { VehicleCategory } from './VehicleDataTypes';
+import { VehicleCategory } from '../../../Types';
 
 interface VehicleCategoriesProps {
     categories: VehicleCategory[];

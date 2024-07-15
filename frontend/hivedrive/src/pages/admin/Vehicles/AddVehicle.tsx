@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Button, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import dayjs from 'dayjs';
-import { Vehicle, VehicleType, Producer } from './VehicleDataTypes';
+import { Vehicle, VehicleType, Producer } from '../../../Types';
 import { LocalizationProvider, MobileDateTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 

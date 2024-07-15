@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Box, Button, Chip, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { useDropzone } from 'react-dropzone';
 import axios from 'axios';
-import { VehicleType, Transmission, DriverSystem } from './VehicleDataTypes';
+import { VehicleType, Transmission, DriverSystem } from '../../../Types';
 
 interface AddVehicleTypeProps {
     categories: { id: number; name: string }[];

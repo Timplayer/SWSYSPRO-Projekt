@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 
 import EditIcon from '@mui/icons-material/Edit';
-import { Vehicle, VehicleType, Producer } from './VehicleDataTypes';
+import { Vehicle, VehicleType, Producer } from '../../../Types';
 
 interface VehicleListProps {
     vehicles: Vehicle[];

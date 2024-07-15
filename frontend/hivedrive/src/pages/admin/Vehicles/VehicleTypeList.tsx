@@ -19,7 +19,7 @@ import {
     MenuItem,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import { VehicleType, Transmission } from './VehicleDataTypes';
+import { VehicleType, Transmission } from '../../../Types';
 
 interface VehicleTypeListProps {
     vehicleTypes: VehicleType[];

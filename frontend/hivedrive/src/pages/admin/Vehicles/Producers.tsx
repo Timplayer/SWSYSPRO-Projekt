@@ -3,7 +3,7 @@ import { Box, Button, List, ListItem, ListItemText, IconButton, Typography, Text
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckIcon from '@mui/icons-material/Check';
-import { Producer } from './VehicleDataTypes';
+import { Producer } from '../../../Types';
 
 interface ProducersProps {
     producers: Producer[];
