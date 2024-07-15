@@ -60,8 +60,8 @@ func getDefectImagesByDefectId(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		if slices.Contains(introspectionResult.Access.Roles, "employee") {
-			urls, fail := getTs[url](writer, request, dbpool, "DefectImages",
-				`SELECT images.url FROM defects 
+			ids, fail := getTs[id](writer, request, dbpool, "DefectImages",
+				`SELECT images.id FROM defects 
     			JOIN defectImage ON defects.id = defectImage.defectId
     			JOIN images ON defectImage.imageId = images.id 
             WHERE defects.id = $1 ORDER BY images.displayorder`,
@@ -69,10 +69,14 @@ func getDefectImagesByDefectId(dbpool *pgxpool.Pool) http.HandlerFunc {
 			if fail {
 				return
 			}
-			returnTAsJSON(writer, urls, http.StatusOK)
+			urls := make([]url, len(ids))
+			for i := range ids {
+				urls[i].URL = httpsPrefix + request.Host + fileAPIpath + strconv.FormatInt(ids[i].Id, 10)
+			}
+			returnTAsJSON(writer, ids, http.StatusOK)
 		} else {
-			urls, fail := getTs[url](writer, request, dbpool, "DefectImages",
-				`SELECT images.url FROM defects 
+			ids, fail := getTs[id](writer, request, dbpool, "DefectImages",
+				`SELECT images.id FROM defects 
     			JOIN defectImage ON defects.id = defectImage.defectId
     			JOIN images ON defectImage.imageId = images.id 
             WHERE defects.id = $1 and defects.userid = $2 ORDER BY images.displayorder`,
@@ -80,13 +84,11 @@ func getDefectImagesByDefectId(dbpool *pgxpool.Pool) http.HandlerFunc {
 			if fail {
 				return
 			}
-			returnTAsJSON(writer, urls, http.StatusOK)
+			urls := make([]url, len(ids))
+			for i := range ids {
+				urls[i].URL = httpsPrefix + request.Host + fileAPIpath + strconv.FormatInt(ids[i].Id, 10)
+			}
+			returnTAsJSON(writer, ids, http.StatusOK)
 		}
-		urls := make([]url, len(ids))
-		for i := range ids {
-			urls[i].URL = httpsPrefix + request.Host + fileAPIpath + strconv.FormatInt(ids[i].Id, 10)
-		}
-
-		returnTAsJSON(writer, urls, http.StatusOK)
 	}
 }
