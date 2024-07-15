@@ -26,7 +26,7 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
 
   const [locations, setLocations] = useState<Array<{ label: string, value: number }>>([]);
 
-  const [startlocation, setStartLocation] = useState<number | undefined>(initialLocation);
+  const [startLocation, setStartLocation] = useState<number | undefined>(initialLocation);
   const [returnLocation, setReturnLocation] = useState<number | undefined>(initialReturnLocation);
 
   const [pickupDate, setPickupDate] = useState<Date | null>(initialPickupDate);
@@ -48,9 +48,9 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
 
   const handleSubmit = () => {
 
-    if(startlocation) {
+    if(startLocation) {
 
-      axios.get<Availability[]>(`/api/stations/id/${startlocation}/availability`)
+      axios.get<Availability[]>(`/api/stations/id/${startLocation}/availability`)
       .then((response) => {  
         let vehicleTypes = new Map<number, {date: Date, count: number}>();
         
@@ -85,7 +85,7 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
 
         navigate('/bookingpage', {
           state: {
-            startLocation : startlocation,
+            startLocation : startLocation,
             returnLocation: splitLocation ? returnLocation : undefined,
             pickupDate: pickupDate,
             returnDate : returnDate,
@@ -100,8 +100,8 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
       
       navigate('/bookingpage', {
         state: {
-          startlocation,
-          returnLocation: splitLocation ? returnLocation : startlocation,
+          startLocation,
+          returnLocation: splitLocation ? returnLocation : undefined,
           pickupDate,
           returnDate
         },
@@ -119,7 +119,7 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
             <TextField
               select
               label={splitLocation ? 'Abholung' : 'Abholung und Rückgabe'}
-              value={startlocation}
+              value={startLocation}
               onChange={(e) => setStartLocation(e.target.value)}
               fullWidth
             >

@@ -18,7 +18,6 @@ const Reservation: React.FC = () => {
 
   const { car, searchLocation, returnLocation, pickupDate, returnDate } = location.state || {};
 
-
   const [vehicleCategories, setVehicleCategories] = useState<VehicleCategory[]>([]);
 
   const [customerName, setCustomerName] = useState('');
@@ -37,9 +36,7 @@ const Reservation: React.FC = () => {
   const [additionalDriverName, setAdditionalDriverName] = useState('');
   const [additionalDriverAge, setAdditionalDriverAge] = useState('25');
 
-  if (!car) {
-    return null;
-  }
+  const [locations, setLocations] = useState<Array<{ label: string, value: string }>>([]);
 
   useEffect(() => {
     if (!location.state || !car) {
@@ -47,44 +44,6 @@ const Reservation: React.FC = () => {
     }
   }, [location.state, car]);
 
-  const getDriverSystemName = (drive: DriverSystem): string => {
-    switch (drive) {
-        case DriverSystem.FWD:
-            return "Vorderradantrieb";
-        case DriverSystem.RWD:
-            return "Hinterradantrieb";
-        case DriverSystem.AWD:
-            return "Allradantrieb";
-        default:
-            return "";
-    }
-  };
-
-  const getTransmissonName = (transmission: Transmission): string => {
-    switch (transmission) {
-        case Transmission.Automatik:
-          return "Automatik"
-          case Transmission.Manuell:
-            return "Manuell";
-        default:
-            return "";
-    }
-  };
-
-  const getVehicaleCategorieNameById = (id: number): string => {
-    const carClass = vehicleCategories.find((cls) => cls.id === id);
-    return carClass ? carClass.name : "Unbekannt";
-  };
-  
-
-
-  useEffect(() => {
-    const { given_name, family_name, email } = keycloak.tokenParsed;
-    setCustomerName(`${given_name} ${family_name}`);
-    setCustomerEmail(email);
-  }, []);
-
-  const [locations, setLocations] = useState<Array<{ label: string, value: string }>>([]);
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -100,6 +59,10 @@ const Reservation: React.FC = () => {
       const response = await axios.get('/api/vehicleCategories');
       setVehicleCategories(response.data);
     }
+
+    const { given_name, family_name, email } = keycloak.tokenParsed;
+    setCustomerName(`${given_name} ${family_name}`);
+    setCustomerEmail(email);
 
     fetchVehicleCategories();
     fetchLocations();
@@ -135,6 +98,35 @@ const Reservation: React.FC = () => {
     }
   };
 
+  const getDriverSystemName = (drive: DriverSystem): string => {
+    switch (drive) {
+        case DriverSystem.FWD:
+            return "Vorderradantrieb";
+        case DriverSystem.RWD:
+            return "Hinterradantrieb";
+        case DriverSystem.AWD:
+            return "Allradantrieb";
+        default:
+            return "";
+    }
+  };
+
+  const getTransmissonName = (transmission: Transmission): string => {
+    switch (transmission) {
+        case Transmission.Automatik:
+          return "Automatik"
+          case Transmission.Manuell:
+            return "Manuell";
+        default:
+            return "";
+    }
+  };
+
+  const getVehicaleCategorieNameById = (id: number): string => {
+    const carClass = vehicleCategories.find((cls) => cls.id === id);
+    return carClass ? carClass.name : "Unbekannt";
+  };
+  
   const StyledTextField = styled(TextField)({
     '& .Mui-disabled': {
       color: 'rgba(0, 0, 0, 0.87)', 
@@ -144,6 +136,10 @@ const Reservation: React.FC = () => {
   });
 
   const now = new Date();
+
+  if (!car) {
+    return null;
+  }
 
   return (
     <React.Fragment>

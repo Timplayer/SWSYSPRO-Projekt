@@ -25,7 +25,7 @@ const Bookings: React.FC = () => {
   const [openReturnDetails, setOpenReturnDetails] = useState(false);
   const [openMoreInfo, setOpenMoreInfo] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
-  const [removeid, setremoveid] = useState(0);
+  const [removeid, setRemoveid] = useState(0);
   const [openEdit, setOpenEdit] = useState(false);
   const [currentEditBooking, setCurrentEditBooking] = useState<Reservation | null>(null);
   const [bookings, setBookings] = useState<Reservation[]>([]);
@@ -87,7 +87,7 @@ const Bookings: React.FC = () => {
   };
 
   const handleClickOpenCancel = (id: number) => {
-    setremoveid(id);
+    setRemoveid(id);
     setOpenCancel(true);
   };
 
