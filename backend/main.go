@@ -63,9 +63,9 @@ func main() {
 	router.HandleFunc(imagesDefectAPIpath, getDefectImagesByDefectId(dbpool)).Methods("GET")
 	router.HandleFunc(imagesDefectAPIpath, RestRequestWithTransaction(dbpool, http.StatusOK, deleteDefectImage)).Methods("DELETE")
 
-	router.HandleFunc(imagesAPIpath, getImages(dbpool)).Methods("GET")                                                 // List of URLs
-	router.HandleFunc(imagesIdAPIpath, RestRequestWithTransaction(dbpool, http.StatusOK, getImageById)).Methods("GET") // URL
-	router.HandleFunc(imagesFilesIDAPIpath, getImageByIdAsFile(dbpool)).Methods("GET")                                 // File
+	router.HandleFunc(imagesAPIpath, getImages(dbpool)).Methods("GET")
+	router.HandleFunc(imagesIdAPIpath, RestRequestWithTransaction(dbpool, http.StatusOK, getImageById)).Methods("GET")
+	router.HandleFunc(imagesFilesIDAPIpath, getImageByIdAsFile(dbpool)).Methods("GET")
 
 	router.HandleFunc(vehicleCategoriesAPIpath, RestRequestWithTransaction(dbpool, http.StatusCreated, postVehicleCategories)).Methods("POST")
 	router.HandleFunc(vehicleCategoriesAPIpath, getVehicleCategories(dbpool)).Methods("GET")
@@ -180,8 +180,8 @@ func initializeDatabase(dbpool *pgxpool.Pool) {
 
 func validate(
 	handler func(writer http.ResponseWriter,
-		request *http.Request,
-		introspectionResult *introspection)) http.HandlerFunc {
+	request *http.Request,
+	introspectionResult *introspection)) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		introspectionResult, err := introspect(writer, request)
 		if err != nil {
