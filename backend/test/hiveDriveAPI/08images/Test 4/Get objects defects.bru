@@ -10,6 +10,10 @@ get {
   auth: none
 }
 
+headers {
+  Authorization: Bearer {{access_token_employee}}
+}
+
 tests {
   test("Status = 200", function() {
     const data = res.getBody();
