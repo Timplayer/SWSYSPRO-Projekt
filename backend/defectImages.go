@@ -10,6 +10,12 @@ import (
 )
 
 func postDefectImage(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (picture, bool) {
+	_, err := introspect(writer, request)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusUnauthorized)
+		return picture{}, true
+	}
+
 	p, fail := addImageToDB(writer, request, tx)
 	if fail {
 		return picture{}, true
