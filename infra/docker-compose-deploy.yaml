@@ -1,0 +1,73 @@
+version: '3.7'
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:Z
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      - SITE_ADDRESS=hivedrive.de
+    depends_on:
+      - keycloak
+      - frontend
+  keycloak:
+    build: ./keycloak/
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=password
+      - KC_HTTP_RELATIVE_PATH=/auth/
+      - KC_PROXY_HEADERS=xforwarded
+      - KC_HEALTH_ENABLED=true
+    command: start-dev --import-realm
+    volumes:
+      - keycloak_data:/opt/keycloak/data:Z
+      - ./keycloak/input:/opt/keycloak/data/import:Z
+    healthcheck:
+      test: /healthcheck.sh
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+  frontend:
+    build: ../frontend/
+    restart: unless-stopped
+    volumes:
+      - ../frontend/hivedrive/src/:/usr/local/app/src/:Z
+  backend:
+    build: ../backend/
+    restart: unless-stopped
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    environment:
+      - ISSUER=http://keycloak:8080/auth/realms/hivedrive
+      - CLIENT_ID=go-backend
+      - CLIENT_SECRET=Q09xvcW2dwvqBzKzRTUF3I9Q6RS25qco
+      - DATABASE_URL=db
+      - DATABASE_USER=postgres
+      - DATABASE_PASS=example
+  db:
+    image: postgres
+    restart: always
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: hivedrive
+    volumes:
+      - db:/var/lib/postgresql/data
+
+volumes:
+  caddy_data:
+  caddy_config:
+  db:
+  keycloak_data:
+
