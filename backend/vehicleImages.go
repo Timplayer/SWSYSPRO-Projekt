@@ -7,9 +7,20 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"net/http"
 	"strconv"
+	"slices"
 )
 
 func postVehicleImage2(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (picture, bool) {
+	introspectionResult, err := introspect(writer, request)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusUnauthorized)
+		return picture{}, true
+	}
+	if !slices.Contains(introspectionResult.Access.Roles, "employee") {
+		http.Error(writer, "Access denied", http.StatusUnauthorized)
+		return picture{}, true
+	}
+
 	p, fail := addImageToDB(writer, request, tx)
 	if fail {
 		return picture{}, true
@@ -21,6 +32,16 @@ func postVehicleImage2(writer http.ResponseWriter, request *http.Request, tx pgx
 }
 
 func deleteVehicleImage(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (picture, bool) {
+	introspectionResult, err := introspect(writer, request)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusUnauthorized)
+		return picture{}, true
+	}
+	if !slices.Contains(introspectionResult.Access.Roles, "employee") {
+		http.Error(writer, "Access denied", http.StatusUnauthorized)
+		return picture{}, true
+	}
+
 	result, err := tx.Exec(context.Background(),
 		"DELETE FROM vehicleImage WHERE imageId = $1;", mux.Vars(request)["id"])
 	if checkUpdateSingleRow(writer, err, result, "deleteVehicleImage") {
