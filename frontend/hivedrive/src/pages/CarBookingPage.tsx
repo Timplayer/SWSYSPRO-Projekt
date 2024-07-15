@@ -14,30 +14,12 @@ import { VehicleType, Transmission, DriverSystem, VehicleCategory } from '../Typ
 const Reservation: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
 
   const { car, searchLocation, returnLocation, pickupDate, returnDate } = location.state || {};
 
-  useEffect(() => {
-    if (!location.state || !car) {
-      navigate('/');
-    }
-  }, [location.state, car, navigate]);
-
-  if (!car) {
-    return null;
-  }
-
-  const theme = useTheme();
 
   const [vehicleCategories, setVehicleCategories] = useState<VehicleCategory[]>([]);
-
-  const [carName, setCarName] = useState(car.name);
-  const [carClass, setCarClass] = useState(car.vehicleCategory);
-
-  const [carTransmission, setCarTransmission] = useState<Transmission>(car.transmission as Transmission);
-  const [carDrive, setCarDrive] = useState<DriverSystem>(car.driverSystem as DriverSystem);
-
-  const [carSeatings, setCarSeatings] = useState(car.maxSeatCount);
 
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
@@ -54,6 +36,16 @@ const Reservation: React.FC = () => {
   const [additionalDriver, setAdditionalDriver] = useState(false);
   const [additionalDriverName, setAdditionalDriverName] = useState('');
   const [additionalDriverAge, setAdditionalDriverAge] = useState('25');
+
+  if (!car) {
+    return null;
+  }
+
+  useEffect(() => {
+    if (!location.state || !car) {
+      navigate('/');
+    }
+  }, [location.state, car]);
 
   const getDriverSystemName = (drive: DriverSystem): string => {
     switch (drive) {
@@ -122,7 +114,7 @@ const Reservation: React.FC = () => {
         start_station: pickupLocationCopy,
         end_zeit: returnDateCopy,
         end_station:  differentReturnLocation ? returnLocationCopy : pickupLocationCopy,
-        auto_klasse: carClass,
+        auto_klasse: car.id,
       }
 
       const response = await axios.post('/api/reservations', api_reservation_data, {
@@ -194,7 +186,7 @@ const Reservation: React.FC = () => {
                 <StyledTextField
                   fullWidth
                   label="Fahrzeug Bezeichnung"
-                  value={carName}
+                  value={car.name}
                   sx={{ backgroundColor: theme.palette.background.paper }}
                   disabled
                 />
@@ -203,7 +195,7 @@ const Reservation: React.FC = () => {
                 <StyledTextField
                   fullWidth
                   label="Fahrzeugklasse"
-                  value={getVehicaleCategorieNameById(carClass)}
+                  value={getVehicaleCategorieNameById(car.vehicleCategory)}
                   sx={{ backgroundColor: theme.palette.background.paper }}
                   disabled
                 />
@@ -212,7 +204,7 @@ const Reservation: React.FC = () => {
                 <StyledTextField
                   fullWidth
                   label="Getriebe"
-                  value={getTransmissonName(carTransmission)}
+                  value={getTransmissonName(car.transmission)}
                   sx={{ backgroundColor: theme.palette.background.paper }}
                   disabled
                 />
@@ -221,7 +213,7 @@ const Reservation: React.FC = () => {
                 <StyledTextField
                   fullWidth
                   label="Antrieb"
-                  value={getDriverSystemName(carDrive)}
+                  value={getDriverSystemName(car.driverSystem)}
                   sx={{ backgroundColor: theme.palette.background.paper }}
                   disabled
                 />
@@ -230,7 +222,7 @@ const Reservation: React.FC = () => {
                 <StyledTextField
                   fullWidth
                   label="Anzahl der Sitzplätze"
-                  value={carSeatings}
+                  value={car.maxSeatCount}
                   sx={{ backgroundColor: theme.palette.background.paper }}
                   disabled
                 />

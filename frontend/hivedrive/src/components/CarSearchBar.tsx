@@ -33,7 +33,6 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
   const [returnDate, setReturnDate] = useState<Date | null>(initialReturnDate);
   const [splitLocation, setSplitLocation] = useState<boolean>(initialReturnLocation !== undefined);
 
-
   useEffect(() => {
     const fetchLocations = async () => {
       const response = await axios.get('/api/stations');
@@ -49,7 +48,8 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
 
   const handleSubmit = () => {
 
-    if(startlocation){
+    if(startlocation) {
+
       axios.get<Availability[]>(`/api/stations/id/${startlocation}/availability`)
       .then((response) => {  
         let vehicleTypes = new Map<number, {date: Date, count: number}>();
@@ -61,10 +61,12 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
 
           if (!vehicleTypes.has(availability.auto_klasse)) {
             vehicleTypes.set(availability.auto_klasse, { 
-              date: new Date(availability.time), // Ensure availability.time is of type Date
+              date: new Date(availability.time),
               count: availability.availability,
             });
-          } else {
+          }
+          else 
+          {
             const existingEntry = vehicleTypes.get(availability.auto_klasse);
     
             if (existingEntry && new Date(existingEntry.date) < new Date(availability.time)) {
@@ -80,16 +82,29 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
           const type = vehicleTypes.get(id);
           return type && type.count > 0;
         });
-        
+
         navigate('/bookingpage', {
           state: {
-            startlocation,
-            returnLocation: splitLocation ? returnLocation : startlocation,
-            pickupDate,
-            returnDate,
-            availabilityVehicleTypes,
+            startLocation : startlocation,
+            returnLocation: splitLocation ? returnLocation : undefined,
+            pickupDate: pickupDate,
+            returnDate : returnDate,
+            availabilityVehicleTypes: availabilityVehicleTypes,
           },
         });
+        
+      });
+    }
+    else
+    {
+      
+      navigate('/bookingpage', {
+        state: {
+          startlocation,
+          returnLocation: splitLocation ? returnLocation : startlocation,
+          pickupDate,
+          returnDate
+        },
       });
     }
   };

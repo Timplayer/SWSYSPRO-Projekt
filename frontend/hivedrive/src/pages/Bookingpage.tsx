@@ -15,7 +15,7 @@ const BookingPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const { location: startLocation, returnLocation, pickupDate, returnDate, availabilityVehicleTypes } = location.state || {};
+  const { startLocation, returnLocation, pickupDate, returnDate, availabilityVehicleTypes } = location.state || {};
 
   const [cars, setCars] = useState<VehicleType[]>([]);
 
@@ -28,7 +28,8 @@ const BookingPage: React.FC = () => {
   const [seatCount, setSeatCount] = useState('2+'); 
   const [driverAge, setDriverAge] = useState('25+'); 
 
-  useEffect(() => {
+  useEffect(() => { 
+
     const fetchVehicleCategories = async () => {
       const response = await axios.get('/api/vehicleCategories');
       setVehicleCategories(response.data);
@@ -87,8 +88,13 @@ const BookingPage: React.FC = () => {
       const matchesTransmission = transmission.length === 0 || transmission.includes(car.transmission);
       const matchesDriveType = driveType.length === 0 || driveType.includes(car.driverSystem);
       const matchesSeatCount = !seatCount || car.maxSeatCount >= parseInt(seatCount, 10);
-
-      const matchesAvailabilityVehicleTypes = availabilityVehicleTypes.includes(car.id);
+      let matchesAvailabilityVehicleTypes = false;
+  
+      if(!availabilityVehicleTypes){
+        matchesAvailabilityVehicleTypes = true;
+      }else{
+        matchesAvailabilityVehicleTypes = availabilityVehicleTypes.includes(car.id)
+      }
       return matchesAvailabilityVehicleTypes && matchesVehicleCategory && matchesTransmission && matchesDriveType && matchesSeatCount;
     });
   };
