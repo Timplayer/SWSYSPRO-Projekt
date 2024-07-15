@@ -151,7 +151,6 @@ const FilterBar: React.FC<FilterContextType> = ({
             <RadioGroup value={sortOption} onChange={handleSortChange}>
               <FormControlLabel value="lowestPrice" control={<Radio />} label="Niedrigster Preis zuerst" />
               <FormControlLabel value="highestPrice" control={<Radio />} label="Höchster Preis zuerst" />
-              <FormControlLabel value="electricFirst" control={<Radio />} label="Elektrische Fahrzeuge zuerst" />
             </RadioGroup>
           </Box>
         )}
