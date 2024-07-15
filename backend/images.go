@@ -102,7 +102,14 @@ func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if err != nil {
 			return
 		}
-		returnTAsJSON(writer, p.File, http.StatusOK)
+		writer.Header().Set(contentType, octetStream)
+		writer.WriteHeader(http.StatusOK)
+		_, err = writer.Write(p.File)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error sending HTTP response: %v", err)
+			return
+		}
 	}
 }
 
