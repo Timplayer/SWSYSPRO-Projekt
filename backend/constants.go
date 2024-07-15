@@ -69,3 +69,8 @@ var transactionOptionsReadOnly = pgx.TxOptions{
 	DeferrableMode: pgx.NotDeferrable}
 
 var supportedFileTypes = []string{imageJPEG, imagePNG, imageGIF, imageWEBP, imageSVG}
+
+// SQL statements
+const postVehilceImageSQL = "INSERT INTO vehicleImage (vehicleId, imageId) VALUES ($1, $2);"
+const deleteVehicleImageSQL = "DELETE FROM vehicleImage WHERE imageId = $1;"
+const getVehicleImagesByVehicleIdSQL = "SELECT images.url FROM vehicles JOIN vehicleImage ON vehicles.id = vehicleImage.vehicleId JOIN images ON vehicleImage.imageId = images.id WHERE vehicles.id = $1 ORDER BY images.displayorder"
