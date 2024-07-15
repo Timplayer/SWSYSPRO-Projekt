@@ -9,7 +9,7 @@ import axios from 'axios';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { MobileDateTimePicker } from '@mui/x-date-pickers';
-import { VehicleType, Transmission, DriverSystem } from '../Types.ts';
+import { VehicleType, Transmission, DriverSystem, VehicleCategory } from '../Types.ts';
 
 const Reservation: React.FC = () => {
   const navigate = useNavigate();
@@ -17,12 +17,26 @@ const Reservation: React.FC = () => {
 
   const { car, searchLocation, returnLocation, pickupDate, returnDate } = location.state || {};
 
+  useEffect(() => {
+    if (!location.state || !car) {
+      navigate('/');
+    }
+  }, [location.state, car, navigate]);
+
+  if (!car) {
+    return null;
+  }
+
   const theme = useTheme();
+
+  const [vehicleCategories, setVehicleCategories] = useState<VehicleCategory[]>([]);
 
   const [carName, setCarName] = useState(car.name);
   const [carClass, setCarClass] = useState(car.vehicleCategory);
-  const [carTransmission, setCarTransmission] = useState(car.transmission as Transmission);
-  const [carDrive, setCarDrive] = useState(car.driveType as DriverSystem);
+
+  const [carTransmission, setCarTransmission] = useState<Transmission>(car.transmission as Transmission);
+  const [carDrive, setCarDrive] = useState<DriverSystem>(car.driverSystem as DriverSystem);
+
   const [carSeatings, setCarSeatings] = useState(car.maxSeatCount);
 
   const [customerName, setCustomerName] = useState('');
@@ -40,6 +54,37 @@ const Reservation: React.FC = () => {
   const [additionalDriver, setAdditionalDriver] = useState(false);
   const [additionalDriverName, setAdditionalDriverName] = useState('');
   const [additionalDriverAge, setAdditionalDriverAge] = useState('25');
+
+  const getDriverSystemName = (drive: DriverSystem): string => {
+    switch (drive) {
+        case DriverSystem.FWD:
+            return "Vorderradantrieb";
+        case DriverSystem.RWD:
+            return "Hinterradantrieb";
+        case DriverSystem.AWD:
+            return "Allradantrieb";
+        default:
+            return "";
+    }
+  };
+
+  const getTransmissonName = (transmission: Transmission): string => {
+    switch (transmission) {
+        case Transmission.Automatik:
+          return "Automatik"
+          case Transmission.Manuell:
+            return "Manuell";
+        default:
+            return "";
+    }
+  };
+
+  const getVehicaleCategorieNameById = (id: number): string => {
+    const carClass = vehicleCategories.find((cls) => cls.id === id);
+    return carClass ? carClass.name : "Unbekannt";
+  };
+  
+
 
   useEffect(() => {
     const { given_name, family_name, email } = keycloak.tokenParsed;
@@ -59,6 +104,12 @@ const Reservation: React.FC = () => {
       setLocations(locationsData);
     };
 
+    const fetchVehicleCategories = async() => {
+      const response = await axios.get('/api/vehicleCategories');
+      setVehicleCategories(response.data);
+    }
+
+    fetchVehicleCategories();
     fetchLocations();
   }, []);
 
@@ -152,7 +203,7 @@ const Reservation: React.FC = () => {
                 <StyledTextField
                   fullWidth
                   label="Fahrzeugklasse"
-                  value={carClass}
+                  value={getVehicaleCategorieNameById(carClass)}
                   sx={{ backgroundColor: theme.palette.background.paper }}
                   disabled
                 />
@@ -161,7 +212,7 @@ const Reservation: React.FC = () => {
                 <StyledTextField
                   fullWidth
                   label="Getriebe"
-                  value={carTransmission}
+                  value={getTransmissonName(carTransmission)}
                   sx={{ backgroundColor: theme.palette.background.paper }}
                   disabled
                 />
@@ -170,7 +221,7 @@ const Reservation: React.FC = () => {
                 <StyledTextField
                   fullWidth
                   label="Antrieb"
-                  value={carDrive}
+                  value={getDriverSystemName(carDrive)}
                   sx={{ backgroundColor: theme.palette.background.paper }}
                   disabled
                 />

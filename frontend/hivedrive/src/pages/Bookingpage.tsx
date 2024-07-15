@@ -9,7 +9,7 @@ import AppFooter from '../views/AppFooter';
 import CarSearchBar from '../components/CarSearchBar';
 import keycloak from '../keycloak';
 import axios from 'axios';
-import { Reservation, Transmission, VehicleCategory, VehicleType, DriverSystem } from '../Types.ts';
+import { Transmission, VehicleCategory, VehicleType, DriverSystem } from '../Types.ts';
 
 const BookingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -18,7 +18,6 @@ const BookingPage: React.FC = () => {
   const { location: startLocation, returnLocation, pickupDate, returnDate, availabilityVehicleTypes } = location.state || {};
 
   const [cars, setCars] = useState<VehicleType[]>([]);
-  const [reservation, setReservation] = useState<Reservation>();
 
   const [vehicleCategories, setVehicleCategories] = useState<VehicleCategory[]>([]);
   const [filterCategories, setFilterCategories] = useState<VehicleCategory[]>([]);
@@ -39,8 +38,6 @@ const BookingPage: React.FC = () => {
       const response = await axios.get('/api/vehicleTypes');
       const carData = response.data;
       
-      console.log(response);
-
       const fetchImages = async (carId: number) => {
         const imageResponse = await axios.get(`/api/images/vehicleCategories/id/${carId}`);
         return imageResponse.data.map((img: { url: string }) => img.url);
@@ -64,6 +61,7 @@ const BookingPage: React.FC = () => {
     if (!keycloak.authenticated) {
       navigate('/login');
     } else {
+      console.log(car);
       navigate('/carbooking', {
         state: {
           car,
