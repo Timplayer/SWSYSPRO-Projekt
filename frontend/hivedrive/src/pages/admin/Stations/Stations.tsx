@@ -53,11 +53,11 @@ const Stations: React.FC = () => {
     return (
         <Box sx={{ p: 3 }}>
             <Typography variant="h4" gutterBottom>
-                Stations
+                Stationen
             </Typography>
             <Tabs value={tabIndex} onChange={handleTabChange}>
-                <Tab label="Station List" />
-                <Tab label="Add Station" />
+                <Tab label="Station Liste" />
+                <Tab label="Station hinzufügen" />
             </Tabs>
             <Divider sx={{ mb: 2 }} />
             {tabIndex === 0 && (

@@ -98,7 +98,7 @@ const Vehicles: React.FC = () => {
     };
 
     const handleUpdateVehicle = (updatedVehicle: Vehicle) => {
-        axios.put(`/api/vehicles/id/${updatedVehicle.id}`, updatedVehicle, { 
+        axios.put(`/api/vehicles`, updatedVehicle, { 
                 headers: {
                     Authorization: `Bearer ${keycloak.token}`,
                     'Content-Type': 'application/json'
@@ -113,7 +113,7 @@ const Vehicles: React.FC = () => {
     };
 
     const handleUpdateVehicleType = (updatedVehicleType: VehicleType) => {
-        axios.put(`/api/vehicleTypes/id/${updatedVehicleType.id}`, updatedVehicleType, 
+        axios.put(`/api/vehicleTypes`, updatedVehicleType, 
             { 
                 headers: {
                     Authorization: `Bearer ${keycloak.token}`,
@@ -145,9 +145,9 @@ const Vehicles: React.FC = () => {
     };
 
     const handleUpdateCategory = (id: number, name: string) => {
-        const updatedCategory = { id, name };
+        const updatedCategory = { id: id, name: name };
 
-        axios.put(`/api/vehicleCategories/id/${id}`, updatedCategory,
+        axios.put(`/api/vehicleCategories`, updatedCategory,
             { 
                 headers: {
                     Authorization: `Bearer ${keycloak.token}`,
@@ -180,7 +180,7 @@ const Vehicles: React.FC = () => {
     const handleUpdateProducer = (id: number, name: string) => {
         const updatedProducer = { name };
 
-        axios.put(`/api/producers/id/${id}`, updatedProducer,
+        axios.put(`/api/producers`, updatedProducer,
             { 
                 headers: {
                     Authorization: `Bearer ${keycloak.token}`,
@@ -249,7 +249,7 @@ const Vehicles: React.FC = () => {
         <ThemeProvider theme={theme}>
         <Box sx={{ p: 3, color: "#ffffff" }}>
             <Typography variant="h4" gutterBottom>
-                Vehicles
+                Fahrzeuge
             </Typography>
             <Tabs value={tabIndex} onChange={handleTabChange}>
                 <Tab label="Fahrzeugliste" />

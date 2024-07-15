@@ -50,14 +50,14 @@ const AddStation: React.FC<AddStationProps> = ({ handleAddStation }) => {
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <TextField
-                label="Station Name"
+                label="Name der Station"
                 value={stationName}
                 onChange={(e) => setStationName(e.target.value)}
                 variant="outlined"
                 sx={{ minWidth: '200px' }}
             />
             <TextField
-                label="Latitude"
+                label="Breitengrad"
                 type="number"
                 value={latitude}
                 onChange={(e) => setLatitude(parseFloat(e.target.value))}
@@ -65,7 +65,7 @@ const AddStation: React.FC<AddStationProps> = ({ handleAddStation }) => {
                 sx={{ minWidth: '150px' }}
             />
             <TextField
-                label="Longitude"
+                label="Längengrad"
                 type="number"
                 value={longitude}
                 onChange={(e) => setLongitude(parseFloat(e.target.value))}
@@ -73,49 +73,49 @@ const AddStation: React.FC<AddStationProps> = ({ handleAddStation }) => {
                 sx={{ minWidth: '150px' }}
             />
             <TextField
-                label="Country"
+                label="Land"
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
                 variant="outlined"
                 sx={{ minWidth: '200px' }}
             />
             <TextField
-                label="State"
+                label="Bundesland"
                 value={state}
                 onChange={(e) => setState(e.target.value)}
                 variant="outlined"
                 sx={{ minWidth: '200px' }}
             />
             <TextField
-                label="City"
+                label="Stadt"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 variant="outlined"
                 sx={{ minWidth: '200px' }}
             />
             <TextField
-                label="Zip"
+                label="Postleitzahl"
                 value={zip}
                 onChange={(e) => setZip(e.target.value)}
                 variant="outlined"
                 sx={{ minWidth: '200px' }}
             />
             <TextField
-                label="Street"
+                label="Straße"
                 value={street}
                 onChange={(e) => setStreet(e.target.value)}
                 variant="outlined"
                 sx={{ minWidth: '200px' }}
             />
             <TextField
-                label="House Number"
+                label="Hausnummer"
                 value={houseNumber}
                 onChange={(e) => setHouseNumber(e.target.value)}
                 variant="outlined"
                 sx={{ minWidth: '150px' }}
             />
             <TextField
-                label="Capacity"
+                label="Kapazität"
                 type="number"
                 value={capacity}
                 onChange={(e) => setCapacity(parseInt(e.target.value, 10))}
@@ -123,7 +123,7 @@ const AddStation: React.FC<AddStationProps> = ({ handleAddStation }) => {
                 sx={{ minWidth: '150px' }}
             />
             <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ alignSelf: 'center' }}>
-                Add Station
+                Station hinzufügen
             </Button>
         </Box>
     );
