@@ -34,24 +34,21 @@ func deleteDefectImage(writer http.ResponseWriter, request *http.Request, tx pgx
 		return picture{}, true
 	}
 
-	userId, err := tx.Exec(context.Background(),
-		"SELECT defects.userId from defects join defectimage on defects.id = defectimage.defectid join images on defectimage.imageid = images.id where images.id = $1", mux.Vars(request)["id"])
-
-	if slices.Contains(introspectionResult.Access.Roles, "employee") || introspectionResult.UserId == userId.String() {
+	if slices.Contains(introspectionResult.Access.Roles, "employee") {
 		result, err := tx.Exec(context.Background(),
 			"DELETE FROM defectImage WHERE imageId = $1;", mux.Vars(request)["id"])
 		if checkUpdateSingleRow(writer, err, result, "deleteDefectImage") {
-			//goland:noinspection GoUnhandledErrorResult
-			tx.Rollback(request.Context())
+			err := tx.Rollback(request.Context())
+			if err != nil {
+				return picture{}, false
+			}
 			return picture{}, true
 		}
 		image := deleteImage(writer, request, tx)
 		return image, false
 	}
 
-	http.Error(writer, "Access denied", http.StatusUnauthorized)
-	return picture{}, true
-
+	return picture{}, false
 }
 
 func getDefectImagesByDefectId(dbpool *pgxpool.Pool) http.HandlerFunc {
