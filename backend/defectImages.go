@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"net/http"
 	"strconv"
+	"slices"
 )
 
 func postDefectImage(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (picture, bool) {
@@ -27,15 +28,30 @@ func postDefectImage(writer http.ResponseWriter, request *http.Request, tx pgx.T
 }
 
 func deleteDefectImage(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (picture, bool) {
-	result, err := tx.Exec(context.Background(),
-		"DELETE FROM defectImage WHERE imageId = $1;", mux.Vars(request)["id"])
-	if checkUpdateSingleRow(writer, err, result, "deleteDefectImage") {
-		//goland:noinspection GoUnhandledErrorResult
-		tx.Rollback(request.Context())
+	introspectionResult, err := introspect(writer, request)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusUnauthorized)
 		return picture{}, true
 	}
-	image := deleteImage(writer, request, tx)
-	return image, false
+
+	userId, err := tx.Exec(context.Background(),
+		"SELECT defects.userId from defects join defectimage on defects.id = defectimage.defectid join images on defectimage.imageid = images.id where images.id = $1", mux.Vars(request)["id"])
+
+	if slices.Contains(introspectionResult.Access.Roles, "employee") || introspectionResult.UserId == userId.String() {
+		result, err := tx.Exec(context.Background(),
+			"DELETE FROM defectImage WHERE imageId = $1;", mux.Vars(request)["id"])
+		if checkUpdateSingleRow(writer, err, result, "deleteDefectImage") {
+			//goland:noinspection GoUnhandledErrorResult
+			tx.Rollback(request.Context())
+			return picture{}, true
+		}
+		image := deleteImage(writer, request, tx)
+		return image, false
+	}
+
+	http.Error(writer, "Access denied", http.StatusUnauthorized)
+	return picture{}, true
+
 }
 
 func getDefectImagesByDefectId(dbpool *pgxpool.Pool) http.HandlerFunc {
