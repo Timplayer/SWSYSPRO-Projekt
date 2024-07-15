@@ -15,7 +15,7 @@ const BookingPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const { location: startLocation, returnLocation, pickupDate, returnDate } = location.state || {};
+  const { location: startLocation, returnLocation, pickupDate, returnDate, availabilityVehicleTypes } = location.state || {};
 
   const [cars, setCars] = useState<VehicleType[]>([]);
   const [reservation, setReservation] = useState<Reservation>();
@@ -77,9 +77,9 @@ const BookingPage: React.FC = () => {
   };
 
   const filterCars = (cars: VehicleType[]) => {
+
     return cars.filter(car => {
       const filterCategoryNames = filterCategories.map(category => category.name);
-      console.log(cars);
 
       const selectedCategoryIds = vehicleCategories
         .filter(category => filterCategoryNames.includes(category.name))
@@ -90,7 +90,8 @@ const BookingPage: React.FC = () => {
       const matchesDriveType = driveType.length === 0 || driveType.includes(car.driverSystem);
       const matchesSeatCount = !seatCount || car.maxSeatCount >= parseInt(seatCount, 10);
 
-      return matchesVehicleCategory && matchesTransmission && matchesDriveType && matchesSeatCount;
+      const matchesAvailabilityVehicleTypes = availabilityVehicleTypes.includes(car.id);
+      return matchesAvailabilityVehicleTypes && matchesVehicleCategory && matchesTransmission && matchesDriveType && matchesSeatCount;
     });
   };
 

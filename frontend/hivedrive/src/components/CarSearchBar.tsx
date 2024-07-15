@@ -7,34 +7,39 @@ import AddIcon from '@mui/icons-material/Add';
 import { MobileDateTimePicker } from '@mui/x-date-pickers';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { Availability } from '../Types';
 
 interface CarSearchBarProps {
-  initialLocation?: string;
-  initialReturnLocation?: string;
+  initialLocation?: number;
+  initialReturnLocation?: number;
   initialPickupDate?: Date | null;
   initialReturnDate?: Date | null;
 }
 
 const CarSearchBar: React.FC<CarSearchBarProps> = ({
-  initialLocation = '',
-  initialReturnLocation = '',
+  initialLocation = undefined,
+  initialReturnLocation = undefined,
   initialPickupDate = new Date(),
   initialReturnDate = new Date(),
 }) => {
   const navigate = useNavigate();
-  const [locations, setLocations] = useState<Array<{ label: string, value: string }>>([]);
-  const [location, setLocationState] = useState<string>(initialLocation);
+
+  const [locations, setLocations] = useState<Array<{ label: string, value: number }>>([]);
+
+  const [startlocation, setStartLocation] = useState<number | undefined>(initialLocation);
+  const [returnLocation, setReturnLocation] = useState<number | undefined>(initialReturnLocation);
+
   const [pickupDate, setPickupDate] = useState<Date | null>(initialPickupDate);
   const [returnDate, setReturnDate] = useState<Date | null>(initialReturnDate);
-  const [splitLocation, setSplitLocation] = useState<boolean>(initialReturnLocation !== '');
-  const [returnLocation, setReturnLocation] = useState<string>(initialReturnLocation);
+  const [splitLocation, setSplitLocation] = useState<boolean>(initialReturnLocation !== undefined);
+
 
   useEffect(() => {
     const fetchLocations = async () => {
       const response = await axios.get('/api/stations');
       const locationsData = response.data.map((location: any) => ({
         label: location.name,
-        value: location.name,
+        value: location.id,
       }));
       setLocations (locationsData);
     };
@@ -43,14 +48,50 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
   }, []);
 
   const handleSubmit = () => {
-    navigate('/bookingpage', {
-      state: {
-        location,
-        returnLocation: splitLocation ? returnLocation : location,
-        pickupDate,
-        returnDate,
-      },
-    });
+
+    if(startlocation){
+      axios.get<Availability[]>(`/api/stations/id/${startlocation}/availability`)
+      .then((response) => {  
+        let vehicleTypes = new Map<number, {date: Date, count: number}>();
+        
+        for (const availability of response.data) {
+          if(returnDate && new Date(availability.time) > new Date(returnDate)){
+              continue;
+          }
+
+          if (!vehicleTypes.has(availability.auto_klasse)) {
+            vehicleTypes.set(availability.auto_klasse, { 
+              date: new Date(availability.time), // Ensure availability.time is of type Date
+              count: availability.availability,
+            });
+          } else {
+            const existingEntry = vehicleTypes.get(availability.auto_klasse);
+    
+            if (existingEntry && new Date(existingEntry.date) < new Date(availability.time)) {
+              vehicleTypes.set(availability.auto_klasse, {
+                date: new Date(availability.time),
+                count: availability.availability,
+              });
+            }
+          }
+        }
+
+        const availabilityVehicleTypes = Array.from(vehicleTypes.keys()).filter((id: number) => {
+          const type = vehicleTypes.get(id);
+          return type && type.count > 0;
+        });
+        
+        navigate('/bookingpage', {
+          state: {
+            startlocation,
+            returnLocation: splitLocation ? returnLocation : startlocation,
+            pickupDate,
+            returnDate,
+            availabilityVehicleTypes,
+          },
+        });
+      });
+    }
   };
 
   const now = new Date();
@@ -63,8 +104,8 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
             <TextField
               select
               label={splitLocation ? 'Abholung' : 'Abholung und Rückgabe'}
-              value={location}
-              onChange={(e) => setLocationState(e.target.value)}
+              value={startlocation}
+              onChange={(e) => setStartLocation(e.target.value)}
               fullWidth
             >
               {locations.map((option) => (

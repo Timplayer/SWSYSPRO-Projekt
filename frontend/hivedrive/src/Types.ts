@@ -47,3 +47,10 @@ export interface Reservation{
   end_station: number,
   auto_klasse: number,
 }
+
+export interface Availability{
+    time : Date,
+    pos : number,
+    auto_klasse : number,
+    availability : number,
+}
