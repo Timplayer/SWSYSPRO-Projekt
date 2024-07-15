@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
 	"net/http"
+	"slices"
 )
 
 type station struct {
@@ -25,6 +26,15 @@ type station struct {
 
 func updateStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
+		introspectionResult, err := introspect(writer, request)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusUnauthorized)
+			return
+		}
+		if !slices.Contains(introspectionResult.Access.Roles, "employee") {
+			http.Error(writer, "Access denied", http.StatusUnauthorized)
+			return
+		}
 		s, fail := getRequestBody[station](writer, request.Body)
 		if fail {
 			return
@@ -40,6 +50,16 @@ func updateStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 }
 
 func postStation(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (station, bool) {
+	introspectionResult, err := introspect(writer, request)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusUnauthorized)
+		return station{}, true
+	}
+	if !slices.Contains(introspectionResult.Access.Roles, "employee") {
+		http.Error(writer, "Access denied", http.StatusUnauthorized)
+		return station{}, true
+	}
+
 	s, fail := getRequestBody[station](writer, request.Body)
 	if fail {
 		return station{}, true
@@ -113,5 +133,6 @@ func createStationsTable(dbpool *pgxpool.Pool) {
 		"CREATE TABLE IF NOT EXISTS stations(id BIGSERIAL PRIMARY KEY, name TEXT, location POINT, country TEXT, state TEXT, city TEXT, zip TEXT, street TEXT, houseNumber TEXT, capacity INTEGER);")
 	if err != nil {
 		log.Fatalf(failedToCreateTable, err)
+		return
 	}
 }

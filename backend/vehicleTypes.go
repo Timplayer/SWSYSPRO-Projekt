@@ -8,6 +8,7 @@ import (
 	"github.com/shopspring/decimal"
 	"log"
 	"net/http"
+	"slices"
 )
 
 type vehicleType struct {
@@ -23,6 +24,16 @@ type vehicleType struct {
 
 func updateVehicleType(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
+		introspectionResult, err := introspect(writer, request)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusUnauthorized)
+			return
+		}
+		if !slices.Contains(introspectionResult.Access.Roles, "employee") {
+			http.Error(writer, "Access denied", http.StatusUnauthorized)
+			return
+		}
+
 		s, fail := getRequestBody[vehicleType](writer, request.Body)
 		if fail {
 			return
@@ -40,6 +51,16 @@ func updateVehicleType(dbpool *pgxpool.Pool) http.HandlerFunc {
 }
 
 func postVehicleType(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (vehicleType, bool) {
+	introspectionResult, err := introspect(writer, request)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusUnauthorized)
+		return vehicleType{}, true
+	}
+	if !slices.Contains(introspectionResult.Access.Roles, "employee") {
+		http.Error(writer, "Access denied", http.StatusUnauthorized)
+		return vehicleType{}, true
+	}
+
 	s, fail := getRequestBody[vehicleType](writer, request.Body)
 	if fail {
 		return vehicleType{}, true

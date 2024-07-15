@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM alpine:3.20
 WORKDIR /usr/local/app
 RUN apk add --no-cache nodejs npm
 

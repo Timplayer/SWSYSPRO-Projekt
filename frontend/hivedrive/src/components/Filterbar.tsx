@@ -1,17 +1,44 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   AppBar, Toolbar, Button, Menu, FormControl, FormControlLabel, Radio, RadioGroup, Checkbox, Box, Typography
 } from '@mui/material';
 
-const FilterBar: React.FC = () => {
+import { VehicleCategory, Transmission, DriverSystem } from '../Types';
+
+interface FilterContextType {
+  sortOption: string;
+  vehicleCategory: VehicleCategory[];
+  transmission: Transmission[];
+  driveType: DriverSystem[];
+  seatCount: string;
+  driverAge: string;
+  
+  setSortOption: (value: string) => void;
+  setVehicleCategory: React.Dispatch<React.SetStateAction<VehicleCategory[]>>;
+  setTransmission: React.Dispatch<React.SetStateAction<Transmission[]>>;
+  setDriveType: React.Dispatch<React.SetStateAction<DriverSystem[]>>;
+  setSeatCount: (value: string) => void;
+  setDriverAge: (value: string) => void;
+}
+
+const FilterBar: React.FC<FilterContextType> = ({
+  sortOption, setSortOption,
+  vehicleCategory, setVehicleCategory,
+  transmission, setTransmission,
+  driveType, setDriveType,
+  seatCount, setSeatCount,
+  driverAge, setDriverAge
+}) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [activeMenu, setActiveMenu] = React.useState<string | null>(null);
-  const [sortOption, setSortOption] = React.useState('');
-  const [vehicleCategory, setVehicleCategory] = React.useState('');
-  const [transmission, setTransmission] = React.useState('');
-  const [driveType, setDriveType] = React.useState('');
-  const [seatCount, setSeatCount] = React.useState<string[]>([]);
-  const [driverAge, setDriverAge] = React.useState<string[]>([]);
+  const [availableVehicleCategories, setAvailableVehicleCategories] = useState<VehicleCategory[]>([]);
+
+  useEffect(() => {
+    fetch('/api/vehicleCategories')
+      .then(response => response.json())
+      .then(data => setAvailableVehicleCategories(data))
+      .catch(error => console.error('Error fetching vehicle categories:', error));
+  }, []);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, menuType: string) => {
     setAnchorEl(event.currentTarget);
@@ -27,30 +54,45 @@ const FilterBar: React.FC = () => {
     setSortOption(event.target.value as string);
   };
 
-  const handleVehicleCategoryChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setVehicleCategory(event.target.value as string);
+  const handleVehicleCategoryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(event.target.value, 10);
+    const selectedCategory = availableVehicleCategories.find(category => category.id === value);
+    if (selectedCategory) {
+      setVehicleCategory((prev) =>
+        prev.some((item) => item.id === value) ? prev.filter((item) => item.id !== value) : [...prev, selectedCategory]
+      );
+    }
   };
 
-  const handleTransmissionChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setTransmission(event.target.value as string);
-  };
-
-  const handleDriveTypeChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setDriveType(event.target.value as string);
-  };
-
-  const handleSeatCountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = (event.target as HTMLInputElement).value;
-    setSeatCount((prev) =>
+  const handleTransmissionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value as Transmission;
+    setTransmission((prev) =>
       prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
     );
   };
 
-  const handleDriverAgeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = (event.target as HTMLInputElement).value;
-    setDriverAge((prev) =>
+  const handleDriveTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value as DriverSystem;
+    setDriveType((prev) =>
       prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
     );
+  };
+
+  const handleSeatCountChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setSeatCount(event.target.value as string);
+  };
+
+  const handleDriverAgeChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setDriverAge(event.target.value as string);
+  };
+
+  const resetFilters = () => {
+    setSortOption('lowestPrice');
+    setVehicleCategory([]);
+    setTransmission([]);
+    setDriveType([]);
+    setSeatCount('2+');
+    setDriverAge('25+');
   };
 
   return (
@@ -98,6 +140,9 @@ const FilterBar: React.FC = () => {
         >
           Alter des Fahrers
         </Button>
+        <Button variant="contained" size='small' color="secondary" onClick={resetFilters}>
+          Alle Filter zurücksetzen
+        </Button>
       </Toolbar>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
         {activeMenu === 'sort' && (
@@ -114,84 +159,55 @@ const FilterBar: React.FC = () => {
           <Box sx={{ width: '300px', padding: 2 }}>
             <Typography variant="h6">Fahrzeugkategorie</Typography>
             <FormControl component="fieldset">
-              <FormControlLabel control={<Checkbox checked={vehicleCategory.includes("limousine")} onChange={handleVehicleCategoryChange} value="limousine" />} label="Limousine" />
-              <FormControlLabel control={<Checkbox checked={vehicleCategory.includes("suv")} onChange={handleVehicleCategoryChange} value="suv" />} label="SUV" />
-              <FormControlLabel control={<Checkbox checked={vehicleCategory.includes("coupe")} onChange={handleVehicleCategoryChange} value="coupe" />} label="Coupé" />
-              <FormControlLabel control={<Checkbox checked={vehicleCategory.includes("cabriolet")} onChange={handleVehicleCategoryChange} value="cabriolet" />} label="Cabriolet" />
-              <FormControlLabel control={<Checkbox checked={vehicleCategory.includes("family")} onChange={handleVehicleCategoryChange} value="family" />} label="Familienauto" />
-              <FormControlLabel control={<Checkbox checked={vehicleCategory.includes("kombi")} onChange={handleVehicleCategoryChange} value="kombi" />} label="Kombi" />
-              <FormControlLabel control={<Checkbox checked={vehicleCategory.includes("electricVehicle")} onChange={handleVehicleCategoryChange} value="electricVehicle" />} label="Elektrisches Fahrzeug" />
-              <FormControlLabel control={<Checkbox checked={vehicleCategory.includes("luxuryVehicle")} onChange={handleVehicleCategoryChange} value="luxuryVehicle" />} label="Luxus Fahrzeug" />
+              {availableVehicleCategories.map(category => (
+                <FormControlLabel
+                  key={category.id}
+                  control={<Checkbox checked={vehicleCategory.some(item => item.id === category.id)} onChange={handleVehicleCategoryChange} value={category.id.toString()} />}
+                  label={category.name.charAt(0).toUpperCase() + category.name.slice(1)}
+                />
+              ))}
             </FormControl>
           </Box>
         )}
         {activeMenu === 'transmission' && (
           <Box sx={{ width: '300px', padding: 2 }}>
             <Typography variant="h6">Getriebe</Typography>
-            <RadioGroup value={transmission} onChange={handleTransmissionChange}>
-              <FormControlLabel value="automatic" control={<Radio />} label="Automatik" />
-              <FormControlLabel value="manual" control={<Radio />} label="Manuell" />
-            </RadioGroup>
+            <FormControl component="fieldset">
+              <FormControlLabel control={<Checkbox checked={transmission.includes(Transmission.Automatik)} onChange={handleTransmissionChange} value={Transmission.Automatik} />} label="Automatik" />
+              <FormControlLabel control={<Checkbox checked={transmission.includes(Transmission.Manuell)} onChange={handleTransmissionChange} value={Transmission.Manuell} />} label="Manuell" />
+            </FormControl>
           </Box>
         )}
         {activeMenu === 'driveType' && (
           <Box sx={{ width: '300px', padding: 2 }}>
             <Typography variant="h6">Antrieb</Typography>
-            <RadioGroup value={driveType} onChange={handleDriveTypeChange}>
-              <FormControlLabel value="frontWheel" control={<Radio />} label="Frontantrieb" />
-              <FormControlLabel value="rearWheel" control={<Radio />} label="Heckantrieb" />
-              <FormControlLabel value="allWheel" control={<Radio />} label="Allradantrieb" />
-            </RadioGroup>
+            <FormControl component="fieldset">
+              <FormControlLabel control={<Checkbox checked={driveType.includes(DriverSystem.FWD)} onChange={handleDriveTypeChange} value={DriverSystem.FWD} />} label="Frontantrieb" />
+              <FormControlLabel control={<Checkbox checked={driveType.includes(DriverSystem.RWD)} onChange={handleDriveTypeChange} value={DriverSystem.RWD} />} label="Heckantrieb" />
+              <FormControlLabel control={<Checkbox checked={driveType.includes(DriverSystem.AWD)} onChange={handleDriveTypeChange} value={DriverSystem.AWD} />} label="Allradantrieb" />
+            </FormControl>
           </Box>
         )}
         {activeMenu === 'seatCount' && (
           <Box sx={{ width: '300px', padding: 2 }}>
             <Typography variant="h6">Anzahl Sitze</Typography>
-            <FormControl component="fieldset">
-              <FormControlLabel
-                control={<Checkbox checked={seatCount.includes("2+")} onChange={handleSeatCountChange} value="2+" />}
-                label="2+"
-              />
-              <FormControlLabel
-                control={<Checkbox checked={seatCount.includes("4+")} onChange={handleSeatCountChange} value="4+" />}
-                label="4+"
-              />
-              <FormControlLabel
-                control={<Checkbox checked={seatCount.includes("5+")} onChange={handleSeatCountChange} value="5+" />}
-                label="5+"
-              />
-              <FormControlLabel
-                control={<Checkbox checked={seatCount.includes("7+")} onChange={handleSeatCountChange} value="7+" />}
-                label="7+"
-              />
-            </FormControl>
+            <RadioGroup value={seatCount} onChange={handleSeatCountChange}>
+              <FormControlLabel value="2+" control={<Radio />} label="2+" />
+              <FormControlLabel value="4+" control={<Radio />} label="4+" />
+              <FormControlLabel value="5+" control={<Radio />} label="5+" />
+              <FormControlLabel value="7+" control={<Radio />} label="7+" />
+            </RadioGroup>
           </Box>
         )}
         {activeMenu === 'driverAge' && (
           <Box sx={{ width: '300px', padding: 2 }}>
             <Typography variant="h6">Alter des Fahrers</Typography>
-            <FormControl component="fieldset">
-              <FormControlLabel
-                control={<Checkbox checked={driverAge.includes("18+")} onChange={handleDriverAgeChange} value="18+" />}
-                label="18+"
-              />
-              <FormControlLabel
-                control={<Checkbox checked={driverAge.includes("21+")} onChange={handleDriverAgeChange} value="21+" />}
-                label="21+"
-              />
-              <FormControlLabel
-                control={<Checkbox checked={driverAge.includes("23+")} onChange={handleDriverAgeChange} value="23+" />}
-                label="23+"
-              />
-              <FormControlLabel
-                control={<Checkbox checked={driverAge.includes("25+")} onChange={handleDriverAgeChange} value="25+" />}
-                label="25+"
-              />
-              <FormControlLabel
-                control={<Checkbox checked={driverAge.includes("30+")} onChange={handleDriverAgeChange} value="30+" />}
-                label="30+"
-              />
-            </FormControl>
+            <RadioGroup value={driverAge} onChange={handleDriverAgeChange}>
+              <FormControlLabel value="18+" control={<Radio />} label="18+" />
+              <FormControlLabel value="21+" control={<Radio />} label="21+" />
+              <FormControlLabel value="23+" control={<Radio />} label="23+" />
+              <FormControlLabel value="25+" control={<Radio />} label="25+" />
+            </RadioGroup>
           </Box>
         )}
       </Menu>

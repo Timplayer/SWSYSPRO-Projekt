@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -15,7 +16,6 @@ import (
 )
 
 var (
-	keycloakRealm        string
 	keycloakClientID     string
 	keycloakClientSecret string
 )
@@ -96,7 +96,7 @@ func main() {
 
 	router.HandleFunc("/api/healthcheck/hello", hello()).Methods("GET")
 	router.HandleFunc("/api/healthcheck/auth", validate(
-		func(writer http.ResponseWriter, request *http.Request, introspectionResult introspection) {
+		func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 			hello()(writer, request)
 		}))
 	router.HandleFunc("/api/healthcheck/sql", RestRequestWithTransaction(dbpool, http.StatusOK, testDBget)).Methods("GET")
@@ -181,36 +181,43 @@ func initializeDatabase(dbpool *pgxpool.Pool) {
 func validate(
 	handler func(writer http.ResponseWriter,
 		request *http.Request,
-		introspectionResult introspection)) http.HandlerFunc {
+		introspectionResult *introspection)) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		auth := request.Header.Get("Authorization")
-		if auth == "" {
-			http.Error(writer, "Auth header missing", http.StatusUnauthorized)
-			return
-		}
-		if !strings.HasPrefix(auth, oidc.PrefixBearer) {
-			http.Error(writer, "invalid header", http.StatusUnauthorized)
-			return
-		}
-		token := strings.TrimPrefix(auth, oidc.PrefixBearer)
-
-		var urlValues neturl.Values
-		urlValues = neturl.Values{"token": {token}}
-		urlValues.Set("token_type_hint", "access_token")
-		urlValues.Set("client_id", keycloakClientID)
-		urlValues.Set("client_secret", keycloakClientSecret)
-
-		r, _ := http.PostForm("http://keycloak:8080/auth/realms/hivedrive/protocol/openid-connect/token/introspect", urlValues)
-
-		introspectionResult, fail := getRequestBody[introspection](writer, r.Body)
-		if fail {
-			return
-		}
-		if !introspectionResult.Active {
-			http.Error(writer, "Invalid Token", http.StatusUnauthorized)
+		introspectionResult, err := introspect(writer, request)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
 		handler(writer, request, introspectionResult)
 	}
+}
+
+func introspect(writer http.ResponseWriter, request *http.Request) (*introspection, error) {
+	auth := request.Header.Get("Authorization")
+	if auth == "" {
+		return nil, errors.New("auth header missing")
+	}
+	if !strings.HasPrefix(auth, oidc.PrefixBearer) {
+
+		return nil, errors.New("invalid header")
+	}
+	token := strings.TrimPrefix(auth, oidc.PrefixBearer)
+
+	var urlValues neturl.Values
+	urlValues = neturl.Values{"token": {token}}
+	urlValues.Set("token_type_hint", "access_token")
+	urlValues.Set("client_id", keycloakClientID)
+	urlValues.Set("client_secret", keycloakClientSecret)
+
+	r, _ := http.PostForm("http://keycloak:8080/auth/realms/hivedrive/protocol/openid-connect/token/introspect", urlValues)
+
+	introspectionResult, fail := getRequestBody[introspection](writer, r.Body)
+	if fail {
+		return nil, errors.New("could not introspect token")
+	}
+	if !introspectionResult.Active {
+		return &introspectionResult, errors.New("invalid token")
+	}
+	return &introspectionResult, nil
 }

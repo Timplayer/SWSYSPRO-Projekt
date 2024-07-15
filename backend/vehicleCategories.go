@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
 	"net/http"
+	"slices"
 )
 
 type vehicleCategory struct {
@@ -16,6 +17,16 @@ type vehicleCategory struct {
 
 func updateVehicleCategory(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
+		introspectionResult, err := introspect(writer, request)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusUnauthorized)
+			return
+		}
+		if !slices.Contains(introspectionResult.Access.Roles, "employee") {
+			http.Error(writer, "Access denied", http.StatusUnauthorized)
+			return
+		}
+
 		vC, fail := getRequestBody[vehicleCategory](writer, request.Body)
 		if fail {
 			return
@@ -31,6 +42,16 @@ func updateVehicleCategory(dbpool *pgxpool.Pool) http.HandlerFunc {
 }
 
 func postVehicleCategories(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (vehicleCategory, bool) {
+	introspectionResult, err := introspect(writer, request)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusUnauthorized)
+		return vehicleCategory{}, true
+	}
+	if !slices.Contains(introspectionResult.Access.Roles, "employee") {
+		http.Error(writer, "Access denied", http.StatusUnauthorized)
+		return vehicleCategory{}, true
+	}
+
 	vC, fail := getRequestBody[vehicleCategory](writer, request.Body)
 	if fail {
 		return vehicleCategory{}, true

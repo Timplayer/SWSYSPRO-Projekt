@@ -1,143 +1,225 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import withRoot from '../withRoot';
 import AppAppBar from '../views/AppAppBar';
 import AppFooter from '../views/AppFooter';
-import Container from '@mui/material/Container';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import FormControl from '@mui/material/FormControl';
-import FormLabel from '@mui/material/FormLabel';
-import FormGroup from '@mui/material/FormGroup';
+import { Container, Box, Typography, TextField, MenuItem, Checkbox, FormControlLabel, Button, Grid, Radio, RadioGroup, FormControl, FormLabel, useTheme, styled } from '@mui/material';
+import keycloak from '../keycloak';
+import axios from 'axios';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { MobileDateTimePicker } from '@mui/x-date-pickers';
+import { VehicleType, Transmission, DriverSystem } from '../Types.ts';
 
-const carOptions = [
-  { value: 'economy', label: 'Economy' },
-  { value: 'compact', label: 'Compact' },
-  { value: 'midsize', label: 'Midsize' },
-  { value: 'suv', label: 'SUV' },
-  { value: 'luxury', label: 'Luxury' },
-];
+const Reservation: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-const locationOptions = [
-    { "value": "Airport Bremen", "label": "Airport Bremen" },
-    { "value": "Airport Munich", "label": "Airport Munich" },
-    { "value": "Innenstadt Bremen", "label": "City Bremen" },
-    { "value": "Hauptbahnhof Bremen", "label": "HBF Bremen" },
-    { "value": "Hauptbahnhof Hamburg", "label": "HBF Hamburg" },
-    { "value": "Hauptbahnhof Berlin", "label": "HBF Berlin" }
-];
+  const { car, searchLocation, returnLocation, pickupDate, returnDate } = location.state || {};
 
-function Reservation() {
-  const [carType, setCarType] = useState('');
-  const [additionalDriver, setAdditionalDriver] = useState(false);
-  const [pickupDate, setPickupDate] = useState('');
-  const [returnDate, setReturnDate] = useState('');
-  const [pickupLocation, setPickupLocation] = useState('');
-  const [returnLocation, setReturnLocation] = useState('');
-  const [differentReturnLocation, setDifferentReturnLocation] = useState(false);
+  const theme = useTheme();
+
+  const [carName, setCarName] = useState(car.name);
+  const [carClass, setCarClass] = useState(car.vehicleCategory);
+  const [carTransmission, setCarTransmission] = useState(car.transmission as Transmission);
+  const [carDrive, setCarDrive] = useState(car.driveType as DriverSystem);
+  const [carSeatings, setCarSeatings] = useState(car.maxSeatCount);
+
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [driverAge, setDriverAge] = useState('');
-  const [rentalType, setRentalType] = useState('');
-  const [discountCode, setDiscountCode] = useState('');
 
-  const handleSubmit = (event) => {
+  const [pickupDateCopy, setPickupDate] = useState<Date | null>(pickupDate ? new Date(pickupDate) : new Date());
+  const [returnDateCopy, setReturnDate] = useState<Date | null>(returnDate ? new Date(returnDate) : new Date());
+  
+  const [pickupLocationCopy, setPickupLocation] = useState(searchLocation);
+  const [returnLocationCopy, setReturnLocation] = useState(returnLocation);
+  const [differentReturnLocation, setDifferentReturnLocation] = useState(false);
+
+  const [driverAge, setDriverAge] = useState('');
+
+  const [additionalDriver, setAdditionalDriver] = useState(false);
+  const [additionalDriverName, setAdditionalDriverName] = useState('');
+  const [additionalDriverAge, setAdditionalDriverAge] = useState('25');
+
+  useEffect(() => {
+    const { given_name, family_name, email } = keycloak.tokenParsed;
+    setCustomerName(`${given_name} ${family_name}`);
+    setCustomerEmail(email);
+  }, []);
+
+  const [locations, setLocations] = useState<Array<{ label: string, value: string }>>([]);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      const response = await axios.get('/api/stations');
+      const locationsData = response.data.map((location: any) => ({
+        label: location.name,
+        value: location.name
+      }));
+      setLocations(locationsData);
+    };
+
+    fetchLocations();
+  }, []);
+
+  const handleSubmit = async (event: { preventDefault: () => void; }) => {
     event.preventDefault();
-    //wohin kommen die Daten ?
-    console.log({
-      carType,
-      additionalDriver,
-      pickupDate,
-      returnDate,
-      pickupLocation,
-      returnLocation: differentReturnLocation ? returnLocation : pickupLocation,
-      customerName,
-      customerEmail,
-      customerPhone,
-      driverAge,
-      rentalType,
-      discountCode
-    });
+
+    try {
+      const api_reservation_data = {
+        start_zeit: pickupDateCopy,
+        start_station: 1,
+        end_zeit: returnDateCopy,
+        end_station: 1,
+        auto_klasse: carClass,
+      }
+
+      const response = await axios.post('/api/reservations', api_reservation_data, {
+        headers: {
+          Authorization: `Bearer ${keycloak.token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.status === 201) {
+        console.log('Reservation successful:', response.data);
+        navigate('/mybookings');
+      } else {
+        console.error('Reservation failed:', response);
+      }
+    } catch (error) {
+      console.error('Error making reservation:', error);
+    }
   };
+
+  const StyledTextField = styled(TextField)({
+    '& .Mui-disabled': {
+      color: 'rgba(0, 0, 0, 0.87)', 
+      '-webkit-text-fill-color': 'rgba(0, 0, 0, 0.87)', 
+      backgroundColor: theme.palette.background.paper, 
+    },
+  });
+
+  const now = new Date();
 
   return (
     <React.Fragment>
       <AppAppBar />
 
       <Container>
-        <Box sx={{ mt: 7, mb: 12 }}>
-          <Typography variant="h4" gutterBottom>Autovermietung Reservation</Typography>
+        <Box 
+          sx={{ 
+            marginTop: 7, 
+            marginBottom: 12, 
+            backgroundColor: 'white', 
+            padding: 2, 
+            borderRadius: 4, 
+            boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)'
+          }}
+        >
+          <Typography variant="h4" gutterBottom>HiveDrive Reservierung</Typography>
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
               <Grid item xs={12}>
-                <TextField
-                  required
+                <StyledTextField
                   fullWidth
                   label="Name"
                   value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
+                  sx={{ backgroundColor: theme.palette.background.paper }}
+                  disabled
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
-                  required
+                <StyledTextField
                   fullWidth
                   label="Email"
                   type="email"
                   value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  sx={{ backgroundColor: theme.palette.background.paper }}
+                  disabled
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
-                  required
+                <StyledTextField
                   fullWidth
-                  label="Telefonnummer"
-                  type="tel"
-                  value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  label="Fahrzeug Bezeichnung"
+                  value={carName}
+                  sx={{ backgroundColor: theme.palette.background.paper }}
+                  disabled
                 />
               </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  select
-                  required
+              <Grid item xs={12} md={6}>
+                <StyledTextField
                   fullWidth
-                  label="Autotyp"
-                  value={carType}
-                  onChange={(e) => setCarType(e.target.value)}
-                >
-                  {carOptions.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                  label="Fahrzeugklasse"
+                  value={carClass}
+                  sx={{ backgroundColor: theme.palette.background.paper }}
+                  disabled
+                />
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={12} md={6}>
+                <StyledTextField
+                  fullWidth
+                  label="Getriebe"
+                  value={carTransmission}
+                  sx={{ backgroundColor: theme.palette.background.paper }}
+                  disabled
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <StyledTextField
+                  fullWidth
+                  label="Antrieb"
+                  value={carDrive}
+                  sx={{ backgroundColor: theme.palette.background.paper }}
+                  disabled
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <StyledTextField
+                  fullWidth
+                  label="Anzahl der Sitzplätze"
+                  value={carSeatings}
+                  sx={{ backgroundColor: theme.palette.background.paper }}
+                  disabled
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
                 <TextField
                   select
                   required
                   fullWidth
                   label="Abholort"
-                  value={pickupLocation}
+                  value={pickupLocationCopy}
                   onChange={(e) => setPickupLocation(e.target.value)}
+                  sx={{ backgroundColor: theme.palette.background.paper }}
                 >
-                  {locationOptions.map((option) => (
+                  {locations.map((option) => (
                     <MenuItem key={option.value} value={option.value}>
                       {option.label}
                     </MenuItem>
                   ))}
                 </TextField>
               </Grid>
+              {differentReturnLocation && (
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    required
+                    select
+                    fullWidth
+                    label="Rückgabeort"
+                    value={returnLocationCopy}
+                    onChange={(e) => setReturnLocation(e.target.value)}
+                    sx={{ backgroundColor: theme.palette.background.paper }}
+                  >
+                    {locations.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+              )}
               <Grid item xs={12}>
                 <FormControlLabel
                   control={
@@ -150,47 +232,37 @@ function Reservation() {
                   label="Anderen Rückgabeort auswählen"
                 />
               </Grid>
-              {differentReturnLocation && (
-                <Grid item xs={12}>
-                  <TextField
-                    select
-                    fullWidth
-                    label="Rückgabeort"
-                    value={returnLocation}
-                    onChange={(e) => setReturnLocation(e.target.value)}
-                  >
-                    {locationOptions.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-              )}
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  label="Abholdatum"
-                  type="date"
-                  InputLabelProps={{ shrink: true }}
-                  value={pickupDate}
-                  onChange={(e) => setPickupDate(e.target.value)}
-                />
+              <Grid item xs={12} md={6}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <MobileDateTimePicker
+                    ampm={false}
+                    label="Abholdatum"
+                    value={pickupDateCopy}
+                    onChange={(date) => {
+                      setPickupDate(date);
+                      if (date && returnDateCopy && date > returnDateCopy) {
+                        setReturnDate(date);
+                      }
+                    }}
+                    minDate={now}
+                    minTime={new Date(now.getTime() - 1 * 60 * 1000)}
+                  />
+                </LocalizationProvider>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <MobileDateTimePicker
+                    ampm={false}
+                    label="Rückgabedatum"
+                    value={returnDateCopy}
+                    onChange={(date) => setReturnDate(date)}
+                    minDate={pickupDateCopy || now}
+                    minTime={pickupDateCopy || now}
+                  />
+                </LocalizationProvider>
               </Grid>
               <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  label="Rückgabedatum"
-                  type="date"
-                  InputLabelProps={{ shrink: true }}
-                  value={returnDate}
-                  onChange={(e) => setReturnDate(e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <FormControl component="fieldset">
+                <FormControl component="fieldset" sx={{ backgroundColor: theme.palette.background.paper, p: 2, borderRadius: 1 }}>
                   <FormLabel component="legend">Alter des Fahrers</FormLabel>
                   <RadioGroup
                     row
@@ -199,34 +271,10 @@ function Reservation() {
                     value={driverAge}
                     onChange={(e) => setDriverAge(e.target.value)}
                   >
-                    <FormControlLabel value="18-21" control={<Radio />} label="18-21" />
-                    <FormControlLabel value="21-25" control={<Radio />} label="21-25" />
-                    <FormControlLabel value="25-60" control={<Radio />} label="25-60" />
-                    <FormControlLabel value="over60" control={<Radio />} label="Über 60" />
-                  </RadioGroup>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Rabattcode"
-                  value={discountCode}
-                  onChange={(e) => setDiscountCode(e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <FormControl component="fieldset">
-                  <FormLabel component="legend">Art der Anmietung</FormLabel>
-                  <RadioGroup
-                    row
-                    aria-label="rentalType"
-                    name="rentalType"
-                    value={rentalType}
-                    onChange={(e) => setRentalType(e.target.value)}
-                  >
-                    <FormControlLabel value="personal" control={<Radio />} label="Privatreise" />
-                    <FormControlLabel value="business" control={<Radio />} label="Geschäftsreise" />
-                    <FormControlLabel value="other" control={<Radio />} label="Andere" />
+                    <FormControlLabel value="18" control={<Radio />} label="18+" />
+                    <FormControlLabel value="21" control={<Radio />} label="21+" />
+                    <FormControlLabel value="23" control={<Radio />} label="23+" />
+                    <FormControlLabel value="25" control={<Radio />} label="25+" />
                   </RadioGroup>
                 </FormControl>
               </Grid>
@@ -242,9 +290,40 @@ function Reservation() {
                   label="Zusatzfahrer hinzufügen"
                 />
               </Grid>
+              {additionalDriver && (
+                <>
+                  <Grid item xs={12}>
+                    <TextField
+                      required
+                      fullWidth
+                      label="Zusatzfahrer Name"
+                      value={additionalDriverName}
+                      onChange={(e) => setAdditionalDriverName(e.target.value)}
+                      sx={{ backgroundColor: theme.palette.background.paper }}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <FormControl component="fieldset" sx={{ backgroundColor: theme.palette.background.paper, p: 2, borderRadius: 1 }}>
+                      <FormLabel component="legend">Alter des Zusatzfahrers</FormLabel>
+                      <RadioGroup
+                        row
+                        aria-label="additionalDriverAge"
+                        name="additionalDriverAge"
+                        value={additionalDriverAge}
+                        onChange={(e) => setAdditionalDriverAge(e.target.value)}
+                      >
+                        <FormControlLabel value="18" control={<Radio />} label="18+" />
+                        <FormControlLabel value="21" control={<Radio />} label="21+" />
+                        <FormControlLabel value="23" control={<Radio />} label="23+" />
+                        <FormControlLabel value="25" control={<Radio />} label="25+" />
+                      </RadioGroup>
+                    </FormControl>
+                  </Grid>
+                </>
+              )}
               <Grid item xs={12}>
-                <Button type="submit" variant="contained" color="primary">
-                  Reservation abschicken
+                <Button type="submit" variant="contained" color="primary" fullWidth>
+                  Reservierung abschicken
                 </Button>
               </Grid>
             </Grid>

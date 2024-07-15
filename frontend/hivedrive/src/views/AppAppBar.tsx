@@ -7,6 +7,17 @@ import logo from '../../images/HiveDriveLogo.png'; // Pfad zum Logo
 import keycloak from '../keycloak';
 import AccountManagement from '../components/Accountmanagement';
 import Button from '@mui/material/Button';
+import { Link as RouterLink } from 'react-router-dom';
+
+
+function checkAdminRole() {
+  if (keycloak.tokenParsed && keycloak.tokenParsed.realm_access){
+  if (keycloak.tokenParsed.realm_access?.roles.includes('admin') ) {
+    return true;
+  }
+}
+  return false;
+}
 
 const rightLink = {
   fontSize: 16,
@@ -29,14 +40,14 @@ function AppAppBar() {
             <TemporaryDrawer />
           </Box>
           <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <img src={logo} alt="Logo" style={{ height: 40, marginRight: 8 }} />
             <Link
               variant="h6"
               underline="none"
               color="inherit"
               href="/"
-              sx={{ fontSize: 24 }}
+              sx={{ display: 'flex', alignItems: 'center', fontSize: 24 }}
             >
+              <img src={logo} alt="Logo" style={{ height: 40, marginRight: 8 }} />
               {'HiveDrive'}
             </Link>
           </Box>
@@ -73,7 +84,25 @@ function AppAppBar() {
             </Button>
           </Box>
            )}
+
+          {checkAdminRole() && (
+          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+            <Button
+              variant="text"
+              component={RouterLink}
+              to="/admin" 
+              sx={{ ...rightLink, color: 'secondary.main' }}
+            >
+              {'Adminpage'}
+            </Button>
+          </Box>
+           )}
+
+
+          {!checkAdminRole() && (
           <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}></Box>
+          )}   
+
         </Toolbar>
       </AppBar>
     </div>
