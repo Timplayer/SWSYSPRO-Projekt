@@ -6,6 +6,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"net/http"
+	"strconv"
 )
 
 func postDefectImage(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (picture, bool) {
@@ -33,8 +34,8 @@ func deleteDefectImage(writer http.ResponseWriter, request *http.Request, tx pgx
 
 func getDefectImagesByDefectId(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		urls, fail := getTs[url](writer, request, dbpool, "DefectImages",
-			`SELECT images.url FROM defects 
+		ids, fail := getTs[id](writer, request, dbpool, "DefectImages",
+			`SELECT images.id FROM defects 
     			JOIN defectImage ON defects.id = defectImage.defectId
     			JOIN images ON defectImage.imageId = images.id 
             WHERE defects.id = $1 ORDER BY images.displayorder`,
@@ -42,6 +43,11 @@ func getDefectImagesByDefectId(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if fail {
 			return
 		}
+		urls := make([]url, len(ids))
+		for i := range ids {
+			urls[i].URL = httpsPrefix + request.Host + fileAPIpath + strconv.FormatInt(ids[i].Id, 10)
+		}
+
 		returnTAsJSON(writer, urls, http.StatusOK)
 	}
 }

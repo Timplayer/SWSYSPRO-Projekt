@@ -4,6 +4,7 @@ import "github.com/jackc/pgx/v5"
 
 const contentType = "Content-Type"
 const applicationJSON = "application/json"
+const octetStream = "octet-stream"
 const updateOperation = "update"
 const findingOperation = "finding"
 const failedToCreateTable = "Failed to create table: %v\n"

@@ -25,6 +25,10 @@ type url struct {
 	URL string `json:"url"`
 }
 
+type id struct {
+	Id int64 `db:"id"`
+}
+
 func postImage(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (picture, bool) {
 	p, fail := addImageToDB(writer, request, tx)
 	if fail {
@@ -98,7 +102,14 @@ func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if err != nil {
 			return
 		}
-		returnTAsJSON(writer, p.File, http.StatusOK)
+		writer.Header().Set(contentType, octetStream)
+		writer.WriteHeader(http.StatusOK)
+		_, err = writer.Write(p.File)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Error sending HTTP response: %v", err)
+			return
+		}
 	}
 }
 
