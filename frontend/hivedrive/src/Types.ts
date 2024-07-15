@@ -40,6 +40,7 @@ export interface Producer {
 }
 
 export interface Reservation{
+  id : number,  
   start_zeit: Date,
   start_station: number,
   end_zeit: Date,

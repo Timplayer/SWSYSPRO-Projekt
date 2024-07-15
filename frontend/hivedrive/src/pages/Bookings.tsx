@@ -25,6 +25,7 @@ const Bookings: React.FC = () => {
   const [openReturnDetails, setOpenReturnDetails] = useState(false);
   const [openMoreInfo, setOpenMoreInfo] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
+  const [removeid, setremoveid] = useState(0);
   const [openEdit, setOpenEdit] = useState(false);
   const [currentEditBooking, setCurrentEditBooking] = useState(null);
   const [bookings, setBookings] = useState<Reservation[]>([]);
@@ -85,7 +86,8 @@ const Bookings: React.FC = () => {
     setOpenMoreInfo(false);
   };
 
-  const handleClickOpenCancel = () => {
+  const handleClickOpenCancel = (id : number) => {
+    setremoveid(id);
     setOpenCancel(true);
   };
 
@@ -94,7 +96,13 @@ const Bookings: React.FC = () => {
   };
 
   const handleConfirmCancel = () => {
-    // Add your cancellation logic here
+    axios.delete( `/api/reservations/id/${removeid}`,{
+      headers: {
+        'Authorization': `Bearer ${keycloak.token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    setBookings(bookings.filter((booking) => booking.id!== removeid));
     setOpenCancel(false);
   };
 
@@ -148,7 +156,7 @@ const Bookings: React.FC = () => {
                 <Button variant="contained" color="primary" onClick={() => handleDownloadInvoice(booking.id)} sx={{ ml: 2 }}>Rechnung herunterladen</Button>
               ) : (
                 <React.Fragment>
-                  <Button variant="contained" color="secondary" onClick={handleClickOpenCancel} sx={{ ml: 2 }}>Buchung stornieren</Button>
+                  <Button variant="contained" color="secondary" onClick={() => handleClickOpenCancel(booking.id)} sx={{ ml: 2 }}>Buchung stornieren</Button>   
                   <Button variant="contained" color="secondary" onClick={() => handleClickOpenEdit(booking)} sx={{ ml: 2 }}>Bearbeiten</Button>
                 </React.Fragment>
               )}
