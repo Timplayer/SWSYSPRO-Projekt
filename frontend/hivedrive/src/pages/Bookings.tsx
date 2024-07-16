@@ -59,8 +59,10 @@ const Bookings: React.FC = () => {
             'Content-Type': 'application/json'
           }
         });
+        
         setBookings(response.data);
         setLoading(false);
+
       } catch (error) {
         setError(error.message);
         setLoading(false);
@@ -88,8 +90,13 @@ const Bookings: React.FC = () => {
 
   const getVehicleNameById = (id: number): string | undefined => {
     const vehicle = vehicleTypes.find(v => v.id === id);
-    console.log(vehicleTypes);
     return vehicle ? vehicle.name : undefined;
+  };
+
+
+  const getStationNameById = (id: number): string | undefined => {
+    const station = locations.find(v => v.value === id);
+    return station ? station.label : undefined;
   };
 
   const handleClickOpenInfo = () => {
@@ -220,8 +227,8 @@ const Bookings: React.FC = () => {
               <Typography>Buchungs-ID: {booking.id}</Typography>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <Typography>Start: Station {booking.start_station}</Typography>
-              <Typography>Ende: Station {booking.end_station}</Typography>
+              <Typography>Start: {getStationNameById(booking.start_station)}</Typography>
+              <Typography>Ende: {getStationNameById(booking.end_station)}</Typography>
               <Typography>{new Date(booking.start_zeit).toLocaleString()}</Typography>
               <Typography>{new Date(booking.end_zeit).toLocaleString()}</Typography>
             </Grid>
