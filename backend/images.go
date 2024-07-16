@@ -45,7 +45,7 @@ func postImage(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (pi
 
 func getImageById(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (picture, bool) {
 	p, fail := getT[picture](writer, request, tx, "getImageByID",
-		"SELECT * FROM images left join defectImage ON images.id = defectImage.imageid WHERE id = $1 and defectId is NOT NULL", mux.Vars(request)["id"])
+		"SELECT * FROM images WHERE id = $1", mux.Vars(request)["id"])
 	if fail {
 		return picture{}, true
 	}
@@ -140,7 +140,7 @@ func deleteImage(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) p
 }
 
 func createImagesTable(dbpool *pgxpool.Pool) {
-	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS images (id BIGSERIAL PRIMARY KEY, fileName TEXT, file bytea, displayOrder INTEGER)")
+	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS images (id BIGSERIAL PRIMARY KEY, fileName TEXT, url TEXT, file bytea, displayOrder INTEGER)")
 	if err != nil {
 		log.Fatalf(failedToCreateTable, err)
 	}
