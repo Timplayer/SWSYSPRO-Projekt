@@ -19,7 +19,7 @@ body:json {
     "id": 2,
     "start_zeit": "2024-08-22T00:00:00Z",
     "start_station": 1,
-    "end_zeit": "2024-09-23T00:00:00Z",
+    "end_zeit": "2024-09-23T01:00:00Z",
     "end_station": 2,
     "auto_klasse": 1
   }
@@ -43,7 +43,7 @@ tests {
   
   test("End Time is correct?", function() {
     const data = res.getBody();
-    expect (data.end_zeit).to.equal("2024-09-23T00:00:00Z");
+    expect (data.end_zeit).to.equal("2024-09-23T01:00:00Z");
   });
   
   test("End Station is correct?", function() {

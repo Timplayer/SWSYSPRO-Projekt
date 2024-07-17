@@ -1,6 +1,9 @@
 package main
 
-import "github.com/jackc/pgx/v5"
+import (
+	"github.com/jackc/pgx/v5"
+	"time"
+)
 
 const contentType = "Content-Type"
 const applicationJSON = "application/json"
@@ -82,3 +85,5 @@ const getDefectImagesByDefectIdSQL = "SELECT images.url FROM defects JOIN defect
 const postVehicleTypesImageSQL = "INSERT INTO vehicleTypesImage (vehicletypeid, imageId) VALUES ($1, $2);"
 const deleteVehicleTypesImageSQL = "DELETE FROM vehicleTypesImage WHERE imageId = $1;"
 const getVehicleTypesImagesByVehicleTypeIdSQL = "SELECT images.url FROM vehicletypes JOIN vehicleTypesImage ON vehicletypes.id = vehicleTypesImage.vehicletypeid JOIN images ON vehicleTypesImage.imageId = images.id WHERE vehicleTypes.id = $1 ORDER BY images.displayorder"
+
+const minReservationDuration = 10 * time.Minute

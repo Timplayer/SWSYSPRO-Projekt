@@ -62,7 +62,7 @@ func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, requ
 			return
 		}
 
-		notAvailable := checkAvailability(writer, request, tx)
+		notAvailable := checkAvailability(writer, request, tx, &r)
 		if notAvailable {
 			return
 		}
@@ -107,7 +107,7 @@ func putReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, reque
 			return
 		}
 
-		notAvailable := checkAvailability(writer, request, tx)
+		notAvailable := checkAvailability(writer, request, tx, &r)
 		if notAvailable {
 			return
 		}
@@ -166,7 +166,7 @@ func deleteReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, re
 			return
 		}
 
-		notAvailable := checkAvailability(writer, request, tx)
+		notAvailable := checkAvailability(writer, request, tx, nil)
 		if notAvailable {
 			return
 		}
@@ -210,7 +210,7 @@ func addCarToStation(writer http.ResponseWriter, request *http.Request, tx pgx.T
 		return reservationNullable{}, true
 	}
 
-	notAvailable := checkAvailability(writer, request, tx)
+	notAvailable := checkAvailability(writer, request, tx, nil)
 	if notAvailable {
 		return reservationNullable{}, true
 	}
@@ -228,7 +228,12 @@ func getAvailabilityAtStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 	}
 }
 
-func checkAvailability(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) bool {
+func checkAvailability(writer http.ResponseWriter, request *http.Request, tx pgx.Tx, r *reservation) bool {
+	if r != nil && r.StartZeit.Add(minReservationDuration).After(r.EndZeit) {
+		http.Error(writer, "Reservation must end after more than "+minReservationDuration.String(), http.StatusConflict)
+		return true
+	}
+
 	var available int
 	var free int
 	err := tx.QueryRow(request.Context(), "SELECT min(a.available), min(s.capacity-a.available) FROM availability a LEFT JOIN stations s ON a.station = s.id;").Scan(&available, &free)
