@@ -28,7 +28,7 @@ const Reservation: React.FC = () => {
   
   const [pickupLocationCopy, setPickupLocation] = useState(searchLocation);
   const [returnLocationCopy, setReturnLocation] = useState(returnLocation);
-  const [differentReturnLocation, setDifferentReturnLocation] = useState(false);
+  const [differentReturnLocation, setDifferentReturnLocation] = useState(searchLocation !== returnLocation);
 
   const [locations, setLocations] = useState<Array<{ label: string, value: string }>>([]);
 
@@ -180,11 +180,20 @@ const Reservation: React.FC = () => {
                   disabled
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={12} md={6}>
                 <StyledTextField
                   fullWidth
                   label="Fahrzeug Bezeichnung"
                   value={car.name}
+                  sx={{ backgroundColor: theme.palette.background.paper }}
+                  disabled
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <StyledTextField
+                  fullWidth
+                  label="€/ProStunde"
+                  value={car.pricePerHour}
                   sx={{ backgroundColor: theme.palette.background.paper }}
                   disabled
                 />
@@ -300,7 +309,7 @@ const Reservation: React.FC = () => {
                     onAccept={(date) => setReturnDate(date)}
                     onChange={(date) => setReturnDate(date)}
                     minDate={pickupDateCopy || now}
-                    minTime={returnDateCopy && isSameDay(returnDateCopy, pickupDateCopy) ? new Date(now.getTime() - 1 * 60 * 1000) : undefined}
+                    minTime={pickupDateCopy && isSameDay(returnDateCopy, pickupDateCopy) ? new Date(pickupDateCopy.getTime() - 1 * 60 * 1000) : undefined}
                   />
                 </LocalizationProvider>
               </Grid>

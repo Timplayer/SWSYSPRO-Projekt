@@ -63,9 +63,7 @@ const BookingPage: React.FC = () => {
     if (!keycloak.authenticated) {
       navigate('/login');
     } 
-    else 
-    {
-
+    else {
       navigate('/carbooking', {
         state: {
           car: car,
@@ -91,13 +89,9 @@ const BookingPage: React.FC = () => {
       const matchesTransmission = transmission.length === 0 || transmission.includes(car.transmission);
       const matchesDriveType = driveType.length === 0 || driveType.includes(car.driverSystem);
       const matchesSeatCount = !seatCount || car.maxSeatCount >= parseInt(seatCount, 10);
-      let matchesAvailabilityVehicleTypes = false;
-  
-      if(!availabilityVehicleTypes){
-        matchesAvailabilityVehicleTypes = true;
-      }else{
-        matchesAvailabilityVehicleTypes = availabilityVehicleTypes.includes(car.id)
-      }
+      
+      let matchesAvailabilityVehicleTypes = !availabilityVehicleTypes ? true : availabilityVehicleTypes.includes(car.id);
+      
       return matchesAvailabilityVehicleTypes && matchesVehicleCategory && matchesTransmission && matchesDriveType && matchesSeatCount;
     });
   };

@@ -12,7 +12,8 @@ import {
   CardContent,
   Grid,
   TextField,
-  MenuItem
+  MenuItem,
+  CircularProgress
 } from '@mui/material';
 import AppAppBar from '../views/AppAppBar';
 import AppFooter from '../views/AppFooter';
@@ -59,11 +60,13 @@ const Bookings: React.FC = () => {
             'Content-Type': 'application/json'
           }
         });
+
         setBookings(response.data);
         setLoading(false);
+
       } catch (error) {
         setError(error.message);
-        setLoading(false);
+        fetchBookings();
       }
     };
 
@@ -83,13 +86,17 @@ const Bookings: React.FC = () => {
 
   const calculateRentalDays = (startDate: string, endDate: string) => {
     const diffTime = Math.abs(new Date(endDate).getTime() - new Date(startDate).getTime());
-    return Math.ceil(diffTime / (1000 * 60 * 60 ));
+    return Math.ceil(diffTime / (1000 * 60 * 60));
   };
 
   const getVehicleNameById = (id: number): string | undefined => {
     const vehicle = vehicleTypes.find(v => v.id === id);
-    console.log(vehicleTypes);
     return vehicle ? vehicle.name : undefined;
+  };
+
+  const getStationNameById = (id: number): string | undefined => {
+    const station = locations.find(v => v.value === id);
+    return station ? station.label : undefined;
   };
 
   const handleClickOpenInfo = () => {
@@ -220,8 +227,8 @@ const Bookings: React.FC = () => {
               <Typography>Buchungs-ID: {booking.id}</Typography>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <Typography>Start: Station {booking.start_station}</Typography>
-              <Typography>Ende: Station {booking.end_station}</Typography>
+              <Typography>Start: {getStationNameById(booking.start_station)}</Typography>
+              <Typography>Ende: {getStationNameById(booking.end_station)}</Typography>
               <Typography>{new Date(booking.start_zeit).toLocaleString()}</Typography>
               <Typography>{new Date(booking.end_zeit).toLocaleString()}</Typography>
             </Grid>
@@ -230,30 +237,30 @@ const Bookings: React.FC = () => {
               <Button variant="contained" onClick={handleClickOpenReturnDetails}>Rückgabedetails</Button>
               <Button variant="contained" onClick={handleClickOpenMoreInfo}>Mehr anzeigen</Button>
               {isPast ? (
-               <React.Fragment>
-               <Button
-                 variant="contained"
-                 color="primary"
-                 onClick={handleDialogOpen}
-                 sx={{ ml: 2 }}
-               >
-                 Rechnung herunterladen
-               </Button>
-               <Dialog open={openDialog} onClose={handleDialogClose}>
-                 <DialogTitle>Coming Soon</DialogTitle>
-                 <DialogContent>
-                   <Typography variant="body1">
-                     Diese Funktion ist noch nicht verfügbar, wird aber bald hinzugefügt.
-                   </Typography>
-                 </DialogContent>
-                 <DialogActions>
-                   <Button onClick={handleDialogClose} color="primary">
-                     Schließen
-                   </Button>
-                 </DialogActions>
-               </Dialog>
-             </React.Fragment>
-                    ) : (
+                <React.Fragment>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleDialogOpen}
+                    sx={{ ml: 2 }}
+                  >
+                    Rechnung herunterladen
+                  </Button>
+                  <Dialog open={openDialog} onClose={handleDialogClose}>
+                    <DialogTitle>Coming Soon</DialogTitle>
+                    <DialogContent>
+                      <Typography variant="body1">
+                        Diese Funktion ist noch nicht verfügbar, wird aber bald hinzugefügt.
+                      </Typography>
+                    </DialogContent>
+                    <DialogActions>
+                      <Button onClick={handleDialogClose} color="primary">
+                        Schließen
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
+                </React.Fragment>
+              ) : (
                 <React.Fragment>
                   <Button variant="contained" color="secondary" onClick={() => handleClickOpenCancel(booking.id)} sx={{ ml: 2 }}>Buchung stornieren</Button>
                   <Button variant="contained" color="secondary" onClick={() => handleClickOpenEdit(booking)} sx={{ ml: 2 }}>Bearbeiten</Button>
@@ -267,7 +274,11 @@ const Bookings: React.FC = () => {
   };
 
   if (loading) {
-    return <Typography>Loading...</Typography>;
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
+      </Box>
+    );
   }
 
   if (error) {

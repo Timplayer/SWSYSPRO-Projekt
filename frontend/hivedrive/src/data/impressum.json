@@ -2,6 +2,10 @@
     "title": "Impressum",
     "sections": [
       {
+        "heading": "Disclaimer",
+        "content": "Alles auf dieser Webseite ist fiktiv und nicht als real zu betrachten."
+      },
+      {
         "heading": "Angaben gemäß § 5 TMG",
         "content": "Autovermietung Beispiel GmbH\nMusterstraße 1\n12345 Musterstadt\nDeutschland"
       },

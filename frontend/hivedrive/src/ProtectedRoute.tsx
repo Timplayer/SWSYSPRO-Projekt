@@ -23,7 +23,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element: Component, req
     }
 
     if (requiredRoles && !requiredRoles.some(role => keycloak.hasRealmRole(role))) {
-        return <Navigate to="/" replace={true} />; // Redirect to unauthorized page if user lacks required role
+        return <Navigate to="/" replace={true} />;
     }
 
     return Component;
