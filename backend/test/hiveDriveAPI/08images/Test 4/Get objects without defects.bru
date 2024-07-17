@@ -1,17 +1,13 @@
 meta {
-  name: Get objects defects
+  name: Get objects without defects
   type: http
-  seq: 8
+  seq: 10
 }
 
 get {
   url: https://localhost:8080/api/images
   body: none
   auth: none
-}
-
-headers {
-  Authorization: Bearer {{access_token_member}}
 }
 
 tests {
