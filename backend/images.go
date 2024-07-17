@@ -139,7 +139,7 @@ func getImages(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		p, fail := getTs[picture](writer, request, dbpool, "getImages",
-			"SELECT images.* FROM images left JOIN defectimage ON images.id = defectImage.imageId LEFT JOIN defects ON defectimage.defectid = defects.id WHERE defectId is NULL OR defects.user_id = $2 OR $2 ORDER BY displayOrder;", introspectionResult.UserId, isEmployee)
+			"SELECT images.* FROM images left JOIN defectimage ON images.id = defectImage.imageId LEFT JOIN defects ON defectimage.defectid = defects.id WHERE defectId is NULL OR defects.user_id = $2 OR $3 ORDER BY displayOrder;", introspectionResult.UserId, isEmployee)
 		if fail {
 			return
 		}
