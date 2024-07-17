@@ -64,8 +64,7 @@ const Reservation: React.FC = () => {
 
   const handleSubmit = async (event: { preventDefault: () => void; }) => {
     event.preventDefault();
-    setErrorMessage(null);  // Reset error message before submitting
-
+    setErrorMessage(null);  
     try {
       const api_reservation_data = {
         start_zeit: pickupDateCopy,
