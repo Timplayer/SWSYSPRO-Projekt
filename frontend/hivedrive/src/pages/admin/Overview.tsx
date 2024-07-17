@@ -75,7 +75,7 @@ const Overview: React.FC = () => {
                 Overview
             </Typography>
             <Link href="/auth/admin/hivedrive/console/" target="_blank" rel="noopener" sx={{ display: 'block', mb: 3 }}>
-                Go to Keycloak Back Office
+                Zum Keycloak Back Office gehen
             </Link>
             <Grid container spacing={3}>
                 <Grid item xs={12} sm={6} md={3}>
