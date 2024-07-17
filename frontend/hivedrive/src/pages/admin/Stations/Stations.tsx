@@ -35,15 +35,19 @@ const Stations: React.FC = () => {
             .catch(error => console.error('Error adding station:', error));
     };
 
-    const handleEditStation = (id: number) => {
-        axios.delete(`/api/stations/id/${id}`, { 
+    const handleEditStation = (new_station: Station) => {
+        axios.put(`/api/stations`, new_station, { 
                 headers: {
-                    Authorization: `Bearer ${keycloak.token}`,
+                    'Authorization': `Bearer ${keycloak.token}`,
                     'Content-Type': 'application/json'
                 }
             })
-            .then(() => { setStations(stations.filter(station => station.id !== id)); })
-            .catch(error => console.error('Error deleting station:', error));
+            .then((response) => {  
+                setStations(stations.map(station =>
+                    station.id === new_station.id ? response.data : station
+                ));
+            })
+            .catch(error => console.error('Error editing station:', error));
     };
 
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
