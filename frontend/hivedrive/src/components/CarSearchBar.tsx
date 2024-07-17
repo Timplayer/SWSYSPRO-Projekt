@@ -55,22 +55,6 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
     fetchLocations();
   }, []);
 
-  useEffect(() => {
-    setStartLocation(initialLocation);
-  }, [initialLocation]);
-
-  useEffect(() => {
-    setReturnLocation(initialReturnLocation);
-  }, [initialReturnLocation]);
-
-  useEffect(() => {
-    setPickupDate(initialPickupDate);
-  }, [initialPickupDate]);
-
-  useEffect(() => {
-    setReturnDate(initialReturnDate);
-  }, [initialReturnDate]);
-
   const handleSubmit = () => {
     if (startLocation) {
       axios.get<Availability[]>(`/api/stations/id/${startLocation}/availability`)
