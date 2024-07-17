@@ -23,9 +23,8 @@ services:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=password
       - KC_HTTP_RELATIVE_PATH=/auth/
-      - KC_PROXY_HEADERS=xforwarded
       - KC_HEALTH_ENABLED=true
-    command: start-dev --import-realm
+    command: start --proxy edge --import-realm --hostname-strict=false --optimized
     volumes:
       - ./keycloak/input:/opt/keycloak/data/import:Z
     healthcheck:
