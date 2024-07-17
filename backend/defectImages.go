@@ -6,25 +6,34 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"net/http"
-	"strconv"
 	"slices"
+	"strconv"
 )
 
 func postDefectImage(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (picture, bool) {
-	_, err := introspect(writer, request)
+	introspectionResult, err := introspect(writer, request)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusUnauthorized)
 		return picture{}, true
 	}
 
-	p, fail := addImageToDB(writer, request, tx)
-	if fail {
-		return picture{}, true
+	userId := ""
+	tx.QueryRow(context.Background(), "SELECT user_id FROM defects WHERE id = $1", mux.Vars(request)[idKey]).Scan(&userId)
+
+	b := slices.Contains(introspectionResult.Access.Roles, "employee") || userId == introspectionResult.UserId
+	if b {
+		p, fail := addImageToDB(writer, request, tx)
+		if fail {
+			return picture{}, true
+		}
+		result, err := tx.Exec(request.Context(), "INSERT INTO defectImage (defectId, imageId) VALUES ($1, $2);",
+			mux.Vars(request)[idKey], p.Id)
+		checkUpdateSingleRow(writer, err, result, "postDefectImage")
+		return p, false
 	}
-	result, err := tx.Exec(request.Context(), "INSERT INTO defectImage (defectId, imageId) VALUES ($1, $2);",
-		mux.Vars(request)[idKey], p.Id)
-	checkUpdateSingleRow(writer, err, result, "postDefectImage")
-	return p, false
+
+	writer.WriteHeader(http.StatusUnauthorized)
+	return picture{}, true
 }
 
 func deleteDefectImage(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (picture, bool) {
