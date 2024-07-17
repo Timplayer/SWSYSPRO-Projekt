@@ -22,9 +22,9 @@ export default function AccountManagement() {
     setAnchorElUser(null);
     console.log(settingLink);
     if (settingLink) {
-      if (settingLink.startsWith('http')) {
+      if (settingLink.startsWith('/auth')) {
+
         window.location.href = settingLink; // External URL navigation
-       
       } else {
         navigate(settingLink); // Internal navigation
       }

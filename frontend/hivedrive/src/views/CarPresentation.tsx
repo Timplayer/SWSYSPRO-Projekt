@@ -3,7 +3,7 @@ import { Box, Card, CardContent, CardMedia, Typography, Button, Container, IconB
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import { useLocationContext } from '../Utils/LocationContext';
 import { useNavigate } from 'react-router-dom';
-import { VehicleType as Car } from '../Types';
+import { VehicleType as Car, VehicleCategory } from '../Types';
 import axios from 'axios';
 import keycloak from '../keycloak';
 
@@ -12,6 +12,32 @@ const CarPresentation: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const navigate = useNavigate();
   const [cars, setCars] = useState<Car[]>([]);
+  const [vehicleCategories, setVehicleCategories] = useState<VehicleCategory[]>([]);
+  
+  const [locations, setLocations] = useState<Array<{ label: string, value: string }>>([]);
+
+  useEffect(() => {
+
+    const fetchVehicleCategories = async() => {
+      const response = await axios.get('/api/vehicleCategories');
+      setVehicleCategories(response.data);
+    }
+    
+    fetchVehicleCategories();
+  }, []);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      const response = await axios.get('/api/stations');
+      const locationsData = response.data.map((location: any) => ({
+        label: location.name,
+        value: location.id
+      }));
+      setLocations(locationsData);
+    };
+
+    fetchLocations();
+  }, []);
 
   const nextCars = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 2) % Math.min(cars.length, 10));
@@ -19,6 +45,17 @@ const CarPresentation: React.FC = () => {
 
   const prevCars = () => {
     setCurrentIndex((prevIndex) => (prevIndex - 2 + Math.min(cars.length, 10)) % Math.min(cars.length, 10));
+  };
+
+  const findLabelByValue = (value: string): string | undefined => {
+    const foundLocation = locations.find(loc => loc.value === value);
+    return foundLocation ? foundLocation.label : 'Zuhause';
+  };
+  
+
+  const getVehicaleCategorieNameById = (id: number): string => {
+    const carClass = vehicleCategories.find((cls) => cls.id === id);
+    return carClass ? carClass.name : "Unbekannt";
   };
 
   const handleBookNow = (car: Car) => {
@@ -61,7 +98,7 @@ const CarPresentation: React.FC = () => {
   return (
     <Container maxWidth={false} sx={{ backgroundColor: '#1c1c1e', color: '#fff', padding: '2rem 0', textAlign: 'center', width: '100%' }}>
       <Typography color={'#ff9800'} variant="h4" gutterBottom>
-        DAS PERFEKTE AUTO FÜR IHRE NÄCHSTE REISE VON {location.toUpperCase()}
+        DAS PERFEKTE AUTO FÜR IHRE NÄCHSTE REISE VON {findLabelByValue(location)}
       </Typography>
       <Box display="flex" justifyContent="center" alignItems="center">
         <IconButton onClick={prevCars} sx={{ color: '#fff' }} disabled={cars.length === 0}>
@@ -81,10 +118,10 @@ const CarPresentation: React.FC = () => {
                   {car.name}
                 </Typography>
                 <Typography variant="body2" color='#ff9800'>
-                  {car.vehicleCategory}
+                  {getVehicaleCategorieNameById(car.vehicleCategory)}
                 </Typography>
                 <Typography variant="body2" color='#ff9800'>
-                  Ab {car.pricePerHour}
+                  Ab {car.pricePerHour}€/ProStunde
                 </Typography>
                 <Button variant="contained" onClick={() => handleBookNow(car)} sx={{ backgroundColor: '#ff5c00', color: '#fff', '&:hover': { backgroundColor: '#ff7c00' }, marginTop: '1rem' }}>
                   Jetzt buchen

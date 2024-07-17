@@ -8,12 +8,17 @@ import { MobileDateTimePicker } from '@mui/x-date-pickers';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Availability } from '../Types';
+import { useLocationContext } from '../Utils/LocationContext';
 
 interface CarSearchBarProps {
   initialLocation?: number;
   initialReturnLocation?: number;
   initialPickupDate?: Date | null;
   initialReturnDate?: Date | null;
+  onLocationChange?: (value: number | undefined) => void;
+  onReturnLocationChange?: (value: number | undefined) => void;
+  onPickupDateChange?: (value: Date | null) => void;
+  onReturnDateChange?: (value: Date | null) => void;
 }
 
 const CarSearchBar: React.FC<CarSearchBarProps> = ({
@@ -21,8 +26,14 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
   initialReturnLocation = undefined,
   initialPickupDate = new Date(),
   initialReturnDate = new Date(),
+  onLocationChange,
+  onReturnLocationChange,
+  onPickupDateChange,
+  onReturnDateChange,
 }) => {
   const navigate = useNavigate();
+  const now = new Date();
+  const { location, setLocation } = useLocationContext();
 
   const [locations, setLocations] = useState<Array<{ label: string, value: number }>>([]);
 
@@ -31,6 +42,7 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
 
   const [pickupDate, setPickupDate] = useState<Date | null>(initialPickupDate);
   const [returnDate, setReturnDate] = useState<Date | null>(initialReturnDate);
+
   const [splitLocation, setSplitLocation] = useState<boolean>(initialReturnLocation !== undefined);
 
   useEffect(() => {
@@ -40,76 +52,68 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
         label: location.name,
         value: location.id,
       }));
-      setLocations (locationsData);
+      setLocations(locationsData);
     };
 
     fetchLocations();
   }, []);
 
   const handleSubmit = () => {
-
-    if(startLocation) {
-
+    if (startLocation) {
       axios.get<Availability[]>(`/api/stations/id/${startLocation}/availability`)
-      .then((response) => {  
-        let vehicleTypes = new Map<number, {date: Date, count: number}>();
-        
-        for (const availability of response.data) {
-          if(returnDate && new Date(availability.time) > new Date(returnDate)){
-              continue;
-          }
+        .then((response) => {
+          let vehicleTypes = new Map<number, { date: Date, count: number }>();
 
-          if (!vehicleTypes.has(availability.auto_klasse)) {
-            vehicleTypes.set(availability.auto_klasse, { 
-              date: new Date(availability.time),
-              count: availability.availability,
-            });
-          }
-          else 
-          {
-            const existingEntry = vehicleTypes.get(availability.auto_klasse);
-    
-            if (existingEntry && new Date(existingEntry.date) < new Date(availability.time)) {
+          for (const availability of response.data) {
+            if (returnDate && new Date(availability.time) > new Date(returnDate)) {
+              continue;
+            }
+
+            if (!vehicleTypes.has(availability.auto_klasse)) {
               vehicleTypes.set(availability.auto_klasse, {
                 date: new Date(availability.time),
                 count: availability.availability,
               });
+            } else {
+              const existingEntry = vehicleTypes.get(availability.auto_klasse);
+
+              if (existingEntry && new Date(existingEntry.date) < new Date(availability.time)) {
+                vehicleTypes.set(availability.auto_klasse, {
+                  date: new Date(availability.time),
+                  count: availability.availability,
+                });
+              }
             }
           }
-        }
 
-        const availabilityVehicleTypes = Array.from(vehicleTypes.keys()).filter((id: number) => {
-          const type = vehicleTypes.get(id);
-          return type && type.count > 0;
-        });
+          const availabilityVehicleTypes = Array.from(vehicleTypes.keys()).filter((id: number) => {
+            const type = vehicleTypes.get(id);
+            return type && type.count > 0;
+          });
 
-        navigate('/bookingpage', {
-          state: {
-            startLocation : startLocation,
-            returnLocation: splitLocation ? returnLocation : undefined,
-            pickupDate: pickupDate,
-            returnDate : returnDate,
-            availabilityVehicleTypes: availabilityVehicleTypes,
-          },
+          navigate('/bookingpage', {
+            state: {
+              startLocation: startLocation,
+              returnLocation: splitLocation ? returnLocation : undefined,
+              pickupDate: pickupDate,
+              returnDate: returnDate,
+              availabilityVehicleTypes: availabilityVehicleTypes,
+            },
+          });
+
         });
-        
-      });
-    }
-    else
-    {
-      
+    } else {
       navigate('/bookingpage', {
         state: {
-          startLocation,
+          startLocation: startLocation,
           returnLocation: splitLocation ? returnLocation : undefined,
-          pickupDate,
-          returnDate
+          pickupDate: pickupDate,
+          returnDate: returnDate,
+          availabilityVehicleTypes: [],
         },
       });
     }
   };
-
-  const now = new Date();
 
   const isSameDay = (date1: Date, date2: Date) => {
     return (
@@ -128,7 +132,12 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
               select
               label={splitLocation ? 'Abholung' : 'Abholung und Rückgabe'}
               value={startLocation}
-              onChange={(e) => setStartLocation(e.target.value)}
+              onChange={(e) => {
+                setLocation(e.target.value);
+                const value = e.target.value;
+                setStartLocation(value);
+                onLocationChange && onLocationChange(value);
+              }}
               fullWidth
             >
               {locations.map((option) => (
@@ -149,7 +158,11 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
                 select
                 label="Rückgabe"
                 value={returnLocation}
-                onChange={(e) => setReturnLocation(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setReturnLocation(value);
+                  onReturnLocationChange && onReturnLocationChange(value);
+                }}
                 fullWidth
               >
                 {locations.map((option) => (
@@ -173,11 +186,16 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
                 value={pickupDate}
                 onAccept={(date) => {
                   setPickupDate(date);
+                  onPickupDateChange && onPickupDateChange(date);
                   if (date && returnDate && date > returnDate) {
                     setReturnDate(date);
+                    onReturnDateChange && onReturnDateChange(date);
                   }
                 }}
-                onChange={(date) => setPickupDate(date)}
+                onChange={(date) => {
+                  setPickupDate(date);
+                  onPickupDateChange && onPickupDateChange(date);
+                }} 
                 minDate={now}
                 minTime={pickupDate && isSameDay(pickupDate, now) ? new Date(now.getTime() - 1 * 60 * 1000) : undefined}
               />
@@ -189,10 +207,16 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
                 ampm={false}
                 label="Rückgabedatum"
                 value={returnDate}
-                onAccept={(date) => setReturnDate(date)}
-                onChange={(date) => setReturnDate(date)}
+                onAccept={(date) => {
+                  setReturnDate(date);
+                  onReturnDateChange && onReturnDateChange(date);
+                }}
+                onChange={(date) => {
+                  setReturnDate(date);
+                  onReturnDateChange && onReturnDateChange(date);
+                }}
                 minDate={pickupDate || now}
-                minTime={returnDate && isSameDay(returnDate, pickupDate) ? new Date(now.getTime() - 1 * 60 * 1000) : undefined}
+                minTime={returnDate && pickupDate && isSameDay(returnDate, pickupDate) ? new Date(pickupDate.getTime() - 1 * 60 * 1000) : undefined}
               />
             </LocalizationProvider>
           </Grid>

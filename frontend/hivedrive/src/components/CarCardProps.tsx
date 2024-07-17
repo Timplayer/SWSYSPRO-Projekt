@@ -60,12 +60,12 @@ const CarCard: React.FC<CarCardProps> = ({car, onBook }) => {
       </div>
       <CardContent>
         <Typography variant="h6">{car.name}</Typography>
-        <Typography variant="body2">{`${car.pricePerHour} /ProStunde`}</Typography>
+        <Typography variant="body2">{`${car.pricePerHour}€/ProStunde`}</Typography>
         <div>
           <IconButton>
             <DriveEtaIcon />
           </IconButton>
-          <Typography variant="body2">{`${car.maxSeatCount} Passengers`}</Typography>
+          <Typography variant="body2">{`${car.maxSeatCount} Sitzplätze`}</Typography>
           <Typography variant="body2">{getTransmissonName(car.transmission)}</Typography>
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>

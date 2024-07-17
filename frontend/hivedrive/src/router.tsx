@@ -100,6 +100,7 @@ const routes: RouteObject[] = [
 	}
 ];
 
+
 const router = createBrowserRouter(routes);
 
 const AppRouter: React.FC = () => {
