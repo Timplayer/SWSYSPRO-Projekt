@@ -62,6 +62,7 @@ func deleteDefectImage(writer http.ResponseWriter, request *http.Request, tx pgx
 
 func getDefectImagesByDefectId(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
+		isEmployee := false
 		introspectionResult, err := introspect(writer, request)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusUnauthorized)
@@ -69,28 +70,15 @@ func getDefectImagesByDefectId(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		if slices.Contains(introspectionResult.Access.Roles, "employee") {
-			ids, fail := getTs[id](writer, request, dbpool, "DefectImages",
-				`SELECT images.id FROM defects 
-    			JOIN defectImage ON defects.id = defectImage.defectId
-    			JOIN images ON defectImage.imageId = images.id 
-            WHERE defects.id = $1 ORDER BY images.displayorder`,
-				mux.Vars(request)["id"])
-			if fail {
-				return
-			}
-			urls := make([]url, len(ids))
-			for i := range ids {
-				urls[i].URL = httpsPrefix + request.Host + fileAPIpath + strconv.FormatInt(ids[i].Id, 10)
-			}
-			returnTAsJSON(writer, ids, http.StatusOK)
+			isEmployee = true
 		}
 
 		ids, fail := getTs[id](writer, request, dbpool, "DefectImages",
 			`SELECT images.id FROM defects 
     			JOIN defectImage ON defects.id = defectImage.defectId
     			JOIN images ON defectImage.imageId = images.id 
-            WHERE defects.id = $1 and defects.userid = $2 ORDER BY images.displayorder`,
-			mux.Vars(request)["id"], introspectionResult.UserId)
+            WHERE defects.id = $1 and (defects.user_id = $2 OR $3) ORDER BY images.displayorder`,
+			mux.Vars(request)["id"], introspectionResult.UserId, isEmployee)
 		if fail {
 			return
 		}
