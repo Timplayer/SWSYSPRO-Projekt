@@ -13,6 +13,8 @@ const CarPresentation: React.FC = () => {
   const navigate = useNavigate();
   const [cars, setCars] = useState<Car[]>([]);
   const [vehicleCategories, setVehicleCategories] = useState<VehicleCategory[]>([]);
+  
+  const [locations, setLocations] = useState<Array<{ label: string, value: string }>>([]);
 
   useEffect(() => {
 
@@ -24,6 +26,19 @@ const CarPresentation: React.FC = () => {
     fetchVehicleCategories();
   }, []);
 
+  useEffect(() => {
+    const fetchLocations = async () => {
+      const response = await axios.get('/api/stations');
+      const locationsData = response.data.map((location: any) => ({
+        label: location.name,
+        value: location.id
+      }));
+      setLocations(locationsData);
+    };
+
+    fetchLocations();
+  }, []);
+
   const nextCars = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 2) % Math.min(cars.length, 10));
   };
@@ -31,6 +46,12 @@ const CarPresentation: React.FC = () => {
   const prevCars = () => {
     setCurrentIndex((prevIndex) => (prevIndex - 2 + Math.min(cars.length, 10)) % Math.min(cars.length, 10));
   };
+
+  const findLabelByValue = (value: string): string | undefined => {
+    const foundLocation = locations.find(loc => loc.value === value);
+    return foundLocation ? foundLocation.label : 'Zuhause';
+  };
+  
 
   const getVehicaleCategorieNameById = (id: number): string => {
     const carClass = vehicleCategories.find((cls) => cls.id === id);
@@ -77,7 +98,7 @@ const CarPresentation: React.FC = () => {
   return (
     <Container maxWidth={false} sx={{ backgroundColor: '#1c1c1e', color: '#fff', padding: '2rem 0', textAlign: 'center', width: '100%' }}>
       <Typography color={'#ff9800'} variant="h4" gutterBottom>
-        DAS PERFEKTE AUTO FÜR IHRE NÄCHSTE REISE VON {location.toUpperCase()}
+        DAS PERFEKTE AUTO FÜR IHRE NÄCHSTE REISE VON {findLabelByValue(location)}
       </Typography>
       <Box display="flex" justifyContent="center" alignItems="center">
         <IconButton onClick={prevCars} sx={{ color: '#fff' }} disabled={cars.length === 0}>

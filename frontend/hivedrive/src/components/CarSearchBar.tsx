@@ -8,6 +8,7 @@ import { MobileDateTimePicker } from '@mui/x-date-pickers';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Availability } from '../Types';
+import { useLocationContext } from '../Utils/LocationContext';
 
 interface CarSearchBarProps {
   initialLocation?: number;
@@ -32,6 +33,7 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
 }) => {
   const navigate = useNavigate();
   const now = new Date();
+  const { location, setLocation } = useLocationContext();
 
   const [locations, setLocations] = useState<Array<{ label: string, value: number }>>([]);
 
@@ -131,6 +133,7 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
               label={splitLocation ? 'Abholung' : 'Abholung und Rückgabe'}
               value={startLocation}
               onChange={(e) => {
+                setLocation(e.target.value);
                 const value = e.target.value;
                 setStartLocation(value);
                 onLocationChange && onLocationChange(value);
