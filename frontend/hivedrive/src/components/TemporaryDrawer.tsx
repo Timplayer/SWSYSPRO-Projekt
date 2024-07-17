@@ -57,6 +57,7 @@ export default function TemporaryDrawer() {
       <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
         <CustomRouterLink
           to="/subscription"
+          sx = {{ color: 'black' }}
         >
           {'Hive-Abos'}
         </CustomRouterLink>
@@ -65,6 +66,7 @@ export default function TemporaryDrawer() {
       <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
         <CustomRouterLink
           to="/carclass"
+          sx = {{ color: 'black' }}
         >
           {'Klassen Übersicht'}
         </CustomRouterLink>
@@ -73,6 +75,7 @@ export default function TemporaryDrawer() {
       <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
         <CustomRouterLink
           to="/bookingpage"
+          sx = {{ color: 'black' }}
         >
           {'Auto Buchen'}
         </CustomRouterLink>
@@ -81,6 +84,7 @@ export default function TemporaryDrawer() {
       <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
         <CustomRouterLink
           to="/bonus"
+          sx = {{ color: 'black' }}
         >
           {'Bonusprogramm'}
         </CustomRouterLink>

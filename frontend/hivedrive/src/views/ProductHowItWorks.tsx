@@ -64,7 +64,7 @@ function ProductHowItWorks() {
           <Grid container spacing={5}>
             <Grid item xs={12} md={4}>
               <Box sx={item}>
-                <Box sx={number}>1.</Box>
+                <Box sx={number}><Box sx={{color: 'black'}}>1.</Box></Box>
                 <Box
                   component="img"
                   sx={image}  
@@ -78,7 +78,7 @@ function ProductHowItWorks() {
             </Grid>
             <Grid item xs={12} md={4}>
               <Box sx={item}>
-                <Box sx={number}>2.</Box>
+                <Box sx={number}><Box sx={{color: 'black'}}>2.</Box></Box>
                 <Box
                   component="img"
                   sx={image}  
@@ -92,7 +92,7 @@ function ProductHowItWorks() {
             </Grid>
             <Grid item xs={12} md={4}>
               <Box sx={item}>
-                <Box sx={number}>3.</Box>
+                <Box sx={number}> <Box sx={{color: 'black'}}>3.</Box></Box>
                 <Box
                   component="img"
                   sx={image}  
