@@ -62,14 +62,13 @@ func deleteDefectImage(writer http.ResponseWriter, request *http.Request, tx pgx
 
 func getDefectImagesByDefectId(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		isEmployee := false
 		introspectionResult, err := introspect(writer, request)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
-		isEmployee = slices.Contains(introspectionResult.Access.Roles, "employee")
+		isEmployee := slices.Contains(introspectionResult.Access.Roles, "employee")
 
 		ids, fail := getTs[id](writer, request, dbpool, "DefectImages",
 			`SELECT images.id FROM defects 
