@@ -16,7 +16,7 @@ import (
 type picture struct {
 	Id           int64   `json:"id" db:"id"`
 	FileName     string  `json:"file_name" db:"filename"`
-	URL          *string `json:"url" db:"url"`
+	URL          *string `json:"url" db:"-"`
 	File         []byte  `json:"-" db:"file"`
 	DisplayOrder int64   `json:"display_order" db:"displayorder"`
 }
@@ -30,6 +30,12 @@ type id struct {
 }
 
 func postImage(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (picture, bool) {
+	_, err := introspect(writer, request)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusUnauthorized)
+		return picture{}, false
+	}
+
 	p, fail := addImageToDB(writer, request, tx)
 	if fail {
 		return picture{}, true
@@ -77,7 +83,9 @@ func addImageToDB(writer http.ResponseWriter, request *http.Request, dbpool pgx.
 	}
 
 	p, fail := getT[picture](writer, request, dbpool, "postImage",
-		"INSERT INTO images (fileName, file, displayOrder) VALUES ($1, $2, $3) RETURNING *;",
+		`INSERT INTO images (fileName, file, displayOrder) 
+			 VALUES ($1, $2, $3) 
+			 RETURNING *;`,
 		header.Filename, buf.Bytes(), request.FormValue(displayOrderKey))
 	if fail {
 		return p, true
@@ -87,17 +95,30 @@ func addImageToDB(writer http.ResponseWriter, request *http.Request, dbpool pgx.
 
 func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
+		isEmployee := false
+		userId := ""
+		introspectionResult, err := introspect(writer, request)
+		if err == nil {
+			isEmployee = slices.Contains(introspectionResult.Access.Roles, "employee")
+			userId = introspectionResult.UserId
+		}
+
 		tx, err := dbpool.BeginTx(request.Context(), transactionOptionsReadOnly)
 		if err != nil {
 			return
 		}
-		//goland:noinspection GoUnhandledErrorResult
 		defer tx.Rollback(request.Context())
 		p, fail := getT[picture](writer, request, tx, "getImageByID",
-			"SELECT * FROM images WHERE id = $1", mux.Vars(request)["id"])
+			`SELECT images.* 
+				 FROM images 
+				 LEFT JOIN defectimage ON images.id = defectimage.imageid 
+				 LEFT JOIN defects ON defectimage.defectid = defects.id 
+				 WHERE images.id = $1 and (defectid is NULL OR defects.user_id = $2 OR $3);`,
+			mux.Vars(request)["id"], userId, isEmployee)
 		if fail {
 			return
 		}
+
 		err = tx.Commit(request.Context())
 		if err != nil {
 			return
@@ -110,13 +131,27 @@ func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error sending HTTP response: %v", err)
 			return
 		}
+
 	}
 }
 
 func getImages(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
+		isEmployee := false
+		userId := ""
+		introspectionResult, err := introspect(writer, request)
+		if err == nil {
+			isEmployee = slices.Contains(introspectionResult.Access.Roles, "employee")
+			userId = introspectionResult.UserId
+		}
+
 		p, fail := getTs[picture](writer, request, dbpool, "getImages",
-			"SELECT * FROM images ORDER BY displayOrder;")
+			`SELECT images.* 
+				 FROM images 
+				 LEFT JOIN defectImage ON images.id = defectImage.imageId 
+				 LEFT JOIN defects ON defectImage.defectid = defects.id 
+				 WHERE defectId is NULL OR defects.user_id = $1 OR $2 ORDER BY displayOrder;`,
+			userId, isEmployee)
 		if fail {
 			return
 		}
@@ -125,6 +160,7 @@ func getImages(dbpool *pgxpool.Pool) http.HandlerFunc {
 			p[i].URL = &u
 		}
 		returnTAsJSON(writer, p, http.StatusOK)
+		return
 	}
 }
 
@@ -134,7 +170,7 @@ func deleteImage(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) p
 }
 
 func createImagesTable(dbpool *pgxpool.Pool) {
-	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS images (id BIGSERIAL PRIMARY KEY, fileName TEXT, url TEXT, file bytea, displayOrder INTEGER)")
+	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS images (id BIGSERIAL PRIMARY KEY, fileName TEXT, file bytea, displayOrder INTEGER)")
 	if err != nil {
 		log.Fatalf(failedToCreateTable, err)
 	}

@@ -63,9 +63,9 @@ func main() {
 	router.HandleFunc(imagesDefectAPIpath, getDefectImagesByDefectId(dbpool)).Methods("GET")
 	router.HandleFunc(imagesDefectAPIpath, RestRequestWithTransaction(dbpool, http.StatusOK, deleteDefectImage)).Methods("DELETE")
 
-	router.HandleFunc(imagesAPIpath, getImages(dbpool)).Methods("GET")                                                 // List of URLs
-	router.HandleFunc(imagesIdAPIpath, RestRequestWithTransaction(dbpool, http.StatusOK, getImageById)).Methods("GET") // URL
-	router.HandleFunc(imagesFilesIDAPIpath, getImageByIdAsFile(dbpool)).Methods("GET")                                 // File
+	router.HandleFunc(imagesAPIpath, getImages(dbpool)).Methods("GET")
+	router.HandleFunc(imagesIdAPIpath, RestRequestWithTransaction(dbpool, http.StatusOK, getImageById)).Methods("GET")
+	router.HandleFunc(imagesFilesIDAPIpath, getImageByIdAsFile(dbpool)).Methods("GET")
 
 	router.HandleFunc(vehicleCategoriesAPIpath, RestRequestWithTransaction(dbpool, http.StatusCreated, postVehicleCategories)).Methods("POST")
 	router.HandleFunc(vehicleCategoriesAPIpath, getVehicleCategories(dbpool)).Methods("GET")

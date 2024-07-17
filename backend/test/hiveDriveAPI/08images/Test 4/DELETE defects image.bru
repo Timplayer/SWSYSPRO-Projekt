@@ -1,13 +1,17 @@
 meta {
   name: DELETE defects image
   type: http
-  seq: 10
+  seq: 11
 }
 
 delete {
   url: https://localhost:8080/api/images/defects/id/6
   body: none
   auth: none
+}
+
+headers {
+  Authorization: Bearer {{access_token_employee}}
 }
 
 tests {
