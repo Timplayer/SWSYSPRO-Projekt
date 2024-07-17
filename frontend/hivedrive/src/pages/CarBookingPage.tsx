@@ -180,11 +180,20 @@ const Reservation: React.FC = () => {
                   disabled
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={12} md={6}>
                 <StyledTextField
                   fullWidth
                   label="Fahrzeug Bezeichnung"
                   value={car.name}
+                  sx={{ backgroundColor: theme.palette.background.paper }}
+                  disabled
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <StyledTextField
+                  fullWidth
+                  label="€/ProStunde"
+                  value={car.pricePerHour}
                   sx={{ backgroundColor: theme.palette.background.paper }}
                   disabled
                 />

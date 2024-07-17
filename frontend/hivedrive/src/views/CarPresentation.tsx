@@ -3,7 +3,7 @@ import { Box, Card, CardContent, CardMedia, Typography, Button, Container, IconB
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import { useLocationContext } from '../Utils/LocationContext';
 import { useNavigate } from 'react-router-dom';
-import { VehicleType as Car } from '../Types';
+import { VehicleType as Car, VehicleCategory } from '../Types';
 import axios from 'axios';
 import keycloak from '../keycloak';
 
@@ -12,6 +12,17 @@ const CarPresentation: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const navigate = useNavigate();
   const [cars, setCars] = useState<Car[]>([]);
+  const [vehicleCategories, setVehicleCategories] = useState<VehicleCategory[]>([]);
+
+  useEffect(() => {
+
+    const fetchVehicleCategories = async() => {
+      const response = await axios.get('/api/vehicleCategories');
+      setVehicleCategories(response.data);
+    }
+    
+    fetchVehicleCategories();
+  }, []);
 
   const nextCars = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 2) % Math.min(cars.length, 10));
@@ -19,6 +30,11 @@ const CarPresentation: React.FC = () => {
 
   const prevCars = () => {
     setCurrentIndex((prevIndex) => (prevIndex - 2 + Math.min(cars.length, 10)) % Math.min(cars.length, 10));
+  };
+
+  const getVehicaleCategorieNameById = (id: number): string => {
+    const carClass = vehicleCategories.find((cls) => cls.id === id);
+    return carClass ? carClass.name : "Unbekannt";
   };
 
   const handleBookNow = (car: Car) => {
@@ -81,10 +97,10 @@ const CarPresentation: React.FC = () => {
                   {car.name}
                 </Typography>
                 <Typography variant="body2" color='#ff9800'>
-                  {car.vehicleCategory}
+                  {getVehicaleCategorieNameById(car.vehicleCategory)}
                 </Typography>
                 <Typography variant="body2" color='#ff9800'>
-                  Ab {car.pricePerHour}
+                  Ab {car.pricePerHour}€/ProStunde
                 </Typography>
                 <Button variant="contained" onClick={() => handleBookNow(car)} sx={{ backgroundColor: '#ff5c00', color: '#fff', '&:hover': { backgroundColor: '#ff7c00' }, marginTop: '1rem' }}>
                   Jetzt buchen
