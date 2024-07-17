@@ -93,59 +93,11 @@ func addImageToDB(writer http.ResponseWriter, request *http.Request, dbpool pgx.
 
 func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
+		isEmployee := false
 		introspectionResult, err := introspect(writer, request)
 		if err == nil {
 			if slices.Contains(introspectionResult.Access.Roles, "employee") {
-				tx, err := dbpool.BeginTx(request.Context(), transactionOptionsReadOnly)
-				if err != nil {
-					return
-				}
-				defer tx.Rollback(request.Context())
-				p, fail := getT[picture](writer, request, tx, "getImageByID",
-					"SELECT * FROM images WHERE id = $1", mux.Vars(request)["id"])
-				if fail {
-					return
-				}
-				err = tx.Commit(request.Context())
-				if err != nil {
-					return
-				}
-				writer.Header().Set(contentType, octetStream)
-				writer.WriteHeader(http.StatusOK)
-				_, err = writer.Write(p.File)
-				if err != nil {
-					writer.WriteHeader(http.StatusInternalServerError)
-					log.Printf("Error sending HTTP response: %v", err)
-					return
-				}
-			}
-
-			tx, err := dbpool.BeginTx(request.Context(), transactionOptionsReadOnly)
-			if err != nil {
-				return
-			}
-			defer tx.Rollback(request.Context())
-			p, fail := getT[picture](writer, request, tx, "getImageByID",
-				"SELECT images.id, filename, file, displayorder FROM images LEFT JOIN defectimage ON images.id = defectimage.imageid WHERE images.id = $1 and defectid is NULL", mux.Vars(request)["id"])
-			if fail {
-				p, fail = getT[picture](writer, request, tx, "getImageByID",
-					"SELECT images.id, filename, file, displayorder FROM images LEFT JOIN defectimage ON images.id = defectimage.imageid JOIN defects ON defectimage.defectid = defects.id WHERE images.id = $1 and defects.user_id = $2", mux.Vars(request)["id"], introspectionResult.UserId)
-				if fail {
-					return
-				}
-			}
-
-			err = tx.Commit(request.Context())
-			if err != nil {
-				return
-			}
-			writer.Header().Set(contentType, octetStream)
-			writer.WriteHeader(http.StatusOK)
-			_, err = writer.Write(p.File)
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				log.Printf("Error sending HTTP response: %v", err)
-				return
+				isEmployee = true
 			}
 		}
 
@@ -155,10 +107,11 @@ func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		defer tx.Rollback(request.Context())
 		p, fail := getT[picture](writer, request, tx, "getImageByID",
-			"SELECT images.id, filename, file, displayorder FROM images LEFT JOIN defectimage ON images.id = defectimage.imageid WHERE images.id = $1 and defectid is NULL", mux.Vars(request)["id"])
+			"SELECT images.* FROM images LEFT JOIN defectimage ON images.id = defectimage.imageid LEFT JOIN defects ON defectimage.defectid = defects.id WHERE images.id = $1 and (defectid is NULL OR defects.user_id = $2 OR $3);", mux.Vars(request)["id"], introspectionResult.UserId, isEmployee)
 		if fail {
 			return
 		}
+
 		err = tx.Commit(request.Context())
 		if err != nil {
 			return
@@ -171,42 +124,22 @@ func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error sending HTTP response: %v", err)
 			return
 		}
+
 	}
 }
 
 func getImages(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
+		isEmployee := false
 		introspectionResult, err := introspect(writer, request)
 		if err == nil {
 			if slices.Contains(introspectionResult.Access.Roles, "employee") {
-				p, fail := getTs[picture](writer, request, dbpool, "getImages",
-					"SELECT * FROM images ORDER BY displayOrder;")
-				if fail {
-					return
-				}
-				for i := range p {
-					var u = httpsPrefix + request.Host + fileAPIpath + strconv.FormatInt(p[i].Id, 10)
-					p[i].URL = &u
-				}
-				returnTAsJSON(writer, p, http.StatusOK)
-				return
+				isEmployee = true
 			}
-
-			p, fail := getTs[picture](writer, request, dbpool, "getImages",
-				"SELECT images.id, filename, file, displayOrder FROM images LEFT JOIN defectimage ON images.id = defectImage.imageId JOIN defects ON defectimage.defectid = defects.id WHERE defectId is NULL AND defects.user_id = $1 ORDER BY displayOrder;", introspectionResult.UserId)
-			if fail {
-				return
-			}
-			for i := range p {
-				var u = httpsPrefix + request.Host + fileAPIpath + strconv.FormatInt(p[i].Id, 10)
-				p[i].URL = &u
-			}
-			returnTAsJSON(writer, p, http.StatusOK)
-			return
 		}
 
 		p, fail := getTs[picture](writer, request, dbpool, "getImages",
-			"SELECT images.id, filename, file, displayOrder FROM images left JOIN defectimage ON images.id = defectImage.imageId WHERE defectId is NULL ORDER BY displayOrder;")
+			"SELECT images.* FROM images left JOIN defectimage ON images.id = defectImage.imageId LEFT JOIN defects ON defectimage.defectid = defects.id WHERE defectId is NULL OR defects.user_id = $2 OR $2 ORDER BY displayOrder;", introspectionResult.UserId, isEmployee)
 		if fail {
 			return
 		}
