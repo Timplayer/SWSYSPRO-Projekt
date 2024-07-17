@@ -4,9 +4,6 @@
 
 
 {$SITE_ADDRESS} {
-    tls {
-        on_demand
-    }
 
     reverse_proxy /api/* backend
     reverse_proxy /auth/* keycloak:8080
