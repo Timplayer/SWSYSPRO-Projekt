@@ -94,6 +94,8 @@ const routes: RouteObject[] = [
 	},
 ];
 
+<ProtectedRoute element={<Admin />} requiredRoles={['admin', 'employee']} />
+
 const router = createBrowserRouter(routes);
 
 const AppRouter: React.FC = () => {
