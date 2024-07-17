@@ -260,22 +260,10 @@ const Vehicles: React.FC = () => {
         });
     };
 
-    const theme = createTheme({
-        palette: {
-            mode: 'dark',
-            background: {
-                default: '#121212'
-            },
-            text: {
-                primary: '#ffffff',
-                secondary: '#ffffff'
-            }
-        }
-    });
+
 
     return (
-        <ThemeProvider theme={theme}>
-        <Box sx={{ p: 3, color: "#ffffff" }}>
+        <Box sx={{ p: 3}}>
             <Typography variant="h4" gutterBottom>
                 Fahrzeuge
             </Typography>
@@ -343,7 +331,6 @@ const Vehicles: React.FC = () => {
                 />
             )}
         </Box>
-        </ThemeProvider>
     );
 };
 
