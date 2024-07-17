@@ -28,7 +28,7 @@ const Reservation: React.FC = () => {
   
   const [pickupLocationCopy, setPickupLocation] = useState(searchLocation);
   const [returnLocationCopy, setReturnLocation] = useState(returnLocation);
-  const [differentReturnLocation, setDifferentReturnLocation] = useState(searchLocation !== returnLocation);
+  const [differentReturnLocation, setDifferentReturnLocation] = useState<boolean>(searchLocation !== returnLocation && returnLocation !== undefined);
 
   const [locations, setLocations] = useState<Array<{ label: string, value: string }>>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
