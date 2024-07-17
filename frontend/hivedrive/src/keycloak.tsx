@@ -6,4 +6,10 @@ const keycloak = new Keycloak({
   clientId: 'frontend'
 });
 
+keycloak.onTokenExpired = () => {  
+  keycloak.updateToken(30).catch((error) => {
+    console.error('Failed to refresh token', error);
+  });
+};
+
 export default keycloak;

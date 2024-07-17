@@ -98,10 +98,6 @@ const VehicleTypeList: React.FC<VehicleTypeListProps> = ({
         }
     };
 
-    const handleImageClick = (url: string) => {
-        setSelectedImage(url);
-    };
-
     return (
         <Box sx={{ padding: 2 }}>
             <Typography variant="h4" gutterBottom color="textPrimary">
