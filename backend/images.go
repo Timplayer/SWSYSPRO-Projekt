@@ -94,11 +94,14 @@ func addImageToDB(writer http.ResponseWriter, request *http.Request, dbpool pgx.
 func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		isEmployee := false
+		userId := ""
 		introspectionResult, err := introspect(writer, request)
 		if err == nil {
 			if slices.Contains(introspectionResult.Access.Roles, "employee") {
 				isEmployee = true
 			}
+
+			userId = introspectionResult.UserId
 		}
 
 		tx, err := dbpool.BeginTx(request.Context(), transactionOptionsReadOnly)
@@ -107,7 +110,7 @@ func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		defer tx.Rollback(request.Context())
 		p, fail := getT[picture](writer, request, tx, "getImageByID",
-			"SELECT images.* FROM images LEFT JOIN defectimage ON images.id = defectimage.imageid LEFT JOIN defects ON defectimage.defectid = defects.id WHERE images.id = $1 and (defectid is NULL OR defects.user_id = $2 OR $3);", mux.Vars(request)["id"], introspectionResult.UserId, isEmployee)
+			"SELECT images.* FROM images LEFT JOIN defectimage ON images.id = defectimage.imageid LEFT JOIN defects ON defectimage.defectid = defects.id WHERE images.id = $1 and (defectid is NULL OR defects.user_id = $2 OR $3);", mux.Vars(request)["id"], userId, isEmployee)
 		if fail {
 			return
 		}
@@ -131,15 +134,17 @@ func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 func getImages(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		isEmployee := false
+		userId := ""
 		introspectionResult, err := introspect(writer, request)
 		if err == nil {
 			if slices.Contains(introspectionResult.Access.Roles, "employee") {
 				isEmployee = true
 			}
+			userId = introspectionResult.UserId
 		}
 
 		p, fail := getTs[picture](writer, request, dbpool, "getImages",
-			"SELECT images.* FROM images left JOIN defectimage ON images.id = defectImage.imageId LEFT JOIN defects ON defectimage.defectid = defects.id WHERE defectId is NULL OR defects.user_id = $2 OR $3 ORDER BY displayOrder;", introspectionResult.UserId, isEmployee)
+			"SELECT images.* FROM images LEFT JOIN defectImage ON images.id = defectImage.imageId LEFT JOIN defects ON defectImage.defectid = defects.id WHERE defectId is NULL OR defects.user_id = $1 OR $2 ORDER BY displayOrder;", userId, isEmployee)
 		if fail {
 			return
 		}
