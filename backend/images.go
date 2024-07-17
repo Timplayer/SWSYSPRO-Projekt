@@ -139,6 +139,7 @@ func getImages(dbpool *pgxpool.Pool) http.HandlerFunc {
 					p[i].URL = &u
 				}
 				returnTAsJSON(writer, p, http.StatusOK)
+				return
 			}
 
 			p, fail := getTs[picture](writer, request, dbpool, "getImages",
@@ -151,6 +152,7 @@ func getImages(dbpool *pgxpool.Pool) http.HandlerFunc {
 				p[i].URL = &u
 			}
 			returnTAsJSON(writer, p, http.StatusOK)
+			return
 		}
 
 		p, fail := getTs[picture](writer, request, dbpool, "getImages",
@@ -163,7 +165,7 @@ func getImages(dbpool *pgxpool.Pool) http.HandlerFunc {
 			p[i].URL = &u
 		}
 		returnTAsJSON(writer, p, http.StatusOK)
-
+		return
 	}
 }
 
