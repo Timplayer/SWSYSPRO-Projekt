@@ -60,6 +60,7 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
   }, []);
 
   const handleSubmit = () => {
+
     if (startLocation) {
       axios.get<Availability[]>(`/api/stations/id/${startLocation}/availability`)
       .then((response) => {  
@@ -73,7 +74,10 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
             availabilityVehicleTypes: checkAvilableVehicaleTypes(response.data, pickupDate !== null ? pickupDate : undefined),
           },
         });
-    } else {
+      });
+    } 
+    else 
+    {
       navigate('/bookingpage', {
         state: {
           startLocation: startLocation,
