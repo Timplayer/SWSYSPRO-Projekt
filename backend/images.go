@@ -93,6 +93,11 @@ func addImageToDB(writer http.ResponseWriter, request *http.Request, dbpool pgx.
 
 func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
+		_, err := introspect(writer, request)
+		if err == nil {
+
+		}
+
 		tx, err := dbpool.BeginTx(request.Context(), transactionOptionsReadOnly)
 		if err != nil {
 			return
@@ -122,14 +127,22 @@ func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 func getImages(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		introspectionResult, err := introspect(writer, request)
-		if err != nil {
-			http.Error(writer, err.Error(), http.StatusUnauthorized)
-			return
-		}
+		if err == nil {
+			if slices.Contains(introspectionResult.Access.Roles, "employee") {
+				p, fail := getTs[picture](writer, request, dbpool, "getImages",
+					"SELECT * FROM images ORDER BY displayOrder;")
+				if fail {
+					return
+				}
+				for i := range p {
+					var u = httpsPrefix + request.Host + fileAPIpath + strconv.FormatInt(p[i].Id, 10)
+					p[i].URL = &u
+				}
+				returnTAsJSON(writer, p, http.StatusOK)
+			}
 
-		if slices.Contains(introspectionResult.Access.Roles, "employee") {
 			p, fail := getTs[picture](writer, request, dbpool, "getImages",
-				"SELECT * FROM images ORDER BY displayOrder;")
+				"SELECT images.id, filename, file, displayOrder FROM images LEFT JOIN defectimage ON images.id = defectImage.imageId JOIN defects ON defectimage.defectid = defects.id WHERE defectId is NULL AND defects.user_id = $1 ORDER BY displayOrder;", introspectionResult.UserId)
 			if fail {
 				return
 			}
@@ -141,7 +154,7 @@ func getImages(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		p, fail := getTs[picture](writer, request, dbpool, "getImages",
-			"SELECT * FROM images left JOIN defectimage ON images.id = defectImage.imageId WHERE defectId is NULL ORDER BY displayOrder;")
+			"SELECT images.id, filename, file, displayOrder FROM images left JOIN defectimage ON images.id = defectImage.imageId WHERE defectId is NULL ORDER BY displayOrder;")
 		if fail {
 			return
 		}
