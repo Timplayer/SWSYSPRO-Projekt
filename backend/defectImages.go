@@ -69,9 +69,7 @@ func getDefectImagesByDefectId(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 
-		if slices.Contains(introspectionResult.Access.Roles, "employee") {
-			isEmployee = true
-		}
+		isEmployee = slices.Contains(introspectionResult.Access.Roles, "employee")
 
 		ids, fail := getTs[id](writer, request, dbpool, "DefectImages",
 			`SELECT images.id FROM defects 

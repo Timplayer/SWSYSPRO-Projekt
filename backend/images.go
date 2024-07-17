@@ -97,10 +97,7 @@ func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 		userId := ""
 		introspectionResult, err := introspect(writer, request)
 		if err == nil {
-			if slices.Contains(introspectionResult.Access.Roles, "employee") {
-				isEmployee = true
-			}
-
+			isEmployee = slices.Contains(introspectionResult.Access.Roles, "employee")
 			userId = introspectionResult.UserId
 		}
 
@@ -137,9 +134,7 @@ func getImages(dbpool *pgxpool.Pool) http.HandlerFunc {
 		userId := ""
 		introspectionResult, err := introspect(writer, request)
 		if err == nil {
-			if slices.Contains(introspectionResult.Access.Roles, "employee") {
-				isEmployee = true
-			}
+			isEmployee = slices.Contains(introspectionResult.Access.Roles, "employee")
 			userId = introspectionResult.UserId
 		}
 
