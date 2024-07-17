@@ -300,7 +300,7 @@ const Reservation: React.FC = () => {
                     onAccept={(date) => setReturnDate(date)}
                     onChange={(date) => setReturnDate(date)}
                     minDate={pickupDateCopy || now}
-                    minTime={returnDateCopy && isSameDay(returnDateCopy, pickupDateCopy) ? new Date(now.getTime() - 1 * 60 * 1000) : undefined}
+                    minTime={pickupDateCopy && isSameDay(returnDateCopy, pickupDateCopy) ? new Date(pickupDateCopy.getTime() - 1 * 60 * 1000) : undefined}
                   />
                 </LocalizationProvider>
               </Grid>

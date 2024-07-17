@@ -209,7 +209,7 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
                 onChange={(date) => {
                   setPickupDate(date);
                   onPickupDateChange && onPickupDateChange(date);
-                }}
+                }} 
                 minDate={now}
                 minTime={pickupDate && isSameDay(pickupDate, now) ? new Date(now.getTime() - 1 * 60 * 1000) : undefined}
               />
@@ -230,7 +230,7 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
                   onReturnDateChange && onReturnDateChange(date);
                 }}
                 minDate={pickupDate || now}
-                minTime={returnDate && pickupDate && isSameDay(returnDate, pickupDate) ? new Date(now.getTime() - 1 * 60 * 1000) : undefined}
+                minTime={returnDate && pickupDate && isSameDay(returnDate, pickupDate) ? new Date(pickupDate.getTime() - 1 * 60 * 1000) : undefined}
               />
             </LocalizationProvider>
           </Grid>
