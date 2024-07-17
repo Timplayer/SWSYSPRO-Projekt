@@ -83,7 +83,9 @@ func addImageToDB(writer http.ResponseWriter, request *http.Request, dbpool pgx.
 	}
 
 	p, fail := getT[picture](writer, request, dbpool, "postImage",
-		"INSERT INTO images (fileName, file, displayOrder) VALUES ($1, $2, $3) RETURNING *;",
+		`INSERT INTO images (fileName, file, displayOrder) 
+			 VALUES ($1, $2, $3) 
+			 RETURNING *;`,
 		header.Filename, buf.Bytes(), request.FormValue(displayOrderKey))
 	if fail {
 		return p, true
@@ -107,7 +109,12 @@ func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 		defer tx.Rollback(request.Context())
 		p, fail := getT[picture](writer, request, tx, "getImageByID",
-			"SELECT images.* FROM images LEFT JOIN defectimage ON images.id = defectimage.imageid LEFT JOIN defects ON defectimage.defectid = defects.id WHERE images.id = $1 and (defectid is NULL OR defects.user_id = $2 OR $3);", mux.Vars(request)["id"], userId, isEmployee)
+			`SELECT images.* 
+				 FROM images 
+				 LEFT JOIN defectimage ON images.id = defectimage.imageid 
+				 LEFT JOIN defects ON defectimage.defectid = defects.id 
+				 WHERE images.id = $1 and (defectid is NULL OR defects.user_id = $2 OR $3);`,
+			mux.Vars(request)["id"], userId, isEmployee)
 		if fail {
 			return
 		}
@@ -139,7 +146,12 @@ func getImages(dbpool *pgxpool.Pool) http.HandlerFunc {
 		}
 
 		p, fail := getTs[picture](writer, request, dbpool, "getImages",
-			"SELECT images.* FROM images LEFT JOIN defectImage ON images.id = defectImage.imageId LEFT JOIN defects ON defectImage.defectid = defects.id WHERE defectId is NULL OR defects.user_id = $1 OR $2 ORDER BY displayOrder;", userId, isEmployee)
+			`SELECT images.* 
+				 FROM images 
+				 LEFT JOIN defectImage ON images.id = defectImage.imageId 
+				 LEFT JOIN defects ON defectImage.defectid = defects.id 
+				 WHERE defectId is NULL OR defects.user_id = $1 OR $2 ORDER BY displayOrder;`,
+			userId, isEmployee)
 		if fail {
 			return
 		}
