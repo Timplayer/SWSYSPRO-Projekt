@@ -230,15 +230,21 @@ func getAvailabilityAtStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func checkAvailability(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) bool {
 	var available int
-	err := tx.QueryRow(request.Context(), "SELECT MIN(available) AS a FROM availability").Scan(&available)
+	var free int
+	err := tx.QueryRow(request.Context(), "SELECT min(a.available), min(s.capacity-a.available) FROM availability a LEFT JOIN stations s ON a.station = s.id;").Scan(&available, &free)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		log.Printf("Error testing availability: %v", err)
 		return true
 	}
 	if available < 0 {
-		writer.WriteHeader(http.StatusConflict)
+		http.Error(writer, "Error testing availability: no cars available\n", http.StatusConflict)
 		log.Printf("Error testing availability: no cars available\n")
+		return true
+	}
+	if free < 0 {
+		http.Error(writer, "Error testing availability: no parking available\n", http.StatusConflict)
+		log.Printf("Error testing availability: no parking available\n")
 		return true
 	}
 	return false
