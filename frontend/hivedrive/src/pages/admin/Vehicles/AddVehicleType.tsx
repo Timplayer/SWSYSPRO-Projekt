@@ -8,9 +8,10 @@ import keycloak from '../../../keycloak';
 interface AddVehicleTypeProps {
     categories: VehicleCategory[];
     handleAddVehicleType: (vehicle: Omit<VehicleType, 'id'>) => Promise<number>;
+    handleUploadImage: (id: number, file: File) => Promise<void>;
 }
 
-const AddVehicleType: React.FC<AddVehicleTypeProps> = ({ categories, handleAddVehicleType }) => {
+const AddVehicleType: React.FC<AddVehicleTypeProps> = ({ categories, handleAddVehicleType, handleUploadImage }) => {
     const [name, setName] = useState<string>('');
     const [vehicleCategory, setVehicleCategory] = useState<number>(0);
     const [transmission, setTransmission] = useState<Transmission>(Transmission.Automatik);
@@ -35,19 +36,6 @@ const AddVehicleType: React.FC<AddVehicleTypeProps> = ({ categories, handleAddVe
         onDrop
     });
 
-    const uploadImage = async (image: File, vehicleId: number) => {
-        const formData = new FormData();
-        formData.append('file', image);
-        formData.append('file_name', image.name);
-        formData.append('display_order', '0');
-
-        await axios.post(`/api/images/vehicleTypes/id/${vehicleId}`, formData, {
-            headers: { 
-                Authorization: `Bearer ${keycloak.token}`,
-                'Content-Type': 'multipart/form-data'
-            }
-        });
-    };
 
     const handleSubmit = async () => {
         if (name.trim() && vehicleCategory > 0 && maxSeatCount > 0 && pricePerHour > 0 && minAgeToDrive > 0 && driverSystem) {
@@ -62,7 +50,7 @@ const AddVehicleType: React.FC<AddVehicleTypeProps> = ({ categories, handleAddVe
             };
 
             handleAddVehicleType(newVehicleType).then((vehicleId : number) => {
-                Promise.all(images.map((image : File) => uploadImage(image, vehicleId)));
+                Promise.all(images.map((image : File) => handleUploadImage(vehicleId, image)));
 
                 setName('');
                 setVehicleCategory(0);

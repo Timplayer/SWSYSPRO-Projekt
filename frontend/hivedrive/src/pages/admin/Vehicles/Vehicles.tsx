@@ -11,9 +11,13 @@ import AddVehicleType from './AddVehicleType';
 import VehicleTypeList from './VehicleTypeList';
 import { ThemeProvider } from '@emotion/react';
 import keycloak from '../../../keycloak';
+import AddAvailability from './AddAvailability';
+import { Station } from '../Stations/StationTypes';
 
 const Vehicles: React.FC = () => {
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+    const [stations, setStation] = useState<Station[]>([]);
+
     const [vehicleTypes, setVehicleTypes] = useState<VehicleType[]>([]);
     const [categories, setCategories] = useState<VehicleCategory[]>([]);
     const [producers, setProducers] = useState<Producer[]>([]);
@@ -57,6 +61,15 @@ const Vehicles: React.FC = () => {
                 }
             })
             .then(response => setProducers(response.data))
+            .catch(error => console.error('Error fetching producers:', error));
+
+        axios.get('/api/stations',{ 
+                headers: {
+                    Authorization: `Bearer ${keycloak.token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => setStation(response.data))
             .catch(error => console.error('Error fetching producers:', error));
     }, []);
 
@@ -201,35 +214,50 @@ const Vehicles: React.FC = () => {
 
     const handleFetchImages = async (vehicleId: number) => {
         try {
-            const response = await axios.get(`/api/images/vehicles/id/${vehicleId}`, { 
+            const response = await axios.get(`/api/images/vehicleTypes/id/${vehicleId}`, { 
                 headers: {
                     Authorization: `Bearer ${keycloak.token}`,
                     'Content-Type': 'application/json'
                 }
             });
-            var urls = new Array<string>();
-            urls.push(response.data.url);
-            return urls;
+            console.log(response);
+            return response.data.map((img: { url: string }) => img.url);
         } catch (error) {
+            console.log(error);
             return new Array<string>();
         }
     };
 
-    const handleFetchVehicleTypeImages = async (vehicleTypeId: number) => {
+    const handleAddAvailability = async (data: { station: number; time: Date; auto_klasse: number }) => {
         try {
-            const response = await axios.get(`/api/images/vehicleTypes/id/${vehicleTypeId}`, { 
+            const response = await axios.post('/api/stations/availability', data, {
                 headers: {
-                    Authorization: `Bearer ${keycloak.token}`,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${keycloak.token}`
                 }
             });
-
-            var urls = new Array<string>();
-            urls.push(response.data.url);
-            return urls;
+            if (response.status === 201) {
+                console.log('Availability added successfully:', response.data);
+            } else {
+                console.error('Failed to add availability:', response.status, response.data);
+            }
         } catch (error) {
-            return new Array<string>();
+            console.error('Error adding availability:', error);
         }
+    };
+
+    const uploadImage = async (vehicleId: number, image: File) => {
+        const formData = new FormData();
+        formData.append('file', image);
+        formData.append('file_name', image.name);
+        formData.append('display_order', '0');
+
+        await axios.post(`/api/images/vehicleTypes/id/${vehicleId}`, formData, {
+            headers: { 
+                Authorization: `Bearer ${keycloak.token}`,
+                'Content-Type': 'multipart/form-data'
+            }
+        });
     };
 
     const theme = createTheme({
@@ -252,15 +280,46 @@ const Vehicles: React.FC = () => {
                 Fahrzeuge
             </Typography>
             <Tabs value={tabIndex} onChange={handleTabChange}>
+                <Tab label="Fahrzeug Typen Liste" />
+                <Tab label="Fahrzeug Type hinzufügen" />
+                <Tab label="Fahrzeugkategorien" />
+                <Tab label="Verfügbarkeit hinzufügen"/>
                 <Tab label="Fahrzeugliste" />
                 <Tab label="Fahrzeug hinzufügen" />
-                <Tab label="Fahrzeug Type hinzufügen" />
-                <Tab label="Fahrzeug Typen Liste" />
-                <Tab label="Fahrzeugkategorien" />
                 <Tab label="Hersteller" />
             </Tabs>
             <Divider sx={{ mb: 2 }} />
             {tabIndex === 0 && (
+                <VehicleTypeList
+                    vehicleTypes={vehicleTypes}
+                    categories={categories}
+                    handleFetchImage={handleFetchImages}
+                    handleUpdateVehicleType={handleUpdateVehicleType}
+                    handleUploadImage={uploadImage}
+                />
+            )}
+            {tabIndex === 1 && (
+                <AddVehicleType
+                    categories={categories}
+                    handleAddVehicleType={handleAddVehicleType}
+                    handleUploadImage={uploadImage}
+                />
+            )}
+            {tabIndex === 2 && (
+                <VehicleCategories
+                    categories={categories}
+                    handleAddCategory={handleAddCategory}
+                    handleUpdateCategory={handleUpdateCategory}
+                />
+            )}
+            {tabIndex === 3 && (
+                <AddAvailability
+                    vehicleTypes={vehicleTypes}
+                    stations={stations}
+                    handleAddAvailability={handleAddAvailability}
+                />
+            )}
+            {tabIndex === 4 && (
                 <VehicleList
                     vehicles={vehicles}
                     vehicleTypes={vehicleTypes}
@@ -269,35 +328,14 @@ const Vehicles: React.FC = () => {
                     handleUpdateVehicle={handleUpdateVehicle}
                 />
             )}
-            {tabIndex === 1 && (
+            {tabIndex === 5 && (
                 <AddVehicle
                     vehicleTypes={vehicleTypes}
                     producers={producers}
                     handleAddVehicle={handleAddVehicle}
                 />
             )}
-            {tabIndex === 2 && (
-                <AddVehicleType
-                    categories={categories}
-                    handleAddVehicleType={handleAddVehicleType}
-                />
-            )}
-            {tabIndex === 3 && (
-                <VehicleTypeList
-                    vehicleTypes={vehicleTypes}
-                    categories={categories}
-                    handleFetchImage={handleFetchVehicleTypeImages}
-                    handleUpdateVehicleType={handleUpdateVehicleType}
-                />
-            )}
-            {tabIndex === 4 && (
-                <VehicleCategories
-                    categories={categories}
-                    handleAddCategory={handleAddCategory}
-                    handleUpdateCategory={handleUpdateCategory}
-                />
-            )}
-            {tabIndex === 5 && (
+            {tabIndex === 6 && (
                 <Producers
                     producers={producers}
                     handleAddProducer={handleAddProducer}
