@@ -31,6 +31,7 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
   onReturnDateChange,
 }) => {
   const navigate = useNavigate();
+  const now = new Date();
 
   const [locations, setLocations] = useState<Array<{ label: string, value: number }>>([]);
 
@@ -111,8 +112,6 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
       });
     }
   };
-
-  const now = new Date();
 
   const isSameDay = (date1: Date, date2: Date) => {
     return (
