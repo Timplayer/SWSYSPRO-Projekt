@@ -12,10 +12,16 @@ import { Link as RouterLink } from 'react-router-dom';
 
 function checkAdminRole() {
   if (keycloak.tokenParsed && keycloak.tokenParsed.realm_access){
-  if (keycloak.tokenParsed.realm_access?.roles.includes('admin') ) {
-    return true;
+
+    if (keycloak.tokenParsed.realm_access?.roles.includes('admin') ) {
+      return true;
+    }
+
+    if (keycloak.tokenParsed.realm_access?.roles.includes('employee') ) {
+      return true;
+    }
+    
   }
-}
   return false;
 }
 
