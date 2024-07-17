@@ -1,6 +1,7 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Typography, Toolbar, Box, Avatar } from '@mui/material';
-import {Home, CarRental, EvStation, EventNote, AccountBox} from '@mui/icons-material';
+import { Home, CarRental, EvStation, EventNote, AccountBox } from '@mui/icons-material';
 import Logo from '../assets/HiveDriveLogo.jpeg'; // Update the path to where your logo is located
 import Users from '../pages/admin/Users';
 
@@ -17,17 +18,16 @@ export const tabs: TabItem[] = [
     { key: 'Cars', label: 'Autos', icon: <CarRental /> },
     { key: 'Stations', label: 'Stationen', icon: <EvStation /> },
     { key: 'Accounts', label: 'Konten', icon: <AccountBox /> },
-
 ];
-
 
 interface SidebarProps {
     selectedTab: string;
     setSelectedTab: (tab: string) => void;
 }
 
-
 const Sidebar: React.FC<SidebarProps> = ({ selectedTab, setSelectedTab }) => {
+    const navigate = useNavigate();
+
     return (
         <Drawer
             variant="permanent"
@@ -38,7 +38,13 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedTab, setSelectedTab }) => {
             }}
         >
             <Toolbar>
-                <Avatar variant="square" src={Logo} sx={{ width: '100%', height: 'auto', margin: '0 auto' }} />
+                <Box
+                    component="a"
+                    onClick={() => navigate('/')}
+                    sx={{ cursor: 'pointer', display: 'block', width: '100%' }}
+                >
+                    <Avatar variant="square" src={Logo} sx={{ width: '100%', height: 'auto', margin: '0 auto' }} />
+                </Box>
             </Toolbar>
             <Box sx={{ overflow: 'auto' }}>
                 <List>

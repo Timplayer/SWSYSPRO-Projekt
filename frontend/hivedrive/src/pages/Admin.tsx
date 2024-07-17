@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { CssBaseline, Toolbar, Typography, Box, ThemeProvider, createTheme } from '@mui/material';
+import { CssBaseline, Toolbar, Typography, Box, ThemeProvider, createTheme, useMediaQuery } from '@mui/material';
 import Sidebar from '../components/Sidebar';
 import Overview from "./admin/Overview.tsx";
 import Vehicles from "./admin/Vehicles/Vehicles.tsx";
 import Stations from "./admin/Stations/Stations.tsx";
 import Users from './admin/Users.tsx';
 
-const theme = createTheme({
+const darkTheme = createTheme({
     palette: {
         mode: 'dark',
         background: {
@@ -18,8 +18,26 @@ const theme = createTheme({
         }
     }
 });
+
+const lightTheme = createTheme({
+    palette: {
+        mode: 'light',
+        background: {
+            default: '#ffffff'
+        },
+        text: {
+            primary: '#000000',
+            secondary: '#555555'
+        }
+    }
+});
+
+
 const Admin: React.FC = () => {
     const [selectedTab, setSelectedTab] = useState('Overview');
+
+    const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+    const theme = prefersDarkMode ? darkTheme : lightTheme;
 
     const renderContent = () => {
         switch (selectedTab) {

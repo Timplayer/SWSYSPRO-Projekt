@@ -14,19 +14,6 @@ interface User {
     roles: string[];
 }
 
-const theme = createTheme({
-    palette: {
-        mode: 'dark',
-        background: {
-            default: '#121212'
-        },
-        text: {
-            primary: '#ffffff',
-            secondary: '#ffffff'
-        }
-    }
-});
-
 const Users: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
@@ -174,7 +161,6 @@ const Users: React.FC = () => {
     };
 
     return (
-        <ThemeProvider theme={theme}>
         <Box sx={{ p: 3 }}>
             <Typography variant="h4" gutterBottom>
                 Benutzer
@@ -240,7 +226,6 @@ const Users: React.FC = () => {
                 </DialogActions>
             </Dialog>
         </Box>
-        </ThemeProvider>
     );
 };
 

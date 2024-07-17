@@ -96,7 +96,7 @@ const routes: RouteObject[] = [
 	},
 	{
 		path: '/admin',
-		element: <Admin/>
+		element: <ProtectedRoute element={<Admin />} requiredRoles={['admin', 'employee']} />,
 	}
 ];
 
