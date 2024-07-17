@@ -274,7 +274,7 @@ WITH station_times AS (SELECT start_pos AS pos, start_time AS time, auto_klasse
                  GROUP BY t.pos, t.time, t.auto_klasse),
      depatures AS (SELECT t.pos, t.time, t.auto_klasse, count(*) AS num
                    FROM station_times t
-                            JOIN reservations r ON r.start_pos = t.pos AND r.start_time = t.time
+                            JOIN reservations r ON r.start_pos = t.pos AND t.time >= r.start_time
                    GROUP BY t.pos, t.time, t.auto_klasse)
 SELECT t.pos AS station,
        t.time AS time,
