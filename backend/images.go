@@ -93,19 +93,69 @@ func addImageToDB(writer http.ResponseWriter, request *http.Request, dbpool pgx.
 
 func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		_, err := introspect(writer, request)
+		introspectionResult, err := introspect(writer, request)
 		if err == nil {
+			if slices.Contains(introspectionResult.Access.Roles, "employee") {
+				tx, err := dbpool.BeginTx(request.Context(), transactionOptionsReadOnly)
+				if err != nil {
+					return
+				}
+				defer tx.Rollback(request.Context())
+				p, fail := getT[picture](writer, request, tx, "getImageByID",
+					"SELECT * FROM images WHERE id = $1", mux.Vars(request)["id"])
+				if fail {
+					return
+				}
+				err = tx.Commit(request.Context())
+				if err != nil {
+					return
+				}
+				writer.Header().Set(contentType, octetStream)
+				writer.WriteHeader(http.StatusOK)
+				_, err = writer.Write(p.File)
+				if err != nil {
+					writer.WriteHeader(http.StatusInternalServerError)
+					log.Printf("Error sending HTTP response: %v", err)
+					return
+				}
+			}
 
+			tx, err := dbpool.BeginTx(request.Context(), transactionOptionsReadOnly)
+			if err != nil {
+				return
+			}
+			defer tx.Rollback(request.Context())
+			p, fail := getT[picture](writer, request, tx, "getImageByID",
+				"SELECT images.id, filename, file, displayorder FROM images LEFT JOIN defectimage ON images.id = defectimage.imageid WHERE images.id = $1 and defectid is NULL", mux.Vars(request)["id"])
+			if fail {
+				p, fail = getT[picture](writer, request, tx, "getImageByID",
+					"SELECT images.id, filename, file, displayorder FROM images LEFT JOIN defectimage ON images.id = defectimage.imageid JOIN defects ON defectimage.defectid = defects.id WHERE images.id = $1 and defects.user_id = $2", mux.Vars(request)["id"], introspectionResult.UserId)
+				if fail {
+					return
+				}
+			}
+
+			err = tx.Commit(request.Context())
+			if err != nil {
+				return
+			}
+			writer.Header().Set(contentType, octetStream)
+			writer.WriteHeader(http.StatusOK)
+			_, err = writer.Write(p.File)
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				log.Printf("Error sending HTTP response: %v", err)
+				return
+			}
 		}
 
 		tx, err := dbpool.BeginTx(request.Context(), transactionOptionsReadOnly)
 		if err != nil {
 			return
 		}
-		//goland:noinspection GoUnhandledErrorResult
 		defer tx.Rollback(request.Context())
 		p, fail := getT[picture](writer, request, tx, "getImageByID",
-			"SELECT * FROM images WHERE id = $1", mux.Vars(request)["id"])
+			"SELECT images.id, filename, file, displayorder FROM images LEFT JOIN defectimage ON images.id = defectimage.imageid WHERE images.id = $1 and defectid is NULL", mux.Vars(request)["id"])
 		if fail {
 			return
 		}
