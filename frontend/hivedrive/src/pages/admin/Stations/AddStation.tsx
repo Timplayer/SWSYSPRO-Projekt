@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { Box, Button, TextField } from '@mui/material';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 import { Station } from './StationTypes';
 
 interface AddStationProps {
@@ -17,6 +20,7 @@ const AddStation: React.FC<AddStationProps> = ({ handleAddStation }) => {
     const [street, setStreet] = useState<string>('');
     const [houseNumber, setHouseNumber] = useState<string>('');
     const [capacity, setCapacity] = useState<number>(0);
+    const [isMapOpen, setIsMapOpen] = useState<boolean>(false);
 
     const handleSubmit = () => {
         const newStation = {
@@ -45,7 +49,29 @@ const AddStation: React.FC<AddStationProps> = ({ handleAddStation }) => {
         setStreet('');
         setHouseNumber('');
         setCapacity(0);
+        setIsMapOpen(false);
     };
+
+    function LocationMarker() {
+        useMapEvents({
+            click(e) {
+                setLatitude(e.latlng.lat);
+                setLongitude(e.latlng.lng);
+            },
+        });
+
+        return latitude === null ? null : (
+            <Marker position={[latitude, longitude]}></Marker>
+        );
+    }
+
+    // Fix for the default marker icon
+    delete L.Icon.Default.prototype._getIconUrl;
+    L.Icon.Default.mergeOptions({
+        iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+        iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+        shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+    });
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -56,22 +82,47 @@ const AddStation: React.FC<AddStationProps> = ({ handleAddStation }) => {
                 variant="outlined"
                 sx={{ minWidth: '200px' }}
             />
-            <TextField
-                label="Breitengrad"
-                type="number"
-                value={latitude}
-                onChange={(e) => setLatitude(parseFloat(e.target.value))}
-                variant="outlined"
-                sx={{ minWidth: '150px' }}
-            />
-            <TextField
-                label="Längengrad"
-                type="number"
-                value={longitude}
-                onChange={(e) => setLongitude(parseFloat(e.target.value))}
-                variant="outlined"
-                sx={{ minWidth: '150px' }}
-            />
+            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, alignItems: 'center' }}>
+                <TextField
+                    label="Breitengrad"
+                    type="number"
+                    value={latitude}
+                    onChange={(e) => setLatitude(parseFloat(e.target.value))}
+                    variant="outlined"
+                    sx={{ minWidth: '150px' }}
+                />
+                <TextField
+                    label="Längengrad"
+                    type="number"
+                    value={longitude}
+                    onChange={(e) => setLongitude(parseFloat(e.target.value))}
+                    variant="outlined"
+                    sx={{ minWidth: '150px' }}
+                />
+                <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => setIsMapOpen(!isMapOpen)}
+                    sx={{ height: 'fit-content' }}
+                >
+                    {isMapOpen ? 'Karte schließen' : 'Karte öffnen'}
+                </Button>
+            </Box>
+            {isMapOpen && (
+                <Box sx={{ height: '400px', width: '100%', marginBottom: '16px' }}>
+                    <MapContainer
+                        center={[latitude, longitude]}
+                        zoom={6}
+                        style={{ height: '100%', width: '100%' }}
+                    >
+                        <TileLayer
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        />
+                        <LocationMarker />
+                    </MapContainer>
+                </Box>
+            )}
             <TextField
                 label="Land"
                 value={country}
