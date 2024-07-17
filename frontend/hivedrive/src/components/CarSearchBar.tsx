@@ -84,7 +84,7 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
           returnLocation: splitLocation ? returnLocation : undefined,
           pickupDate: pickupDate,
           returnDate: returnDate,
-          availabilityVehicleTypes: [],
+          availabilityVehicleTypes: undefined,
         },
       });
     }
