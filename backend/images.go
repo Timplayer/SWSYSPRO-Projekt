@@ -121,8 +121,27 @@ func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func getImages(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
+		introspectionResult, err := introspect(writer, request)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		if slices.Contains(introspectionResult.Access.Roles, "employee") {
+			p, fail := getTs[picture](writer, request, dbpool, "getImages",
+				"SELECT * FROM images ORDER BY displayOrder;")
+			if fail {
+				return
+			}
+			for i := range p {
+				var u = httpsPrefix + request.Host + fileAPIpath + strconv.FormatInt(p[i].Id, 10)
+				p[i].URL = &u
+			}
+			returnTAsJSON(writer, p, http.StatusOK)
+		}
+
 		p, fail := getTs[picture](writer, request, dbpool, "getImages",
-			"SELECT * FROM images ORDER BY displayOrder;")
+			"SELECT * FROM images left JOIN defectimage ON images.id = defectImage.imageId WHERE defectId is NULL ORDER BY displayOrder;")
 		if fail {
 			return
 		}
@@ -131,6 +150,7 @@ func getImages(dbpool *pgxpool.Pool) http.HandlerFunc {
 			p[i].URL = &u
 		}
 		returnTAsJSON(writer, p, http.StatusOK)
+
 	}
 }
 
