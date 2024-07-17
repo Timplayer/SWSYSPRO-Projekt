@@ -25,7 +25,7 @@ const BookingPage: React.FC = () => {
   const [sortOption, setSortOption] = useState('lowestPrice');
   const [transmission, setTransmission] = useState<Transmission[]>([]);
   const [driveType, setDriveType] = useState<DriverSystem[]>([]);
-  const [seatCount, setSeatCount] = useState('2+'); 
+  const [seatCount, setSeatCount] = useState('1+'); 
   const [driverAge, setDriverAge] = useState('25+'); 
 
   useEffect(() => { 

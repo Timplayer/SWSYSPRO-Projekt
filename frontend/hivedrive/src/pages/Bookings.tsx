@@ -146,7 +146,8 @@ const Bookings: React.FC = () => {
         setOpenCancel(false);
         setRemoveId(null);
       } catch (error) {
-        setError(error.message);
+        console.log(error);
+        setError('Ein Fehler ist aufgetreten. Nicht erlaubte Änderungen!');
       }
     }
   };
@@ -346,6 +347,11 @@ const Bookings: React.FC = () => {
             <DialogContentText>
               Möchten Sie diese Buchung wirklich stornieren? Diese Aktion kann nicht rückgängig gemacht werden.
             </DialogContentText>
+            {error && (
+              <Typography variant="body2" color="error">
+                Fehler: {error}
+              </Typography>
+            )}
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseCancel} color="primary">Abbrechen</Button>
