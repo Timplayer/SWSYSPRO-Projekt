@@ -180,8 +180,8 @@ func initializeDatabase(dbpool *pgxpool.Pool) {
 
 func validate(
 	handler func(writer http.ResponseWriter,
-	request *http.Request,
-	introspectionResult *introspection)) http.HandlerFunc {
+		request *http.Request,
+		introspectionResult *introspection)) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		introspectionResult, err := introspect(writer, request)
 		if err != nil {
