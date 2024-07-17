@@ -26,6 +26,8 @@ const Overview: React.FC = () => {
     const [vehiclesCount, setVehiclesCount] = useState<number>(0);
     const [categoriesCount, setCategoriesCount] = useState<number>(0);
     const [producersCount, setProducersCount] = useState<number>(0);
+    const [vehicleTypes, setVehicleTypes] = useState<number>(0);
+
     const [stations, setStations] = useState<any[]>([]);
     const [availabilities, setAvailabilities] = useState<{ [key: number]: number }>({});
 
@@ -57,6 +59,10 @@ const Overview: React.FC = () => {
         axios.get('/api/producers')
             .then(response => setProducersCount(response.data.length))
             .catch(error => console.error('Error fetching producers:', error));
+
+        axios.get('/api/vehicleTypes')
+            .then(response => setVehicleTypes(response.data.length))
+            .catch(error => console.error('Error fetching producers:', error));
     }, []);
 
     const getStationCarsCount = (stationId: number) => {
@@ -80,20 +86,14 @@ const Overview: React.FC = () => {
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <CustomPaper>
-                        <Typography variant="h5">Vehicles</Typography>
-                        <Typography variant="h2">{vehiclesCount}</Typography>
+                        <Typography variant="h5">VehiclesTypes</Typography>
+                        <Typography variant="h2">{vehicleTypes}</Typography>
                     </CustomPaper>
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <CustomPaper>
                         <Typography variant="h5">Categories</Typography>
                         <Typography variant="h2">{categoriesCount}</Typography>
-                    </CustomPaper>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                    <CustomPaper>
-                        <Typography variant="h5">Producers</Typography>
-                        <Typography variant="h2">{producersCount}</Typography>
                     </CustomPaper>
                 </Grid>
                 <Grid item xs={12}>

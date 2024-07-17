@@ -8,6 +8,7 @@ import { MobileDateTimePicker } from '@mui/x-date-pickers';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Availability } from '../Types';
+import { checkAvilableVehicaleTypes } from '../Utils/Utils';
 
 interface CarSearchBarProps {
   initialLocation?: number;
@@ -52,44 +53,14 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
 
       axios.get<Availability[]>(`/api/stations/id/${startLocation}/availability`)
       .then((response) => {  
-        let vehicleTypes = new Map<number, {date: Date, count: number}>();
-        
-        for (const availability of response.data) {
-          if(returnDate && new Date(availability.time) > new Date(returnDate)){
-              continue;
-          }
-
-          if (!vehicleTypes.has(availability.auto_klasse)) {
-            vehicleTypes.set(availability.auto_klasse, { 
-              date: new Date(availability.time),
-              count: availability.availability,
-            });
-          }
-          else 
-          {
-            const existingEntry = vehicleTypes.get(availability.auto_klasse);
-    
-            if (existingEntry && new Date(existingEntry.date) < new Date(availability.time)) {
-              vehicleTypes.set(availability.auto_klasse, {
-                date: new Date(availability.time),
-                count: availability.availability,
-              });
-            }
-          }
-        }
-
-        const availabilityVehicleTypes = Array.from(vehicleTypes.keys()).filter((id: number) => {
-          const type = vehicleTypes.get(id);
-          return type && type.count > 0;
-        });
-
+            
         navigate('/bookingpage', {
           state: {
             startLocation : startLocation,
             returnLocation: splitLocation ? returnLocation : undefined,
             pickupDate: pickupDate,
             returnDate : returnDate,
-            availabilityVehicleTypes: availabilityVehicleTypes,
+            availabilityVehicleTypes: checkAvilableVehicaleTypes(response.data, pickupDate !== null ? pickupDate : undefined),
           },
         });
         
