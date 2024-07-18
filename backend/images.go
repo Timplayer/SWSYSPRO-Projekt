@@ -83,14 +83,10 @@ func addImageToDB(writer http.ResponseWriter, request *http.Request, dbpool pgx.
 	}
 
 	p, fail := getT[picture](writer, request, dbpool, "postImage",
-		`INSERT INTO images (fileName, file, displayOrder) 
-			 VALUES ($1, $2, $3) 
-			 RETURNING *;`,
+		`INSERT INTO images (fileName, file, displayOrder) VALUES ($1, $2, $3) RETURNING *;`,
 		header.Filename, buf.Bytes(), request.FormValue(displayOrderKey))
-	if fail {
-		return p, true
-	}
-	return p, false
+
+	return p, fail
 }
 
 func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
