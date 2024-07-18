@@ -2,8 +2,6 @@ import React from 'react';
 import { Box,Typography, Button, Container } from '@mui/material';
 import { styled } from '@mui/system';
 
-
-
 const PromoBox = styled(Box)(({ theme }) => ({
   maxWidth: '800px',
   padding: theme.spacing(3),

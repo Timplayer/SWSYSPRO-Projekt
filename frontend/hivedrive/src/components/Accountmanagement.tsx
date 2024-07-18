@@ -23,9 +23,9 @@ export default function AccountManagement() {
     console.log(settingLink);
     if (settingLink) {
       if (settingLink.startsWith('/auth')) {
-        window.location.href = settingLink; // External URL navigation
+        window.location.href = settingLink; 
       } else {
-        navigate(settingLink); // Internal navigation
+        navigate(settingLink); 
       }
     }
   };

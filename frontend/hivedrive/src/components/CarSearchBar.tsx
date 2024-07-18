@@ -124,7 +124,7 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
           </Grid>
           {!splitLocation && (
             <Grid item xs={12} sm={4}>
-              {/* Empty Grid to keep alignment */}
+              {/* Abstand gewährleisten */}
             </Grid>
           )}
           {splitLocation && (
