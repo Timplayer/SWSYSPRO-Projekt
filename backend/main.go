@@ -140,9 +140,8 @@ func getDBpool() *pgxpool.Pool {
 	if !ok {
 		log.Fatal("DATABASE_PASS environment variable not set")
 	}
-	psqlconn := fmt.Sprintf(psqlconnString, url, dbPort, user, password, dbTable)
 	for i := 0; i < 10; i++ {
-		dbpool, err := pgxpool.New(context.Background(), psqlconn)
+		dbpool, err := pgxpool.New(context.Background(), fmt.Sprintf(psqlString, url, dbPort, user, password, dbTable))
 		if err != nil {
 			log.Fatal(err)
 		}

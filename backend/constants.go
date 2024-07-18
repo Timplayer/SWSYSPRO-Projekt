@@ -7,7 +7,7 @@ import (
 
 const dbPort = 5432
 const dbTable = "hivedrive"
-const psqlconnString = "host=%s port=%d user=%s password=%s dbname=%s sslmode=disable"
+const psqlString = "host=%s port=%d user=%s password=%s dbname=%s sslmode=disable"
 
 const contentType = "Content-Type"
 const applicationJSON = "application/json"
