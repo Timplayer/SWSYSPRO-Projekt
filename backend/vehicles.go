@@ -37,7 +37,10 @@ func updateVehicle(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if fail {
 			return
 		}
-		result, err := dbpool.Exec(context.Background(), "UPDATE vehicles SET name = $1, vehiclecategory = $2, producer = $3, status = $4, receptionDate = $5, completionDate = $6 WHERE id = $7", v.Name, v.VehicleCategory, v.Producer, v.Status, v.ReceptionDate, v.CompletionDate, v.Id)
+		result, err := dbpool.Exec(context.Background(),
+			`UPDATE vehicles 
+				 SET name = $1, vehiclecategory = $2, producer = $3, status = $4, receptionDate = $5, completionDate = $6 
+				 WHERE id = $7`, v.Name, v.VehicleCategory, v.Producer, v.Status, v.ReceptionDate, v.CompletionDate, v.Id)
 		fail = checkUpdateSingleRow(writer, err, result, "update Vehicle")
 		if fail {
 			return
@@ -94,7 +97,12 @@ func getVehicles(dbpool *pgxpool.Pool) http.HandlerFunc {
 }
 
 func createVehiclesTable(dbpool *pgxpool.Pool) {
-	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS vehicles (id BIGSERIAL PRIMARY KEY, name TEXT NOT NULL, vehicleCategory BIGSERIAL references vehiclecategories(id), producer BIGSERIAL references producers(id), status TEXT NOT NULL, receptionDate timestamp NOT NULL, completionDate timestamp);")
+	_, err := dbpool.Exec(context.Background(),
+		`CREATE TABLE IF NOT EXISTS vehicles (
+    			id BIGSERIAL PRIMARY KEY, name TEXT NOT NULL, 
+    			vehicleCategory BIGSERIAL references vehiclecategories(id), 
+    			producer BIGSERIAL references producers(id), status TEXT NOT NULL, 
+    			receptionDate timestamp NOT NULL, completionDate timestamp);`)
 	if err != nil {
 		log.Fatalf(failedToCreateTable, err)
 	}

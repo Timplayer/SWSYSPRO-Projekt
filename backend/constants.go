@@ -1,6 +1,13 @@
 package main
 
-import "github.com/jackc/pgx/v5"
+import (
+	"github.com/jackc/pgx/v5"
+	"time"
+)
+
+const dbPort = 5432
+const dbTable = "hivedrive"
+const psqlString = "host=%s port=%d user=%s password=%s dbname=%s sslmode=disable"
 
 const contentType = "Content-Type"
 const applicationJSON = "application/json"
@@ -71,14 +78,17 @@ var transactionOptionsReadOnly = pgx.TxOptions{
 
 var supportedFileTypes = []string{imageJPEG, imagePNG, imageGIF, imageWEBP, imageSVG}
 
-const postVehilceImageSQL = "INSERT INTO vehicleImage (vehicleId, imageId) VALUES ($1, $2);"
-const deleteVehicleImageSQL = "DELETE FROM vehicleImage WHERE imageId = $1;"
-const getVehicleImagesByVehicleIdSQL = "SELECT images.url FROM vehicles JOIN vehicleImage ON vehicles.id = vehicleImage.vehicleId JOIN images ON vehicleImage.imageId = images.id WHERE vehicles.id = $1 ORDER BY images.displayorder"
+const getImageByIdAsFileSQL = `SELECT images.* FROM images LEFT JOIN defectimage ON images.id = defectimage.imageid 
+    			 LEFT JOIN defects ON defectimage.defectid = defects.id 
+                 WHERE images.id = $1 and (defectid is NULL OR defects.user_id = $2 OR $3);`
+const postReservationSQL = `INSERT INTO reservations (user_id, auto_klasse, start_time, start_pos, end_time, end_pos)
+				 VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`
+const putReservationSQL = `UPDATE reservations
+				 SET auto_klasse = $1,
+				     start_time = $2,
+				     start_pos = $3,
+				     end_time = $4,
+				     end_pos  = $5
+                 WHERE id = $6 AND user_id = $7;`
 
-const postDefectImageSQL = "INSERT INTO defectImage (defectId, imageId) VALUES ($1, $2);"
-const deleteDefectImageSQL = "DELETE FROM defectImage WHERE imageId = $1;"
-const getDefectImagesByDefectIdSQL = "SELECT images.url FROM defects JOIN defectImage ON defects.id = defectImage.defectId JOIN images ON defectImage.imageId = images.id WHERE defect.id = $1 ORDER BY images.displayorder"
-
-const postVehicleTypesImageSQL = "INSERT INTO vehicleTypesImage (vehicletypeid, imageId) VALUES ($1, $2);"
-const deleteVehicleTypesImageSQL = "DELETE FROM vehicleTypesImage WHERE imageId = $1;"
-const getVehicleTypesImagesByVehicleTypeIdSQL = "SELECT images.url FROM vehicletypes JOIN vehicleTypesImage ON vehicletypes.id = vehicleTypesImage.vehicletypeid JOIN images ON vehicleTypesImage.imageId = images.id WHERE vehicleTypes.id = $1 ORDER BY images.displayorder"
+const minReservationDuration = 10 * time.Minute

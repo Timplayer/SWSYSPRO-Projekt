@@ -4,6 +4,8 @@ import { Drawer, List, ListItem, ListItemIcon, ListItemText, Toolbar, Box, Avata
 import { Home, CarRental, EvStation, AccountBox } from '@mui/icons-material';
 import Logo from '../assets/HiveDriveLogo.jpeg'; 
 
+
+
 const drawerWidth = 240;
 
 export interface TabItem {

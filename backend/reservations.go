@@ -39,91 +39,73 @@ type availability struct {
 	Cars       int64     `json:"availability" db:"available"`
 }
 
-func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+func postReservation(dbpool *pgxpool.Pool) func(
+	writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 		r, fail := getRequestBody[reservation](writer, request.Body)
 		if fail {
 			return
 		}
-
 		tx, err := dbpool.BeginTx(request.Context(), transactionOptionsRW)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf(errorStartingTransaction, err)
 			return
 		}
-		//goland:noinspection GoUnhandledErrorResult
 		defer tx.Rollback(request.Context())
-
-		r, fail = getT[reservation](writer, request, tx, "postReservation",
-			"INSERT INTO reservations (user_id, auto_klasse, start_time, start_pos, end_time, end_pos) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+		r, fail = getT[reservation](writer, request, tx, "postReservation", postReservationSQL,
 			introspectionResult.UserId, r.AutoKlasse, r.StartZeit, r.StartStation, r.EndZeit, r.EndStation)
 		if fail {
 			return
 		}
-
-		notAvailable := checkAvailability(writer, request, tx)
-		if notAvailable {
+		if notAvailable := checkAvailability(writer, request, tx, &r); notAvailable {
 			return
 		}
-		err = tx.Commit(request.Context())
-		if err != nil {
+		if err = tx.Commit(request.Context()); err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf(errorTransactionAborted, err)
 			return
 		}
-
 		log.Printf("added Reservation: %d", r.Id)
 		returnTAsJSON(writer, r, http.StatusCreated)
 	}
 }
 
-func putReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+func putReservation(dbpool *pgxpool.Pool) func(
+	writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 		r, done := getRequestBody[reservation](writer, request.Body)
 		if done {
 			return
 		}
-
 		tx, err := dbpool.BeginTx(request.Context(), transactionOptionsRW)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf(errorStartingTransaction, err)
 			return
 		}
-		//goland:noinspection GoUnhandledErrorResult
 		defer tx.Rollback(request.Context())
-
-		result, err := tx.Exec(context.Background(),
-			`UPDATE reservations
-				 SET auto_klasse = $1,
-				     start_time = $2,
-				     start_pos = $3,
-				     end_time = $4,
-				     end_pos  = $5
-                 WHERE id = $6 AND user_id = $7;`,
+		result, err := tx.Exec(context.Background(), putReservationSQL,
 			r.AutoKlasse, r.StartZeit, r.StartStation, r.EndZeit, r.EndStation, r.Id, introspectionResult.UserId)
 		if checkUpdateSingleRow(writer, err, result, "editing Reservation") {
 			return
 		}
-
-		notAvailable := checkAvailability(writer, request, tx)
-		if notAvailable {
+		if notAvailable := checkAvailability(writer, request, tx, &r); notAvailable {
 			return
 		}
-		err = tx.Commit(request.Context())
-		if err != nil {
+		if err = tx.Commit(request.Context()); err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf(errorTransactionAborted, err)
 			return
 		}
-
 		log.Printf("edited Reservation: %d", r.Id)
 		returnTAsJSON(writer, r, http.StatusAccepted)
 	}
 }
 
-func getReservations(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+func getReservations(
+	dbpool *pgxpool.Pool) func(
+	writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 		if slices.Contains(introspectionResult.Access.Roles, "employee") {
 			reservations, fail := getTs[reservationNullable](writer, request, dbpool, "reservation",
@@ -143,7 +125,8 @@ func getReservations(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, requ
 	}
 }
 
-func deleteReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+func deleteReservation(dbpool *pgxpool.Pool) func(
+	writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 		tx, err := dbpool.BeginTx(request.Context(), transactionOptionsRW)
 		if err != nil {
@@ -152,26 +135,20 @@ func deleteReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, re
 			return
 		}
 		var result pgconn.CommandTag
+		isEmployee := false
 		if slices.Contains(introspectionResult.Access.Roles, "employee") {
-			result, err = dbpool.Exec(context.Background(),
-				`Delete from Reservations
-                     WHERE id = $1`, mux.Vars(request)["id"])
-		} else {
-			result, err = dbpool.Exec(context.Background(),
-				`Delete from Reservations
-                    WHERE user_id = $1 AND id = $2`, introspectionResult.UserId, mux.Vars(request)["id"])
+			isEmployee = true
 		}
+		result, err = dbpool.Exec(context.Background(), `Delete from Reservations WHERE (user_id = $1 OR $2) 
+                           AND id = $3`, introspectionResult.UserId, isEmployee, mux.Vars(request)["id"])
 
 		if checkUpdateSingleRow(writer, err, result, "deleting Reservation") {
 			return
 		}
-
-		notAvailable := checkAvailability(writer, request, tx)
-		if notAvailable {
+		if notAvailable := checkAvailability(writer, request, tx, nil); notAvailable {
 			return
 		}
-		err = tx.Commit(request.Context())
-		if err != nil {
+		if err = tx.Commit(request.Context()); err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error transaction Deleting Reservation aborted: %v", err)
 			return
@@ -210,7 +187,7 @@ func addCarToStation(writer http.ResponseWriter, request *http.Request, tx pgx.T
 		return reservationNullable{}, true
 	}
 
-	notAvailable := checkAvailability(writer, request, tx)
+	notAvailable := checkAvailability(writer, request, tx, nil)
 	if notAvailable {
 		return reservationNullable{}, true
 	}
@@ -219,7 +196,8 @@ func addCarToStation(writer http.ResponseWriter, request *http.Request, tx pgx.T
 
 func getAvailabilityAtStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		availabilities, fail := getTs[availability](writer, request, dbpool, "availability", "SELECT * FROM availability WHERE station = $1",
+		availabilities, fail := getTs[availability](writer, request, dbpool, "availability",
+			"SELECT * FROM availability WHERE station = $1",
 			mux.Vars(request)["id"])
 		if fail {
 			return
@@ -228,10 +206,17 @@ func getAvailabilityAtStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 	}
 }
 
-func checkAvailability(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) bool {
+func checkAvailability(writer http.ResponseWriter, request *http.Request, tx pgx.Tx, r *reservation) bool {
+	if r != nil && r.StartZeit.Add(minReservationDuration).After(r.EndZeit) {
+		http.Error(writer, "Reservation must end after more than "+minReservationDuration.String(), http.StatusConflict)
+		return true
+	}
+
 	var available int
 	var free int
-	err := tx.QueryRow(request.Context(), "SELECT min(a.available), min(s.capacity-a.available) FROM availability a LEFT JOIN stations s ON a.station = s.id;").Scan(&available, &free)
+	err := tx.QueryRow(request.Context(), `SELECT min(a.available), min(s.capacity-a.available) 
+											   FROM availability a 
+											   LEFT JOIN stations s ON a.station = s.id;`).Scan(&available, &free)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		log.Printf("Error testing availability: %v", err)
@@ -252,45 +237,24 @@ func checkAvailability(writer http.ResponseWriter, request *http.Request, tx pgx
 
 func createReservationsTable(dbpool *pgxpool.Pool) {
 	_, err := dbpool.Exec(context.Background(), `
-CREATE TABLE IF NOT EXISTS reservations
-(
-    id              BIGSERIAL PRIMARY KEY,
-    user_id         varchar,
-    auto_klasse     BIGINT,
-    start_time      timestamp,
-    start_pos       BIGINT,
-    end_time        timestamp,
-    end_pos         BIGINT,
+CREATE TABLE IF NOT EXISTS reservations (
+    id BIGSERIAL PRIMARY KEY, user_id varchar, auto_klasse BIGINT,
+    start_time timestamp, start_pos BIGINT, end_time timestamp, end_pos BIGINT,
     CONSTRAINT FK_auto_klasse FOREIGN KEY (auto_klasse) REFERENCES vehicletypes (id),
     CONSTRAINT FK_start_pos FOREIGN KEY (start_pos) REFERENCES stations (id),
-    CONSTRAINT FK_end_pos FOREIGN KEY (end_pos) REFERENCES stations (id)
-);
-CREATE OR REPLACE VIEW availability AS
-WITH station_times AS (SELECT start_pos AS pos, start_time AS time, auto_klasse
-                       FROM reservations
-                       UNION
-                       DISTINCT
-                       SELECT end_pos, end_time, auto_klasse
-                       FROM reservations),
-     arivals AS (SELECT t.pos, t.time, t.auto_klasse, count(*) AS num
-                 FROM station_times t
-                          JOIN reservations r
-                               ON t.pos = r.end_pos
-                                   AND t.time >= r.end_time
-                 GROUP BY t.pos, t.time, t.auto_klasse),
-     depatures AS (SELECT t.pos, t.time, t.auto_klasse, count(*) AS num
-                   FROM station_times t
-                            JOIN reservations r ON r.start_pos = t.pos AND t.time >= r.start_time
-                   GROUP BY t.pos, t.time, t.auto_klasse)
-SELECT t.pos AS station,
-       t.time AS time,
-       t.auto_klasse,
-       (coalesce(a.num, 0) - coalesce(d.num, 0)) AS available
-FROM station_times t
-    LEFT JOIN arivals a
-        ON a.time = t.time AND a.pos = t.pos AND a.auto_klasse = t.auto_klasse
-    LEFT JOIN depatures d
-        ON t.time = d.time AND t.pos = d.pos AND d.auto_klasse = d.auto_klasse;`)
+    CONSTRAINT FK_end_pos FOREIGN KEY (end_pos) REFERENCES stations (id));
+
+CREATE OR REPLACE VIEW availability AS WITH station_times AS (
+	SELECT start_pos AS pos, start_time AS time, auto_klasse FROM reservations UNION DISTINCT 
+	SELECT end_pos, end_time, auto_klasse FROM reservations),
+     arivals AS (SELECT t.pos, t.time, t.auto_klasse, count(*) AS num FROM station_times t JOIN reservations r 
+         ON t.pos = r.end_pos AND t.time >= r.end_time GROUP BY t.pos, t.time, t.auto_klasse),
+     depatures AS (SELECT t.pos, t.time, t.auto_klasse, count(*) AS num FROM station_times t JOIN reservations r 
+         ON r.start_pos = t.pos AND t.time >= r.start_time GROUP BY t.pos, t.time, t.auto_klasse)
+	SELECT t.pos AS station, t.time AS time, t.auto_klasse, (coalesce(a.num, 0) - coalesce(d.num, 0)) AS available
+	FROM station_times t
+    	LEFT JOIN arivals a ON a.time = t.time AND a.pos = t.pos AND a.auto_klasse = t.auto_klasse
+    	LEFT JOIN depatures d ON t.time = d.time AND t.pos = d.pos AND d.auto_klasse = d.auto_klasse;`)
 	if err != nil {
 		log.Fatalf(failedToCreateTable, err)
 	}

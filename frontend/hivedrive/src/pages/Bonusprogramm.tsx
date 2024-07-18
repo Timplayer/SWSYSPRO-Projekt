@@ -39,7 +39,8 @@ const Bonusprogramm: React.FC = () => {
             Unser Bonusprogramm
           </Typography>
           <Typography variant="body1">
-            Treten Sie unserem exklusiven Bonusprogramm bei und profitieren Sie von zahlreichen Vorteilen und Belohnungen. Sammeln Sie Punkte bei jeder Anmietung und lösen Sie diese für tolle Prämien ein.
+            Treten Sie unserem exklusiven Bonusprogramm bei und profitieren Sie von zahlreichen Vorteilen und Belohnungen. 
+            Sammeln Sie Punkte bei jeder Anmietung und lösen Sie diese für tolle Prämien ein.
           </Typography>
 
           <section style={{ marginTop: '32px', marginBottom: '32px' }}>

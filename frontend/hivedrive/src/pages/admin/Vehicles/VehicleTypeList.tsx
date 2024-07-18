@@ -17,8 +17,6 @@ import {
     InputLabel,
     Select,
     MenuItem,
-    ImageList,
-    ImageListItem,
     Grid,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
@@ -108,24 +106,20 @@ const VehicleTypeList: React.FC<VehicleTypeListProps> = ({
                     <ListItem
                         key={vehicleType.id}
                         secondaryAction={
-                            <>
-                                <IconButton edge="end" aria-label="edit" onClick={() => handleEditVehicleType(vehicleType)}>
-                                    <EditIcon />
-                                </IconButton>
-                            </>
+                            <IconButton edge="end" aria-label="edit" onClick={() => handleEditVehicleType(vehicleType)}>
+                                <EditIcon />
+                            </IconButton>
                         }
                     >
                         <ListItemText
                             primary={`${vehicleType.name}`}
                             secondary={
-                                <>
-                                    <Typography variant="body2" color="textSecondary">
-                                        Fahrzeug-Kategorie: {getCategoryName(vehicleType.vehicleCategory)}<br />
-                                        Getriebe: {vehicleType.transmission}<br />
-                                        Maximale Sitzplatzanzahl: {vehicleType.maxSeatCount}<br />
-                                        Preis pro Stunde: {vehicleType.pricePerHour}
-                                    </Typography>
-                                </>
+                                <Typography variant="body2" color="textSecondary">
+                                    Fahrzeug-Kategorie: {getCategoryName(vehicleType.vehicleCategory)}<br />
+                                    Getriebe: {vehicleType.transmission}<br />
+                                    Maximale Sitzplatzanzahl: {vehicleType.maxSeatCount}<br />
+                                    Preis pro Stunde: {vehicleType.pricePerHour}
+                                </Typography>
                             }
                         />
                     </ListItem>
