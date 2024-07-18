@@ -3,7 +3,7 @@ import { Box, Button, Chip, FormControl, InputLabel, MenuItem, Select, TextField
 import axios from 'axios';
 import { VehicleType } from '../../../Types';
 import { Station } from '../Stations/StationTypes';
-import { LocalizationProvider, MobileDatePicker, MobileDateTimePicker } from '@mui/x-date-pickers';
+import { LocalizationProvider, MobileDateTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 interface AddAvailabilityProps {
