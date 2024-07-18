@@ -34,7 +34,7 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
 }) => {
   const navigate = useNavigate();
   const now = new Date();
-  const { location, setLocation } = useLocationContext();
+  const { setLocation } = useLocationContext();
 
   const [locations, setLocations] = useState<Array<{ label: string, value: number }>>([]);
 
