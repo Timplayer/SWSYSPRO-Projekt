@@ -71,48 +71,33 @@ func postReservation(dbpool *pgxpool.Pool) func(
 	}
 }
 
-func putReservation(
-	dbpool *pgxpool.Pool) func(
+func putReservation(dbpool *pgxpool.Pool) func(
 	writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 		r, done := getRequestBody[reservation](writer, request.Body)
 		if done {
 			return
 		}
-
 		tx, err := dbpool.BeginTx(request.Context(), transactionOptionsRW)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf(errorStartingTransaction, err)
 			return
 		}
-		//goland:noinspection GoUnhandledErrorResult
 		defer tx.Rollback(request.Context())
-
-		result, err := tx.Exec(context.Background(),
-			`UPDATE reservations
-				 SET auto_klasse = $1,
-				     start_time = $2,
-				     start_pos = $3,
-				     end_time = $4,
-				     end_pos  = $5
-                 WHERE id = $6 AND user_id = $7;`,
+		result, err := tx.Exec(context.Background(), putReservationSQL,
 			r.AutoKlasse, r.StartZeit, r.StartStation, r.EndZeit, r.EndStation, r.Id, introspectionResult.UserId)
 		if checkUpdateSingleRow(writer, err, result, "editing Reservation") {
 			return
 		}
-
-		notAvailable := checkAvailability(writer, request, tx, &r)
-		if notAvailable {
+		if notAvailable := checkAvailability(writer, request, tx, &r); notAvailable {
 			return
 		}
-		err = tx.Commit(request.Context())
-		if err != nil {
+		if err = tx.Commit(request.Context()); err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf(errorTransactionAborted, err)
 			return
 		}
-
 		log.Printf("edited Reservation: %d", r.Id)
 		returnTAsJSON(writer, r, http.StatusAccepted)
 	}

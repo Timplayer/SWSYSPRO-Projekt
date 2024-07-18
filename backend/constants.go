@@ -83,5 +83,12 @@ const getImageByIdAsFileSQL = `SELECT images.* FROM images LEFT JOIN defectimage
                  WHERE images.id = $1 and (defectid is NULL OR defects.user_id = $2 OR $3);`
 const postReservationSQL = `INSERT INTO reservations (user_id, auto_klasse, start_time, start_pos, end_time, end_pos)
 				 VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`
+const putReservationSQL = `UPDATE reservations
+				 SET auto_klasse = $1,
+				     start_time = $2,
+				     start_pos = $3,
+				     end_time = $4,
+				     end_pos  = $5
+                 WHERE id = $6 AND user_id = $7;`
 
 const minReservationDuration = 10 * time.Minute
