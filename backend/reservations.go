@@ -269,45 +269,24 @@ func checkAvailability(writer http.ResponseWriter, request *http.Request, tx pgx
 
 func createReservationsTable(dbpool *pgxpool.Pool) {
 	_, err := dbpool.Exec(context.Background(), `
-CREATE TABLE IF NOT EXISTS reservations
-(
-    id              BIGSERIAL PRIMARY KEY,
-    user_id         varchar,
-    auto_klasse     BIGINT,
-    start_time      timestamp,
-    start_pos       BIGINT,
-    end_time        timestamp,
-    end_pos         BIGINT,
+CREATE TABLE IF NOT EXISTS reservations (
+    id BIGSERIAL PRIMARY KEY, user_id varchar, auto_klasse BIGINT,
+    start_time timestamp, start_pos BIGINT, end_time timestamp, end_pos BIGINT,
     CONSTRAINT FK_auto_klasse FOREIGN KEY (auto_klasse) REFERENCES vehicletypes (id),
     CONSTRAINT FK_start_pos FOREIGN KEY (start_pos) REFERENCES stations (id),
-    CONSTRAINT FK_end_pos FOREIGN KEY (end_pos) REFERENCES stations (id)
-);
-CREATE OR REPLACE VIEW availability AS
-WITH station_times AS (SELECT start_pos AS pos, start_time AS time, auto_klasse
-                       FROM reservations
-                       UNION
-                       DISTINCT
-                       SELECT end_pos, end_time, auto_klasse
-                       FROM reservations),
-     arivals AS (SELECT t.pos, t.time, t.auto_klasse, count(*) AS num
-                 FROM station_times t
-                          JOIN reservations r
-                               ON t.pos = r.end_pos
-                                   AND t.time >= r.end_time
-                 GROUP BY t.pos, t.time, t.auto_klasse),
-     depatures AS (SELECT t.pos, t.time, t.auto_klasse, count(*) AS num
-                   FROM station_times t
-                            JOIN reservations r ON r.start_pos = t.pos AND t.time >= r.start_time
-                   GROUP BY t.pos, t.time, t.auto_klasse)
-SELECT t.pos AS station,
-       t.time AS time,
-       t.auto_klasse,
-       (coalesce(a.num, 0) - coalesce(d.num, 0)) AS available
-FROM station_times t
-    LEFT JOIN arivals a
-        ON a.time = t.time AND a.pos = t.pos AND a.auto_klasse = t.auto_klasse
-    LEFT JOIN depatures d
-        ON t.time = d.time AND t.pos = d.pos AND d.auto_klasse = d.auto_klasse;`)
+    CONSTRAINT FK_end_pos FOREIGN KEY (end_pos) REFERENCES stations (id));
+
+CREATE OR REPLACE VIEW availability AS WITH station_times AS (
+	SELECT start_pos AS pos, start_time AS time, auto_klasse FROM reservations UNION DISTINCT 
+	SELECT end_pos, end_time, auto_klasse FROM reservations),
+     arivals AS (SELECT t.pos, t.time, t.auto_klasse, count(*) AS num FROM station_times t JOIN reservations r 
+         ON t.pos = r.end_pos AND t.time >= r.end_time GROUP BY t.pos, t.time, t.auto_klasse),
+     depatures AS (SELECT t.pos, t.time, t.auto_klasse, count(*) AS num FROM station_times t JOIN reservations r 
+         ON r.start_pos = t.pos AND t.time >= r.start_time GROUP BY t.pos, t.time, t.auto_klasse)
+	SELECT t.pos AS station, t.time AS time, t.auto_klasse, (coalesce(a.num, 0) - coalesce(d.num, 0)) AS available
+	FROM station_times t
+    	LEFT JOIN arivals a ON a.time = t.time AND a.pos = t.pos AND a.auto_klasse = t.auto_klasse
+    	LEFT JOIN depatures d ON t.time = d.time AND t.pos = d.pos AND d.auto_klasse = d.auto_klasse;`)
 	if err != nil {
 		log.Fatalf(failedToCreateTable, err)
 	}
