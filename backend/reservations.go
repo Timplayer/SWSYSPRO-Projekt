@@ -39,7 +39,9 @@ type availability struct {
 	Cars       int64     `json:"availability" db:"available"`
 }
 
-func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+func postReservation(
+	dbpool *pgxpool.Pool) func(
+	writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 		r, fail := getRequestBody[reservation](writer, request.Body)
 		if fail {
@@ -56,7 +58,8 @@ func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, requ
 		defer tx.Rollback(request.Context())
 
 		r, fail = getT[reservation](writer, request, tx, "postReservation",
-			"INSERT INTO reservations (user_id, auto_klasse, start_time, start_pos, end_time, end_pos) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+			`INSERT INTO reservations (user_id, auto_klasse, start_time, start_pos, end_time, end_pos)
+				 VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
 			introspectionResult.UserId, r.AutoKlasse, r.StartZeit, r.StartStation, r.EndZeit, r.EndStation)
 		if fail {
 			return
@@ -78,7 +81,9 @@ func postReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, requ
 	}
 }
 
-func putReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+func putReservation(
+	dbpool *pgxpool.Pool) func(
+	writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 		r, done := getRequestBody[reservation](writer, request.Body)
 		if done {
@@ -123,7 +128,9 @@ func putReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, reque
 	}
 }
 
-func getReservations(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+func getReservations(
+	dbpool *pgxpool.Pool) func(
+	writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 		if slices.Contains(introspectionResult.Access.Roles, "employee") {
 			reservations, fail := getTs[reservationNullable](writer, request, dbpool, "reservation",
@@ -143,7 +150,9 @@ func getReservations(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, requ
 	}
 }
 
-func deleteReservation(dbpool *pgxpool.Pool) func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
+func deleteReservation(
+	dbpool *pgxpool.Pool) func(
+	writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 		tx, err := dbpool.BeginTx(request.Context(), transactionOptionsRW)
 		if err != nil {
@@ -219,7 +228,8 @@ func addCarToStation(writer http.ResponseWriter, request *http.Request, tx pgx.T
 
 func getAvailabilityAtStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		availabilities, fail := getTs[availability](writer, request, dbpool, "availability", "SELECT * FROM availability WHERE station = $1",
+		availabilities, fail := getTs[availability](writer, request, dbpool, "availability",
+			"SELECT * FROM availability WHERE station = $1",
 			mux.Vars(request)["id"])
 		if fail {
 			return
@@ -236,7 +246,9 @@ func checkAvailability(writer http.ResponseWriter, request *http.Request, tx pgx
 
 	var available int
 	var free int
-	err := tx.QueryRow(request.Context(), "SELECT min(a.available), min(s.capacity-a.available) FROM availability a LEFT JOIN stations s ON a.station = s.id;").Scan(&available, &free)
+	err := tx.QueryRow(request.Context(), `SELECT min(a.available), min(s.capacity-a.available) 
+											   FROM availability a 
+											   LEFT JOIN stations s ON a.station = s.id;`).Scan(&available, &free)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
 		log.Printf("Error testing availability: %v", err)
