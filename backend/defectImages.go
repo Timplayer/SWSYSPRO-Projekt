@@ -18,7 +18,8 @@ func postDefectImage(writer http.ResponseWriter, request *http.Request, tx pgx.T
 	}
 
 	userId := ""
-	err = tx.QueryRow(context.Background(), "SELECT user_id FROM defects WHERE id = $1", mux.Vars(request)[idKey]).Scan(&userId)
+	err = tx.QueryRow(context.Background(),
+		"SELECT user_id FROM defects WHERE id = $1", mux.Vars(request)[idKey]).Scan(&userId)
 	if err != nil {
 		return picture{}, false
 	}
