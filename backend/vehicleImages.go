@@ -6,8 +6,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"net/http"
-	"strconv"
 	"slices"
+	"strconv"
 )
 
 func postVehicleImage2(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (picture, bool) {

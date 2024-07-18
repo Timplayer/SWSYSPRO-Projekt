@@ -62,7 +62,13 @@ func checkUpdateSingleRow(writer http.ResponseWriter, err error, result pgconn.C
 	return false
 }
 
-func getTs[T any](writer http.ResponseWriter, request *http.Request, dbpool *pgxpool.Pool, object string, sql string, args ...any) ([]T, bool) {
+func getTs[T any](
+	writer http.ResponseWriter,
+	request *http.Request,
+	dbpool *pgxpool.Pool,
+	object string,
+	sql string,
+	args ...any) ([]T, bool) {
 	rows, err := dbpool.Query(request.Context(), sql, args...)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
@@ -79,7 +85,12 @@ func getTs[T any](writer http.ResponseWriter, request *http.Request, dbpool *pgx
 	return t, false
 }
 
-func getT[T any](writer http.ResponseWriter, request *http.Request, tx pgx.Tx, object string, sql string, args ...any) (T, bool) {
+func getT[T any](
+	writer http.ResponseWriter,
+	request *http.Request,
+	tx pgx.Tx,
+	object string,
+	sql string, args ...any) (T, bool) {
 	var t T
 	rows, err := tx.Query(request.Context(), sql, args...)
 	if err != nil {
@@ -106,7 +117,9 @@ func getT[T any](writer http.ResponseWriter, request *http.Request, tx pgx.Tx, o
 	return t, false
 }
 
-func RestRequestWithTransaction[T any](dbpool *pgxpool.Pool, success int, fn func(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (T, bool)) http.HandlerFunc {
+func RestRequestWithTransaction[T any](
+	dbpool *pgxpool.Pool, success int,
+	fn func(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (T, bool)) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		tx, err := dbpool.BeginTx(request.Context(), transactionOptionsRW)
 		if err != nil {

@@ -39,7 +39,10 @@ func updateVehicleType(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 
-		rows, err := dbpool.Exec(context.Background(), "UPDATE vehicleTypes SET name = $1, vehicleCategory = $2, transmission = $3, driverSystem = $4, maxSeatCount = $5, pricePerHour = $6, minAgeToDrive = $7 WHERE id = $8",
+		rows, err := dbpool.Exec(context.Background(),
+			`UPDATE vehicleTypes 
+				 SET name = $1, vehicleCategory = $2, transmission = $3, driverSystem = $4, 
+				     maxSeatCount = $5, pricePerHour = $6, minAgeToDrive = $7 WHERE id = $8`,
 			s.Name, s.VehicleCategory, s.Transmission, s.DriverSystem, s.MaxSeatCount, s.PricePerHour, s.MinAgeToDrive, s.Id)
 		fail = checkUpdateSingleRow(writer, err, rows, "update VehicleTypes")
 		if fail {
@@ -66,8 +69,9 @@ func postVehicleType(writer http.ResponseWriter, request *http.Request, tx pgx.T
 		return vehicleType{}, true
 	}
 	s, fail = getT[vehicleType](writer, request, tx, "postVehicleType",
-		`INSERT INTO vehicleTypes (name, vehicleCategory, transmission, driverSystem, maxSeatCount, pricePerHour, minAgeToDrive)
-                               VALUES ($1  , $2             , $3          , $4          , $5          , $6          , $7)
+		`INSERT INTO vehicleTypes 
+    			  (name, vehicleCategory, transmission, driverSystem, maxSeatCount, pricePerHour, minAgeToDrive)
+		   VALUES ($1, $2, $3, $4, $5, $6, $7)
                     RETURNING *`,
 		s.Name, s.VehicleCategory, s.Transmission, s.DriverSystem, s.MaxSeatCount, s.PricePerHour, s.MinAgeToDrive)
 	if fail {
