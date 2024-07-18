@@ -161,8 +161,12 @@ const FilterBar: React.FC<FilterContextType> = ({
           <Box sx={{ width: '300px', padding: 2 }}>
             <Typography variant="h6">Getriebe</Typography>
             <FormControl component="fieldset">
-              <FormControlLabel control={<Checkbox checked={transmission.includes(Transmission.Automatik)} onChange={handleTransmissionChange} value={Transmission.Automatik} />} label="Automatik" />
-              <FormControlLabel control={<Checkbox checked={transmission.includes(Transmission.Manuell)} onChange={handleTransmissionChange} value={Transmission.Manuell} />} label="Manuell" />
+              <FormControlLabel 
+                control={<Checkbox checked={transmission.includes(Transmission.Automatik)} onChange={handleTransmissionChange} value={Transmission.Automatik} />} 
+                label="Automatik" />
+              <FormControlLabel 
+                control={<Checkbox checked={transmission.includes(Transmission.Manuell)} onChange={handleTransmissionChange} value={Transmission.Manuell} />} 
+                label="Manuell" />
             </FormControl>
           </Box>
         )}
@@ -170,9 +174,15 @@ const FilterBar: React.FC<FilterContextType> = ({
           <Box sx={{ width: '300px', padding: 2 }}>
             <Typography variant="h6">Antrieb</Typography>
             <FormControl component="fieldset">
-              <FormControlLabel control={<Checkbox checked={driveType.includes(DriverSystem.FWD)} onChange={handleDriveTypeChange} value={DriverSystem.FWD} />} label="Frontantrieb" />
-              <FormControlLabel control={<Checkbox checked={driveType.includes(DriverSystem.RWD)} onChange={handleDriveTypeChange} value={DriverSystem.RWD} />} label="Heckantrieb" />
-              <FormControlLabel control={<Checkbox checked={driveType.includes(DriverSystem.AWD)} onChange={handleDriveTypeChange} value={DriverSystem.AWD} />} label="Allradantrieb" />
+              <FormControlLabel 
+                control={<Checkbox checked={driveType.includes(DriverSystem.FWD)} onChange={handleDriveTypeChange} value={DriverSystem.FWD} />} 
+                label="Frontantrieb" />
+              <FormControlLabel 
+                control={<Checkbox checked={driveType.includes(DriverSystem.RWD)} onChange={handleDriveTypeChange} value={DriverSystem.RWD} />} 
+                label="Heckantrieb" />
+              <FormControlLabel 
+                control={<Checkbox checked={driveType.includes(DriverSystem.AWD)} onChange={handleDriveTypeChange} value={DriverSystem.AWD} />} 
+                label="Allradantrieb" />
             </FormControl>
           </Box>
         )}
