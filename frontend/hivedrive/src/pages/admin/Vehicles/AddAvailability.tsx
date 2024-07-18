@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Box, Button, Chip, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
-import { useDropzone } from 'react-dropzone';
 import axios from 'axios';
 import { VehicleType } from '../../../Types';
 import { Station } from '../Stations/StationTypes';
