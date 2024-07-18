@@ -93,8 +93,7 @@ func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		isEmployee := false
 		userId := ""
-		introspectionResult, err := introspect(writer, request)
-		if err == nil {
+		if introspectionResult, err := introspect(writer, request); err == nil {
 			isEmployee = slices.Contains(introspectionResult.Access.Roles, "employee")
 			userId = introspectionResult.UserId
 		}
@@ -103,22 +102,17 @@ func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 			return
 		}
 		defer tx.Rollback(request.Context())
-		p, fail := getT[picture](writer, request, tx, "getImageByID",
-			`SELECT images.* FROM images LEFT JOIN defectimage ON images.id = defectimage.imageid 
-    			 LEFT JOIN defects ON defectimage.defectid = defects.id 
-                 WHERE images.id = $1 and (defectid is NULL OR defects.user_id = $2 OR $3);`,
+		p, fail := getT[picture](writer, request, tx, "getImageByID", getImageByIdAsFileSQL,
 			mux.Vars(request)["id"], userId, isEmployee)
 		if fail {
 			return
 		}
-		err = tx.Commit(request.Context())
-		if err != nil {
+		if err = tx.Commit(request.Context()); err != nil {
 			return
 		}
 		writer.Header().Set(contentType, octetStream)
 		writer.WriteHeader(http.StatusOK)
-		_, err = writer.Write(p.File)
-		if err != nil {
+		if _, err = writer.Write(p.File); err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error sending HTTP response: %v", err)
 			return
