@@ -39,7 +39,13 @@ func updateStation(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if fail {
 			return
 		}
-		result, err := dbpool.Exec(context.Background(), "UPDATE stations SET name = $1, location = point($2, $3), country = $4, state = $5, city = $6, zip = $7, street = $8, houseNumber = $9, capacity = $10 WHERE id = $11", s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber, s.Capacity, s.Id)
+		result, err := dbpool.Exec(context.Background(),
+			`UPDATE stations 
+				 SET name = $1, location = point($2, $3), country = $4, state = $5, city = $6,
+				     zip = $7, street = $8, houseNumber = $9, capacity = $10 
+				 WHERE id = $11`,
+			s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip,
+			s.Street, s.HouseNumber, s.Capacity, s.Id)
 		fail = checkUpdateSingleRow(writer, err, result, "update station")
 		if fail {
 			return
@@ -130,7 +136,10 @@ func getStations(dbpool *pgxpool.Pool) http.HandlerFunc {
 
 func createStationsTable(dbpool *pgxpool.Pool) {
 	_, err := dbpool.Exec(context.Background(),
-		"CREATE TABLE IF NOT EXISTS stations(id BIGSERIAL PRIMARY KEY, name TEXT, location POINT, country TEXT, state TEXT, city TEXT, zip TEXT, street TEXT, houseNumber TEXT, capacity INTEGER);")
+		`CREATE TABLE IF NOT EXISTS stations(
+    			id BIGSERIAL PRIMARY KEY, name TEXT, location POINT, 
+    			country TEXT, state TEXT, city TEXT, zip TEXT, street TEXT, 
+    			houseNumber TEXT, capacity INTEGER);`)
 	if err != nil {
 		log.Fatalf(failedToCreateTable, err)
 		return
