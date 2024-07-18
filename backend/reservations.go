@@ -39,43 +39,33 @@ type availability struct {
 	Cars       int64     `json:"availability" db:"available"`
 }
 
-func postReservation(
-	dbpool *pgxpool.Pool) func(
+func postReservation(dbpool *pgxpool.Pool) func(
 	writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 		r, fail := getRequestBody[reservation](writer, request.Body)
 		if fail {
 			return
 		}
-
 		tx, err := dbpool.BeginTx(request.Context(), transactionOptionsRW)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf(errorStartingTransaction, err)
 			return
 		}
-		//goland:noinspection GoUnhandledErrorResult
 		defer tx.Rollback(request.Context())
-
-		r, fail = getT[reservation](writer, request, tx, "postReservation",
-			`INSERT INTO reservations (user_id, auto_klasse, start_time, start_pos, end_time, end_pos)
-				 VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+		r, fail = getT[reservation](writer, request, tx, "postReservation", postReservationSQL,
 			introspectionResult.UserId, r.AutoKlasse, r.StartZeit, r.StartStation, r.EndZeit, r.EndStation)
 		if fail {
 			return
 		}
-
-		notAvailable := checkAvailability(writer, request, tx, &r)
-		if notAvailable {
+		if notAvailable := checkAvailability(writer, request, tx, &r); notAvailable {
 			return
 		}
-		err = tx.Commit(request.Context())
-		if err != nil {
+		if err = tx.Commit(request.Context()); err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf(errorTransactionAborted, err)
 			return
 		}
-
 		log.Printf("added Reservation: %d", r.Id)
 		returnTAsJSON(writer, r, http.StatusCreated)
 	}

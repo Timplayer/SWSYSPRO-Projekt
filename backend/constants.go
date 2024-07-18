@@ -81,5 +81,7 @@ var supportedFileTypes = []string{imageJPEG, imagePNG, imageGIF, imageWEBP, imag
 const getImageByIdAsFileSQL = `SELECT images.* FROM images LEFT JOIN defectimage ON images.id = defectimage.imageid 
     			 LEFT JOIN defects ON defectimage.defectid = defects.id 
                  WHERE images.id = $1 and (defectid is NULL OR defects.user_id = $2 OR $3);`
+const postReservationSQL = `INSERT INTO reservations (user_id, auto_klasse, start_time, start_pos, end_time, end_pos)
+				 VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`
 
 const minReservationDuration = 10 * time.Minute
