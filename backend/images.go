@@ -98,23 +98,18 @@ func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 			isEmployee = slices.Contains(introspectionResult.Access.Roles, "employee")
 			userId = introspectionResult.UserId
 		}
-
 		tx, err := dbpool.BeginTx(request.Context(), transactionOptionsReadOnly)
 		if err != nil {
 			return
 		}
 		defer tx.Rollback(request.Context())
 		p, fail := getT[picture](writer, request, tx, "getImageByID",
-			`SELECT images.* 
-				 FROM images 
-				 LEFT JOIN defectimage ON images.id = defectimage.imageid 
-				 LEFT JOIN defects ON defectimage.defectid = defects.id 
-				 WHERE images.id = $1 and (defectid is NULL OR defects.user_id = $2 OR $3);`,
+			`SELECT images.* FROM images LEFT JOIN defectimage ON images.id = defectimage.imageid 
+    			 LEFT JOIN defects ON defectimage.defectid = defects.id WHERE images.id = $1 and (defectid is NULL OR defects.user_id = $2 OR $3);`,
 			mux.Vars(request)["id"], userId, isEmployee)
 		if fail {
 			return
 		}
-
 		err = tx.Commit(request.Context())
 		if err != nil {
 			return
@@ -127,7 +122,6 @@ func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 			log.Printf("Error sending HTTP response: %v", err)
 			return
 		}
-
 	}
 }
 
