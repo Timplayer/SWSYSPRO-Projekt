@@ -132,7 +132,6 @@ func getDBpool() *pgxpool.Pool {
 	if !ok {
 		log.Fatal("DATABASE_URL environment variable not set")
 	}
-	port := 5432
 	user, ok := os.LookupEnv("DATABASE_USER")
 	if !ok {
 		log.Fatal("DATABASE_USER environment variable not set")
@@ -141,11 +140,10 @@ func getDBpool() *pgxpool.Pool {
 	if !ok {
 		log.Fatal("DATABASE_PASS environment variable not set")
 	}
-	table := "hivedrive"
 
 	psqlconn := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		url, port, user, password, table)
+		url, dbPort, user, password, dbTable)
 
 	for i := 0; i < 10; i++ {
 		dbpool, err := pgxpool.New(context.Background(), psqlconn)
