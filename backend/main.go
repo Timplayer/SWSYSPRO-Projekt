@@ -140,11 +140,7 @@ func getDBpool() *pgxpool.Pool {
 	if !ok {
 		log.Fatal("DATABASE_PASS environment variable not set")
 	}
-
-	psqlconn := fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		url, dbPort, user, password, dbTable)
-
+	psqlconn := fmt.Sprintf(psqlconnString, url, dbPort, user, password, dbTable)
 	for i := 0; i < 10; i++ {
 		dbpool, err := pgxpool.New(context.Background(), psqlconn)
 		if err != nil {
@@ -156,8 +152,7 @@ func getDBpool() *pgxpool.Pool {
 			initializeDatabase(dbpool)
 			return dbpool
 		}
-		log.Printf("Unable to connect to database: %v\n", err)
-		log.Printf("Waiting 5 seconds for database to become available")
+		log.Printf("Unable to connect to database: %v\n Waiting 5 seconds for database to become available", err)
 		time.Sleep(5 * time.Second)
 	}
 	log.Fatal("Unable to connect to database")
