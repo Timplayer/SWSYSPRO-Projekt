@@ -6,8 +6,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"net/http"
-	"strconv"
 	"slices"
+	"strconv"
 )
 
 func postVehicleTypesImage(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (picture, bool) {
@@ -25,7 +25,7 @@ func postVehicleTypesImage(writer http.ResponseWriter, request *http.Request, tx
 	if fail {
 		return picture{}, true
 	}
-	result, err := tx.Exec(request.Context(), postVehicleTypesImageSQL,
+	result, err := tx.Exec(request.Context(), `INSERT INTO vehicleTypesImage (vehicletypeid, imageId) VALUES ($1, $2);`,
 		mux.Vars(request)[idKey], p.Id)
 	checkUpdateSingleRow(writer, err, result, "postDefectImage")
 	return p, false
@@ -43,7 +43,7 @@ func deleteVehicleTypesImage(writer http.ResponseWriter, request *http.Request, 
 	}
 
 	result, err := tx.Exec(context.Background(),
-		deleteVehicleTypesImageSQL, mux.Vars(request)["id"])
+		`DELETE FROM vehicleTypesImage WHERE imageId = $1;`, mux.Vars(request)["id"])
 	if checkUpdateSingleRow(writer, err, result, "deleteVehicleTypesImage") {
 		return picture{}, true
 	}
