@@ -125,8 +125,7 @@ func getReservations(
 	}
 }
 
-func deleteReservation(
-	dbpool *pgxpool.Pool) func(
+func deleteReservation(dbpool *pgxpool.Pool) func(
 	writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 	return func(writer http.ResponseWriter, request *http.Request, introspectionResult *introspection) {
 		tx, err := dbpool.BeginTx(request.Context(), transactionOptionsRW)
@@ -136,26 +135,20 @@ func deleteReservation(
 			return
 		}
 		var result pgconn.CommandTag
+		isEmployee := false
 		if slices.Contains(introspectionResult.Access.Roles, "employee") {
-			result, err = dbpool.Exec(context.Background(),
-				`Delete from Reservations
-                     WHERE id = $1`, mux.Vars(request)["id"])
-		} else {
-			result, err = dbpool.Exec(context.Background(),
-				`Delete from Reservations
-                    WHERE user_id = $1 AND id = $2`, introspectionResult.UserId, mux.Vars(request)["id"])
+			isEmployee = true
 		}
+		result, err = dbpool.Exec(context.Background(), `Delete from Reservations WHERE (user_id = $1 OR $2) 
+                           AND id = $3`, introspectionResult.UserId, isEmployee, mux.Vars(request)["id"])
 
 		if checkUpdateSingleRow(writer, err, result, "deleting Reservation") {
 			return
 		}
-
-		notAvailable := checkAvailability(writer, request, tx, nil)
-		if notAvailable {
+		if notAvailable := checkAvailability(writer, request, tx, nil); notAvailable {
 			return
 		}
-		err = tx.Commit(request.Context())
-		if err != nil {
+		if err = tx.Commit(request.Context()); err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error transaction Deleting Reservation aborted: %v", err)
 			return
