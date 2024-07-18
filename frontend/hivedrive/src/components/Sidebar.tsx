@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Typography, Toolbar, Box, Avatar } from '@mui/material';
+import { Drawer, List, ListItem, ListItemIcon, ListItemText, Typography, Toolbar, Box, Avatar } from '@mui/material';
 import { Home, CarRental, EvStation, EventNote, AccountBox } from '@mui/icons-material';
 import Logo from '../assets/HiveDriveLogo.jpeg'; // Update the path to where your logo is located
 import Users from '../pages/admin/Users';
