@@ -105,7 +105,8 @@ func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 		defer tx.Rollback(request.Context())
 		p, fail := getT[picture](writer, request, tx, "getImageByID",
 			`SELECT images.* FROM images LEFT JOIN defectimage ON images.id = defectimage.imageid 
-    			 LEFT JOIN defects ON defectimage.defectid = defects.id WHERE images.id = $1 and (defectid is NULL OR defects.user_id = $2 OR $3);`,
+    			 LEFT JOIN defects ON defectimage.defectid = defects.id 
+                 WHERE images.id = $1 and (defectid is NULL OR defects.user_id = $2 OR $3);`,
 			mux.Vars(request)["id"], userId, isEmployee)
 		if fail {
 			return
