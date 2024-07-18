@@ -5,6 +5,9 @@ import (
 	"time"
 )
 
+const dbPort = 5432
+const dbTable = "hivedrive"
+
 const contentType = "Content-Type"
 const applicationJSON = "application/json"
 const octetStream = "octet-stream"
