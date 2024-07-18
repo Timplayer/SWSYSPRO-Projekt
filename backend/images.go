@@ -165,12 +165,18 @@ func getImages(dbpool *pgxpool.Pool) http.HandlerFunc {
 }
 
 func deleteImage(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) picture {
-	p, _ := getT[picture](writer, request, tx, "", "DELETE FROM images WHERE id = $1 RETURNING *;", mux.Vars(request)["id"])
+	p, _ := getT[picture](
+		writer, request, tx, "",
+		"DELETE FROM images WHERE id = $1 RETURNING *;", mux.Vars(request)["id"])
 	return p
 }
 
 func createImagesTable(dbpool *pgxpool.Pool) {
-	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS images (id BIGSERIAL PRIMARY KEY, fileName TEXT, file bytea, displayOrder INTEGER)")
+	_, err := dbpool.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS images 
+													 (id BIGSERIAL PRIMARY KEY, 
+													 fileName TEXT, 
+													 file bytea, 
+													 displayOrder INTEGER)`)
 	if err != nil {
 		log.Fatalf(failedToCreateTable, err)
 	}
