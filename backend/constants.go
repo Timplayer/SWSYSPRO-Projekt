@@ -74,16 +74,4 @@ var transactionOptionsReadOnly = pgx.TxOptions{
 
 var supportedFileTypes = []string{imageJPEG, imagePNG, imageGIF, imageWEBP, imageSVG}
 
-const postVehilceImageSQL = "INSERT INTO vehicleImage (vehicleId, imageId) VALUES ($1, $2);"
-const deleteVehicleImageSQL = "DELETE FROM vehicleImage WHERE imageId = $1;"
-const getVehicleImagesByVehicleIdSQL = "SELECT images.url FROM vehicles JOIN vehicleImage ON vehicles.id = vehicleImage.vehicleId JOIN images ON vehicleImage.imageId = images.id WHERE vehicles.id = $1 ORDER BY images.displayorder"
-
-const postDefectImageSQL = "INSERT INTO defectImage (defectId, imageId) VALUES ($1, $2);"
-const deleteDefectImageSQL = "DELETE FROM defectImage WHERE imageId = $1;"
-const getDefectImagesByDefectIdSQL = "SELECT images.url FROM defects JOIN defectImage ON defects.id = defectImage.defectId JOIN images ON defectImage.imageId = images.id WHERE defect.id = $1 ORDER BY images.displayorder"
-
-const postVehicleTypesImageSQL = "INSERT INTO vehicleTypesImage (vehicletypeid, imageId) VALUES ($1, $2);"
-const deleteVehicleTypesImageSQL = "DELETE FROM vehicleTypesImage WHERE imageId = $1;"
-const getVehicleTypesImagesByVehicleTypeIdSQL = "SELECT images.url FROM vehicletypes JOIN vehicleTypesImage ON vehicletypes.id = vehicleTypesImage.vehicletypeid JOIN images ON vehicleTypesImage.imageId = images.id WHERE vehicleTypes.id = $1 ORDER BY images.displayorder"
-
 const minReservationDuration = 10 * time.Minute
