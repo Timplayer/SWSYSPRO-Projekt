@@ -17,7 +17,6 @@ import {
     InputLabel,
     Select,
     MenuItem,
-    ImageList,
     ImageListItem,
     Grid,
 } from '@mui/material';
