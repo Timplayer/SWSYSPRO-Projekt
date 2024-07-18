@@ -73,17 +73,9 @@ func postStation(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) (
 	s, fail = getT[station](writer, request, tx, "postStation",
 		`INSERT INTO stations (name, location, country, state, city, zip, street, houseNumber, capacity)
                    VALUES ($1, point($2, $3), $4  , $5   , $6  , $7 , $8    , $9         , $10)
-        		RETURNING stations.id,
-        		          stations.name,
-        		          stations.location[0] as latitude,
-        		          stations.location[1] as longitude,
-        		          stations.country,
-        		          stations.state,
-        		          stations.city,
-        		          stations.zip,
-        		          stations.street,
-        		          stations.houseNumber,
-        		          stations.capacity`,
+        		RETURNING stations.id, stations.name, stations.location[0] as latitude,
+        		          stations.location[1] as longitude, stations.country, stations.state, stations.city,
+        		          stations.zip, stations.street, stations.houseNumber, stations.capacity`,
 		s.Name, s.Latitude, s.Longitude, s.Country, s.State, s.City, s.Zip, s.Street, s.HouseNumber, s.Capacity)
 	if fail {
 		return station{}, true
