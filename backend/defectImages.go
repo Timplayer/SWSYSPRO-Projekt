@@ -18,7 +18,10 @@ func postDefectImage(writer http.ResponseWriter, request *http.Request, tx pgx.T
 	}
 
 	userId := ""
-	tx.QueryRow(context.Background(), "SELECT user_id FROM defects WHERE id = $1", mux.Vars(request)[idKey]).Scan(&userId)
+	err = tx.QueryRow(context.Background(), "SELECT user_id FROM defects WHERE id = $1", mux.Vars(request)[idKey]).Scan(&userId)
+	if err != nil {
+		return picture{}, false
+	}
 
 	b := slices.Contains(introspectionResult.Access.Roles, "employee") || userId == introspectionResult.UserId
 	if b {
