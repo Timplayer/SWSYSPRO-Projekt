@@ -28,16 +28,16 @@ const Reservation: React.FC = () => {
   
   const [pickupLocationCopy, setPickupLocation] = useState(searchLocation);
   const [returnLocationCopy, setReturnLocation] = useState(returnLocation);
-  const [differentReturnLocation, setDifferentReturnLocation] = useState(searchLocation !== returnLocation);
+  const [differentReturnLocation, setDifferentReturnLocation] = useState<boolean>(searchLocation !== returnLocation && returnLocation !== undefined);
 
   const [locations, setLocations] = useState<Array<{ label: string, value: string }>>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!location.state || !car) {
       navigate('/');
     }
   }, [location.state, car]);
-
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -64,7 +64,7 @@ const Reservation: React.FC = () => {
 
   const handleSubmit = async (event: { preventDefault: () => void; }) => {
     event.preventDefault();
-
+    setErrorMessage(null);  
     try {
       const api_reservation_data = {
         start_zeit: pickupDateCopy,
@@ -86,9 +86,11 @@ const Reservation: React.FC = () => {
         navigate('/mybookings');
       } else {
         console.error('Reservation failed:', response);
+        setErrorMessage('Reservierung failed. Unerlaubte Eingaben. Versuche es bitte noch einmal.');
       }
     } catch (error) {
       console.error('Error making reservation:', error);
+      setErrorMessage('Ein Fehler bei der Reservierung ist aufgetreten.');
     }
   };
 
@@ -159,6 +161,7 @@ const Reservation: React.FC = () => {
           }}
         >
           <Typography variant="h4" gutterBottom>HiveDrive Reservierung</Typography>
+          {errorMessage && <Typography color="error" gutterBottom>{errorMessage}</Typography>}
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
               <Grid item xs={12}>

@@ -87,7 +87,7 @@ const FilterBar: React.FC<FilterContextType> = ({
     setVehicleCategory([]);
     setTransmission([]);
     setDriveType([]);
-    setSeatCount('2+');
+    setSeatCount('1+');
     setDriverAge('25+');
   };
 
@@ -180,6 +180,7 @@ const FilterBar: React.FC<FilterContextType> = ({
           <Box sx={{ width: '300px', padding: 2 }}>
             <Typography variant="h6">Anzahl Sitze</Typography>
             <RadioGroup value={seatCount} onChange={handleSeatCountChange}>
+              <FormControlLabel value="1+" control={<Radio />} label="1+" />
               <FormControlLabel value="2+" control={<Radio />} label="2+" />
               <FormControlLabel value="4+" control={<Radio />} label="4+" />
               <FormControlLabel value="5+" control={<Radio />} label="5+" />
