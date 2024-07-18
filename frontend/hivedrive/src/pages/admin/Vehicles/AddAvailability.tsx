@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Box, Button, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
-import axios from 'axios';
 import { VehicleType } from '../../../Types';
 import { Station } from '../Stations/StationTypes';
 import { LocalizationProvider, MobileDateTimePicker } from '@mui/x-date-pickers';
