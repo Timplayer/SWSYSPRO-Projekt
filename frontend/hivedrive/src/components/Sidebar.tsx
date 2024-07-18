@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Toolbar, Box, Avatar } from '@mui/material';
 import { Home, CarRental, EvStation, AccountBox } from '@mui/icons-material';
 import Logo from '../assets/HiveDriveLogo.jpeg'; // Update the path to where your logo is located
-import Users from '../pages/admin/Users';
 
 const drawerWidth = 240;
 
