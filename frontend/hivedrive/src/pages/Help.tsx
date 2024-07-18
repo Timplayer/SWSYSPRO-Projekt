@@ -111,7 +111,7 @@ const HelpPage: React.FC = () => {
             <Typography variant="body1" sx={{color: '#FFFFFF'}}>
               Wenn Sie weitere Fragen haben, können Sie uns gerne per E-Mail unter &nbsp;
               <a href="mailto:support@hivedrive.de" style={{ color: '#ff9800', textDecoration: 'none' }}>
-                  support@hivedrive.de
+                support@hivedrive.de
               </a> 
               &nbsp; kontaktieren.
             </Typography>
