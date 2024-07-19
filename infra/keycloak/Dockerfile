@@ -4,7 +4,7 @@ FROM quay.io/keycloak/keycloak:24.0 AS builder
 ENV KC_HEALTH_ENABLED=true
 ENV KC_METRICS_ENABLED=true
 ENV KC_HTTP_RELATIVE_PATH=/auth/
-
+ENV KC_FEATURES=admin-fine-grained-authz
 # Configure a database vendor
 # ENV KC_DB=postgres
 
