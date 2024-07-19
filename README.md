@@ -30,10 +30,10 @@
 
 ## Optional
 - [ ] Payment
-- [ ] Images
+- [x] Images
 - [ ] Invoice as PDF
-- [ ] Social login
-- [ ] 2FA
+- [x] Social login
+- [x] 2FA
 - ...
 
 # Deadlines
