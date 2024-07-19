@@ -23,8 +23,8 @@ const Reservation: React.FC = () => {
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
 
-  const [pickupDateCopy, setPickupDate] = useState<Date | null>(pickupDate ? new Date(pickupDate) : new Date());
-  const [returnDateCopy, setReturnDate] = useState<Date | null>(returnDate ? new Date(returnDate) : new Date());
+  const [pickupDateCopy, setPickupDateCopy] = useState<Date | null>(pickupDate ? new Date(pickupDate) : new Date());
+  const [returnDateCopy, setsetReturnDateCopy] = useState<Date | null>(returnDate ? new Date(returnDate) : new Date());
   
   const [pickupLocationCopy, setPickupLocation] = useState(searchLocation);
   const [returnLocationCopy, setReturnLocation] = useState(returnLocation);
@@ -292,12 +292,12 @@ const Reservation: React.FC = () => {
                     label="Abholdatum"
                     value={pickupDateCopy}
                     onAccept={(date) => {
-                      setPickupDate(date);
+                      setPickupDateCopy(date);
                       if (date && returnDateCopy && date > returnDateCopy) {
-                        setReturnDate(date);
+                        setsetReturnDateCopy(date);
                       }
                     }}
-                    onChange={(date) => setPickupDate(date)}
+                    onChange={(date) => setPickupDateCopy(date)}
                     minDate={now}
                     minTime={pickupDateCopy && isSameDay(pickupDateCopy, now) ? new Date(now.getTime() - 1 * 60 * 1000) : undefined}
                   />
@@ -309,8 +309,8 @@ const Reservation: React.FC = () => {
                     ampm={false}
                     label="Rückgabedatum"
                     value={returnDateCopy}
-                    onAccept={(date) => setReturnDate(date)}
-                    onChange={(date) => setReturnDate(date)}
+                    onAccept={(date) => setsetReturnDateCopy(date)}
+                    onChange={(date) => setsetReturnDateCopy(date)}
                     minDate={pickupDateCopy || now}
                     minTime={pickupDateCopy && isSameDay(returnDateCopy, pickupDateCopy) ? new Date(pickupDateCopy.getTime() - 1 * 60 * 1000) : undefined}
                   />

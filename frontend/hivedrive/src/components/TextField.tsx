@@ -73,13 +73,13 @@ const styles = ({ theme }: { theme: Theme }) => ({
   },
 });
 
-export interface OnePirateTextFieldProps
+export interface TextFieldProps
   extends Omit<FilledTextFieldProps | StandardTextFieldProps, 'size'> {
   noBorder?: boolean;
   size?: 'small' | 'medium' | 'large' | 'xlarge';
 }
 
-function TextField(props: OnePirateTextFieldProps) {
+function TextField(props: TextFieldProps) {
   const {
     InputProps = {},
     InputLabelProps,
