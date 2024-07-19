@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { Box, Button, Chip, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
-import { useDropzone } from 'react-dropzone';
-import axios from 'axios';
+import { Box, Button, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { VehicleType } from '../../../Types';
 import { Station } from '../Stations/StationTypes';
-import { LocalizationProvider, MobileDatePicker, MobileDateTimePicker } from '@mui/x-date-pickers';
+import { LocalizationProvider, MobileDateTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 interface AddAvailabilityProps {

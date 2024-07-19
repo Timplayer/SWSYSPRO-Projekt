@@ -31,7 +31,8 @@ func updateVehicleCategory(dbpool *pgxpool.Pool) http.HandlerFunc {
 		if fail {
 			return
 		}
-		result, err := dbpool.Exec(context.Background(), "UPDATE vehicleCategories SET name = $1 WHERE id = $2;", vC.Name, vC.Id)
+		result, err := dbpool.Exec(context.Background(),
+			"UPDATE vehicleCategories SET name = $1 WHERE id = $2;", vC.Name, vC.Id)
 		fail = checkUpdateSingleRow(writer, err, result, "update vehicle category")
 		if fail {
 			return
@@ -87,7 +88,8 @@ func getVehicleCategories(dbpool *pgxpool.Pool) http.HandlerFunc {
 }
 
 func createVehicleCategoriesTable(dbpool *pgxpool.Pool) {
-	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS vehicleCategories (id BIGSERIAL PRIMARY KEY, name TEXT)")
+	_, err := dbpool.Exec(context.Background(),
+		"CREATE TABLE IF NOT EXISTS vehicleCategories (id BIGSERIAL PRIMARY KEY, name TEXT)")
 	if err != nil {
 		log.Fatalf(failedToCreateTable, err)
 	}

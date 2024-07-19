@@ -1,7 +1,7 @@
 meta {
-  name: Change object
+  name: Change object back
   type: http
-  seq: 2
+  seq: 4
 }
 
 put {
@@ -20,7 +20,7 @@ body:json {
     "name": "Station 3",
     "vehicleCategory": 1,
     "producer": 1,
-    "status": "Aktiv",
+    "status": "Werkstatt",
     "receptionDate": "2021-08-15T14:30:45Z",
     "completionDate": "2021-08-15T14:30:45Z"
   }
@@ -54,7 +54,7 @@ tests {
   
   test("Status is correct?", function() {
     const data = res.getBody();
-    expect (data.status).to.equal("Aktiv");
+    expect (data.status).to.equal("Werkstatt");
   });
   
     test("ReceptionDate is correct?", function() {

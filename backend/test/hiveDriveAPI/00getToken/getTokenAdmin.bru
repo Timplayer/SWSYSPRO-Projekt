@@ -1,0 +1,30 @@
+meta {
+  name: getTokenAdmin
+  type: http
+  seq: 3
+}
+
+post {
+  url: https://localhost:8080/auth/realms/hivedrive/protocol/openid-connect/token
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  client_id: admin-cli
+  username: admin_test@example.com
+  password: test
+  grant_type: password
+}
+
+vars:post-response {
+  access_token_admin: res.body.access_token
+}
+
+tests {
+  test("Status = 200", function() {
+    const data = res.getBody();
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+}

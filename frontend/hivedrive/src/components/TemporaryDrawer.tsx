@@ -23,7 +23,7 @@ export default function TemporaryDrawer() {
     },
   }));
 
-  //Skalierunge
+  //Skalierung
   const isSmallScreen = useMediaQuery('(max-width:600px)');
   const isMediumScreen = useMediaQuery('(min-width:600px) and (max-width:1200px)');
   const isLargeScreen = useMediaQuery('(min-width:1200px) and (max-width:2000px)');

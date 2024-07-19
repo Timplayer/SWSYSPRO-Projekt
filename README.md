@@ -5,9 +5,9 @@
 - [x] Create member account
 - [x] Change member account data
 - [x] Login/Logout
-- [ ] Create new reservation
-- [ ] Check out reservations
-- [ ] Delete reservations
+- [X] Create new reservation
+- [X] Check out reservations
+- [X] Delete reservations
 
 ## Optional
 - [ ] Payment

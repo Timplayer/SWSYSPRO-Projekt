@@ -48,6 +48,10 @@ jobs:
       - name: integration test backend-keycloak
         run: |
           docker compose -f ./infra/docker-compose.yaml up --detach --wait
+          npm install -g @usebruno/cli
+          cd ./backend/test/hiveDriveAPI/
+          bru run 01defects/Test\ 2/Get\ created\ object.bru --insecure
+          cd ../../../
           ./backend/test/oauth-integration.sh
           ./backend/test/sql-integration.sh
           docker compose -f ./infra/docker-compose.yaml down

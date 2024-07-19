@@ -83,55 +83,40 @@ func addImageToDB(writer http.ResponseWriter, request *http.Request, dbpool pgx.
 	}
 
 	p, fail := getT[picture](writer, request, dbpool, "postImage",
-		`INSERT INTO images (fileName, file, displayOrder) 
-			 VALUES ($1, $2, $3) 
-			 RETURNING *;`,
+		`INSERT INTO images (fileName, file, displayOrder) VALUES ($1, $2, $3) RETURNING *;`,
 		header.Filename, buf.Bytes(), request.FormValue(displayOrderKey))
-	if fail {
-		return p, true
-	}
-	return p, false
+
+	return p, fail
 }
 
 func getImageByIdAsFile(dbpool *pgxpool.Pool) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		isEmployee := false
 		userId := ""
-		introspectionResult, err := introspect(writer, request)
-		if err == nil {
+		if introspectionResult, err := introspect(writer, request); err == nil {
 			isEmployee = slices.Contains(introspectionResult.Access.Roles, "employee")
 			userId = introspectionResult.UserId
 		}
-
 		tx, err := dbpool.BeginTx(request.Context(), transactionOptionsReadOnly)
 		if err != nil {
 			return
 		}
 		defer tx.Rollback(request.Context())
-		p, fail := getT[picture](writer, request, tx, "getImageByID",
-			`SELECT images.* 
-				 FROM images 
-				 LEFT JOIN defectimage ON images.id = defectimage.imageid 
-				 LEFT JOIN defects ON defectimage.defectid = defects.id 
-				 WHERE images.id = $1 and (defectid is NULL OR defects.user_id = $2 OR $3);`,
+		p, fail := getT[picture](writer, request, tx, "getImageByID", getImageByIdAsFileSQL,
 			mux.Vars(request)["id"], userId, isEmployee)
 		if fail {
 			return
 		}
-
-		err = tx.Commit(request.Context())
-		if err != nil {
+		if err = tx.Commit(request.Context()); err != nil {
 			return
 		}
 		writer.Header().Set(contentType, octetStream)
 		writer.WriteHeader(http.StatusOK)
-		_, err = writer.Write(p.File)
-		if err != nil {
+		if _, err = writer.Write(p.File); err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			log.Printf("Error sending HTTP response: %v", err)
 			return
 		}
-
 	}
 }
 
@@ -165,12 +150,18 @@ func getImages(dbpool *pgxpool.Pool) http.HandlerFunc {
 }
 
 func deleteImage(writer http.ResponseWriter, request *http.Request, tx pgx.Tx) picture {
-	p, _ := getT[picture](writer, request, tx, "", "DELETE FROM images WHERE id = $1 RETURNING *;", mux.Vars(request)["id"])
+	p, _ := getT[picture](
+		writer, request, tx, "",
+		"DELETE FROM images WHERE id = $1 RETURNING *;", mux.Vars(request)["id"])
 	return p
 }
 
 func createImagesTable(dbpool *pgxpool.Pool) {
-	_, err := dbpool.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS images (id BIGSERIAL PRIMARY KEY, fileName TEXT, file bytea, displayOrder INTEGER)")
+	_, err := dbpool.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS images 
+													 (id BIGSERIAL PRIMARY KEY, 
+													 fileName TEXT, 
+													 file bytea, 
+													 displayOrder INTEGER)`)
 	if err != nil {
 		log.Fatalf(failedToCreateTable, err)
 	}
