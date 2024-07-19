@@ -1,5 +1,24 @@
 # SWSYSPRO-Projekt
 
+# Installation and Usage
+
+**Requirement:** Docker must be installed and you need a working internet connection
+
+1. Clone the repository: `https://github.com/Timplayer/SWSYSPRO-Projekt.git`
+2. Navigate to the `infa` directory of the project: `cd SWSYSPRO-Projekt/infra`
+3. Run `docker compose up`
+
+## Technologies
+- Backend
+    - GO
+    - Keycloak
+    - PostgreSQL
+    - Bruno
+    - Caddy
+- Frontend
+    - React
+    - Vite
+
 ## Minimum acceptance criteria
 
 - [x] Create member account
