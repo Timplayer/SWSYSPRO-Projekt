@@ -8,6 +8,20 @@
 2. Navigate to the `infa` directory of the project: `cd SWSYSPRO-Projekt/infra`
 3. Run `docker compose up`
 
+
+## Test Nutzer
+# Admin
+User: admin_test
+Password: test
+
+# Employee
+User: employee_test
+Password: test
+
+# Member
+User: member_test
+Password: test
+
 ## Technologies
 - Backend
     - GO
