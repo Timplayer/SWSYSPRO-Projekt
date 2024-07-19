@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
   AppBar, Toolbar, Button, Menu, FormControl, FormControlLabel, Radio, RadioGroup, Checkbox, Box, Typography
 } from '@mui/material';
-
 import { VehicleCategory, Transmission, DriverSystem } from '../Types';
 
 interface FilterContextType {

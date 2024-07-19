@@ -7,7 +7,7 @@ import { Transmission, Vehicle as Car } from '../Types';
 
 interface CarCardProps {
   car: Car
-  onBook: () => void; // New prop for handling book button click
+  onBook: () => void; 
 }
 
 const CarCard: React.FC<CarCardProps> = ({car, onBook }) => {

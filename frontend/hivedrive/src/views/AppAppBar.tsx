@@ -3,7 +3,7 @@ import Link from '@mui/material/Link';
 import AppBar from '../components/AppBar';
 import Toolbar from '../components/Toolbar';
 import TemporaryDrawer from '../components/TemporaryDrawer';
-import logo from '../../images/HiveDriveLogo.png'; // Pfad zum Logo
+import logo from '../../images/HiveDriveLogo.png'; 
 import keycloak from '../keycloak';
 import AccountManagement from '../components/Accountmanagement';
 import Button from '@mui/material/Button';

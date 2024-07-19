@@ -6,7 +6,7 @@ import Divider from '@mui/material/Divider';
 import MenuIcon from '@mui/icons-material/Menu';
 import { IconButton, Stack, useMediaQuery } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import logo from '../../images/HiveDriveLogo.png'; // Pfad zum Logo
+import logo from '../../images/HiveDriveLogo.png'; 
 import {Link as RouterLink } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 
@@ -23,13 +23,11 @@ export default function TemporaryDrawer() {
     },
   }));
 
-  // Media query hooks to determine screen size
+  //Skalierung
   const isSmallScreen = useMediaQuery('(max-width:600px)');
   const isMediumScreen = useMediaQuery('(min-width:600px) and (max-width:1200px)');
   const isLargeScreen = useMediaQuery('(min-width:1200px) and (max-width:2000px)');
   const isSuperLargeScreen = useMediaQuery('(min-width:2000px)');
-  
-  // Determine drawer width based on screen size
   const drawerWidth = isSmallScreen ? 200 : isMediumScreen ? 300 : isLargeScreen ? 400 : isSuperLargeScreen ? 500 : 250;
 
   const toggleDrawer = (newOpen: boolean) => () => {
@@ -101,7 +99,7 @@ export default function TemporaryDrawer() {
       <Drawer 
         open={open} 
         onClose={toggleDrawer(false)}
-        sx={{ "& .MuiDrawer-paper": { backgroundColor: 'secondary.light' } }} // Hier ändere die Hintergrundfarbe
+        sx={{ "& .MuiDrawer-paper": { backgroundColor: 'secondary.light' } }} 
       >
         {DrawerList}
       </Drawer>
