@@ -1,5 +1,16 @@
 # SWSYSPRO-Projekt
 
+## Technologies
+- Backend
+    - GO
+    - Keycloak
+    - PostgreSQL
+    - Bruno
+    - Caddy
+- Frontend
+    - React
+    - Vite
+
 ## Minimum acceptance criteria
 
 - [x] Create member account
