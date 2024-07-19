@@ -19,12 +19,14 @@ const subscriptionPlans = [
   { 
     title: 'Standard', 
     price: '199€/Monat', 
-    features: ['+500 Freikilometer pro Tag', 'Vollkaskoversicherung mit geringer Selbstbeteiligung', 'Priorisierter Support', 'Kostenloser Zweitfahrer', 'Monatliche Überraschunsfreifahrt'] 
+    features: ['+500 Freikilometer pro Tag', 'Vollkaskoversicherung mit geringer Selbstbeteiligung', 
+      'Priorisierter Support', 'Kostenloser Zweitfahrer', 'Monatliche Überraschunsfreifahrt'] 
   },
   { 
     title: 'Premium', 
     price: '300€/Monat', 
-    features: ['+1000 Freikilometer pro Tag', 'Vollkaskoversicherung ohne Selbstbeteiligung', '24/7 Premium Support', 'Kostenloser Zweitfahrer', 'Kostenlose Upgrades auf Premiumfahrzeuge', 'Monatliche Überraschunsfreifahrt'] 
+    features: ['+1000 Freikilometer pro Tag', 'Vollkaskoversicherung ohne Selbstbeteiligung', 
+      '24/7 Premium Support', 'Kostenloser Zweitfahrer', 'Kostenlose Upgrades auf Premiumfahrzeuge', 'Monatliche Überraschunsfreifahrt'] 
   },
 ];
 

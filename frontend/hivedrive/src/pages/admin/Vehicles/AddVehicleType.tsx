@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Button, Chip, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { useDropzone } from 'react-dropzone';
-import axios from 'axios';
 import { VehicleType, Transmission, DriverSystem, VehicleCategory } from '../../../Types';
-import keycloak from '../../../keycloak';
 
 interface AddVehicleTypeProps {
     categories: VehicleCategory[];

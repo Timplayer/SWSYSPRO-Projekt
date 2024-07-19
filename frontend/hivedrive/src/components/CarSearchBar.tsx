@@ -111,7 +111,7 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
                 setLocation(e.target.value);
                 const value = e.target.value;
                 setStartLocation(value);
-                onLocationChange && onLocationChange(value);
+                onLocationChange?.(value);
               }}
               fullWidth
             >
@@ -136,7 +136,7 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
                 onChange={(e) => {
                   const value = e.target.value;
                   setReturnLocation(value);
-                  onReturnLocationChange && onReturnLocationChange(value);
+                  onReturnLocationChange?.(value);
                 }}
                 fullWidth
               >
@@ -161,15 +161,15 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
                 value={pickupDate}
                 onAccept={(date) => {
                   setPickupDate(date);
-                  onPickupDateChange && onPickupDateChange(date);
+                  onPickupDateChange?.(date);
                   if (date && returnDate && date > returnDate) {
                     setReturnDate(date);
-                    onReturnDateChange && onReturnDateChange(date);
+                    onReturnDateChange?.(date);
                   }
                 }}
                 onChange={(date) => {
                   setPickupDate(date);
-                  onPickupDateChange && onPickupDateChange(date);
+                  onPickupDateChange?.(date);
                 }} 
                 minDate={now}
                 minTime={pickupDate && isSameDay(pickupDate, now) ? new Date(now.getTime() - 1 * 60 * 1000) : undefined}
@@ -184,7 +184,7 @@ const CarSearchBar: React.FC<CarSearchBarProps> = ({
                 value={returnDate}
                 onAccept={(date) => {
                   setReturnDate(date);
-                  onReturnDateChange && onReturnDateChange(date);
+                  onReturnDateChange?.(date);
                 }}
                 onChange={(date) => {
                   setReturnDate(date);

@@ -1,7 +1,7 @@
 // Vehicles.tsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, Divider, Typography, Tabs, Tab, createTheme } from '@mui/material';
+import { Box, Divider, Typography, Tabs, Tab} from '@mui/material';
 import VehicleList from './VehicleList';
 import AddVehicle from './AddVehicle';
 import VehicleCategories from './VehicleCategories';
@@ -9,7 +9,6 @@ import Producers from './Producers';
 import { Vehicle, VehicleCategory, Producer, VehicleType } from './VehicleDataTypes';
 import AddVehicleType from './AddVehicleType';
 import VehicleTypeList from './VehicleTypeList';
-import { ThemeProvider } from '@emotion/react';
 import keycloak from '../../../keycloak';
 import AddAvailability from './AddAvailability';
 import { Station } from '../Stations/StationTypes';

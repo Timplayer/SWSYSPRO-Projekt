@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Box, Button, List, ListItem, ListItemText, IconButton, Typography, TextField } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckIcon from '@mui/icons-material/Check';
 import { Producer } from '../../../Types';
